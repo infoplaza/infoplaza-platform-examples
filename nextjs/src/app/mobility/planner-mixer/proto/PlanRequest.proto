@@ -1,0 +1,200 @@
+syntax = "proto3";
+
+package planner;
+import "Modes.proto";
+import "Planner.proto";
+
+option java_multiple_files = true;
+
+
+
+message PlanRequest {
+  /*
+    The place to start the trip from, coordinate pair in the format "latitude,longitude"
+    Mutually exclusive with fromId, so either fromPlace or fromId must be set but not both.
+   */
+  optional string fromPlace = 1;
+
+  /*
+    The place to start the trip from, id of the place
+    Mutually exclusive with fromPlace, so either fromPlace or fromId must be set but not both.
+   */
+  optional string toPlace = 2;
+
+  /*
+    The stop or station to start the trip at,
+    can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
+    Mutually exclusive with toId, so either toPlace or toId must be set but not both.
+
+    @TODO - Implement this
+   */
+  optional string fromId = 3;
+
+  /*
+    The stop or station to stop the trip at,
+    can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
+    Mutually exclusive with toId, so either toPlace or toId must be set but not both.
+    @TODO - Implement this
+   */
+  optional string toId = 4;
+
+  /**
+    The place to stop/pass at on the way to the destination, coordinate pair in the format "latitude,longitude"
+    Mutually exclusive with viaId, so either viaPlace or viaId must be set but not both.
+
+    @Note: This is not implemented for OpenTripPlanner yet, but is included for future use.
+   */
+  optional string viaPlace = 5;
+
+  /**
+    The place to stop/pass at on the way to the destination,
+    can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
+    Mutually exclusive with viaPlace, so either viaPlace or viaId must be set but not both.
+
+    @Note: This is not implemented for OpenTripPlanner yet, but is included for future use.
+    @TODO - Implement this
+   */
+  optional string viaId = 6;
+
+  /**
+    The time to start or end the trip at, in ISO 8601 format
+    If not set, the current time is used.
+   */
+  optional string timestamp = 7;
+
+  /**
+    Whether the given timestamp is the start or end time of the trip
+    If not set, the timestamp is considered the start time.
+   */
+  optional bool arriveBy = 8;
+
+  /**
+    Whether to only use public transport for the trip
+    If not set, public transport is used by default. If set to false,
+    also other (direct) modes of transport are considered (e.g., walking, biking, driving)
+    and the trip may be planned using a combination of (shared mobility) modes.
+    @default false
+    @TODO - Implement this
+   */
+  optional bool publicTransportOnly = 9;
+
+  /**
+    The modes of transport to ban for the "first mile" (from the origin to the first stop)
+
+    These modes will not be used for alternative searching.
+   */
+  repeated model.enumerations.NonTransitMode excludedFirstMileModes = 10;
+
+  /**
+    The modes of transport to ban for the "last mile" (from the last stop to the destination)
+
+    These modes will not be used for alternative searching.
+   */
+  repeated model.enumerations.NonTransitMode excludedLastMileModes = 11;
+
+  /**
+    Minimum time in seconds to transfer between stops, can be useful for disabled users
+    If not set, transfers are calculated based on the default walking speed and distance.
+   */
+  optional int32 transferSlack = 12;
+
+  /**
+    Whether to include trips with surcharges
+    If not set, trips with surcharges are included by default.
+
+    @note Only works with the default planner - OTP includes all for now
+   */
+  optional bool includeWithSurcharges = 13;
+
+  /**
+    Whether to include on-demand transit services (e.g water taxis, shuttles)
+    If not set, on-demand transit services are included by default.
+
+    @note Only works with the default planner - OTP includes all for now
+   */
+  optional bool includeOnDemandTransit = 14;
+
+  /**
+    The preferred planner to use for the trip
+    If not set, the default planner is used.
+   */
+  optional model.enumerations.Planner preferredPlanner = 15;
+
+  /**
+    The modes of transport to exclude from the trip
+    If not set, no modes are excluded by default.
+   */
+  repeated model.enumerations.TransitMode excludeModes = 16;
+
+  /** Allow worse options than the minimum grade to be returned, which is currently set to a 4.0, which means slightly worse than the base public transport only result */
+  optional bool allowWorseOptions = 17;
+
+  /** Excluded modes to use for unimodal routing */
+  repeated model.enumerations.NonTransitMode excludedUnimodalModes = 18;
+
+  optional UserPreferences userPreferences = 19;
+
+  /**
+    If enabled, public transport will not be considered for the trip.
+    That means only walking, (rented) biking, (rented) scooters and driving will be used.
+
+    Mutually exclusive with publicTransportOnly, so either disablePublicTransport or publicTransportOnly must be set but not both.
+   */
+  optional bool disablePublicTransport = 20;
+
+  /**
+  Slack in minutes to subtract respectively add from the given departure or arrival time.
+  This is used to allow for a flexible departure or arrival time.
+  If not set, the default slack is 5 minutes.
+  If set, the value is in minutes and can be positive or negative.
+   */
+  optional int32 timeSlack = 21;
+
+  /**
+  Whether to enable flex support for the trip. This will cause flex-transit services to be considered
+  for the base result.
+  ONLY SUPPORTED IN OTP, WILL THROW AN ERROR IN THE DEFAULT PLANNER IF SET TO TRUE.
+   */
+  optional bool useFlexibleRouting = 22;
+  //Leave room for future options
+
+}
+
+enum UserSpeed {
+  /** Slow walker (4km/h), biker (12 km/h). */
+  SLOW = 0;
+  /** Average walker (5 km/h), biker (15 km/h). */
+  AVERAGE = 1;
+  /** Fast walker (6 km/h), biker (20 km/h). */
+  FAST = 2;
+}
+
+/**
+  User preferences for the trip, such as walking and biking speeds.
+  These preferences are used to calculate distances and transfer times.
+  If not set, default values are used.
+*/
+
+message UserPreferences {
+  /**
+    Walking speed in kilometers per hour. Defaults to about 5 km/h if not set.
+    Is used for calculating walking distances and transfer times.
+
+    TODO: Pre-cache certain walking speeds (fast, slow, average) in OpenTripPlanner.
+    @default 5.0
+  */
+  optional UserSpeed walkingSpeed = 1;
+
+  /**
+    Biking speed in kilometers per hour. Defaults to about 15 km/h if not set.
+    Is used for calculating biking distances and transfer times.
+
+    TODO: Pre-cache certain biking speeds (fast, slow, average) in OpenTripPlanner.
+   */
+  optional UserSpeed bikingSpeed = 2;
+
+  /**
+    Does the user have an e-bike, if set to true, the biking speed will be increased by 5 km/h from what is set in bikingSpeed or by default.
+   */
+  optional bool hasEbike = 3;
+}

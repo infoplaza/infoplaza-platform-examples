@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "PlanRequest.proto";
+import "PlanResult.proto";
+
+package planner.service;
+
+service TripPlanner {
+  rpc GetPlans(PlanRequest) returns (stream model.PlanResult);
+  rpc GetPlan(PlanRequest) returns (model.PlanResult);
+}

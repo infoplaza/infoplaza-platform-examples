@@ -1,0 +1,1475 @@
+{
+  "nested": {
+    "planner": {
+      "options": {
+        "java_multiple_files": true
+      },
+      "nested": {
+        "PlanRequest": {
+          "oneofs": {
+            "_fromPlace": {
+              "oneof": [
+                "fromPlace"
+              ]
+            },
+            "_toPlace": {
+              "oneof": [
+                "toPlace"
+              ]
+            },
+            "_fromId": {
+              "oneof": [
+                "fromId"
+              ]
+            },
+            "_toId": {
+              "oneof": [
+                "toId"
+              ]
+            },
+            "_viaPlace": {
+              "oneof": [
+                "viaPlace"
+              ]
+            },
+            "_viaId": {
+              "oneof": [
+                "viaId"
+              ]
+            },
+            "_timestamp": {
+              "oneof": [
+                "timestamp"
+              ]
+            },
+            "_arriveBy": {
+              "oneof": [
+                "arriveBy"
+              ]
+            },
+            "_publicTransportOnly": {
+              "oneof": [
+                "publicTransportOnly"
+              ]
+            },
+            "_transferSlack": {
+              "oneof": [
+                "transferSlack"
+              ]
+            },
+            "_includeWithSurcharges": {
+              "oneof": [
+                "includeWithSurcharges"
+              ]
+            },
+            "_includeOnDemandTransit": {
+              "oneof": [
+                "includeOnDemandTransit"
+              ]
+            },
+            "_preferredPlanner": {
+              "oneof": [
+                "preferredPlanner"
+              ]
+            },
+            "_allowWorseOptions": {
+              "oneof": [
+                "allowWorseOptions"
+              ]
+            },
+            "_userPreferences": {
+              "oneof": [
+                "userPreferences"
+              ]
+            },
+            "_disablePublicTransport": {
+              "oneof": [
+                "disablePublicTransport"
+              ]
+            },
+            "_timeSlack": {
+              "oneof": [
+                "timeSlack"
+              ]
+            },
+            "_useFlexibleRouting": {
+              "oneof": [
+                "useFlexibleRouting"
+              ]
+            }
+          },
+          "fields": {
+            "fromPlace": {
+              "type": "string",
+              "id": 1,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "toPlace": {
+              "type": "string",
+              "id": 2,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "fromId": {
+              "type": "string",
+              "id": 3,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "toId": {
+              "type": "string",
+              "id": 4,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "viaPlace": {
+              "type": "string",
+              "id": 5,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "viaId": {
+              "type": "string",
+              "id": 6,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "id": 7,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "arriveBy": {
+              "type": "bool",
+              "id": 8,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "publicTransportOnly": {
+              "type": "bool",
+              "id": 9,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "excludedFirstMileModes": {
+              "rule": "repeated",
+              "type": "model.enumerations.NonTransitMode",
+              "id": 10
+            },
+            "excludedLastMileModes": {
+              "rule": "repeated",
+              "type": "model.enumerations.NonTransitMode",
+              "id": 11
+            },
+            "transferSlack": {
+              "type": "int32",
+              "id": 12,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "includeWithSurcharges": {
+              "type": "bool",
+              "id": 13,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "includeOnDemandTransit": {
+              "type": "bool",
+              "id": 14,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "preferredPlanner": {
+              "type": "model.enumerations.Planner",
+              "id": 15,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "excludeModes": {
+              "rule": "repeated",
+              "type": "model.enumerations.TransitMode",
+              "id": 16
+            },
+            "allowWorseOptions": {
+              "type": "bool",
+              "id": 17,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "excludedUnimodalModes": {
+              "rule": "repeated",
+              "type": "model.enumerations.NonTransitMode",
+              "id": 18
+            },
+            "userPreferences": {
+              "type": "UserPreferences",
+              "id": 19,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "disablePublicTransport": {
+              "type": "bool",
+              "id": 20,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "timeSlack": {
+              "type": "int32",
+              "id": 21,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "useFlexibleRouting": {
+              "type": "bool",
+              "id": 22,
+              "options": {
+                "proto3_optional": true
+              }
+            }
+          }
+        },
+        "UserSpeed": {
+          "values": {
+            "SLOW": 0,
+            "AVERAGE": 1,
+            "FAST": 2
+          }
+        },
+        "UserPreferences": {
+          "oneofs": {
+            "_walkingSpeed": {
+              "oneof": [
+                "walkingSpeed"
+              ]
+            },
+            "_bikingSpeed": {
+              "oneof": [
+                "bikingSpeed"
+              ]
+            },
+            "_hasEbike": {
+              "oneof": [
+                "hasEbike"
+              ]
+            }
+          },
+          "fields": {
+            "walkingSpeed": {
+              "type": "UserSpeed",
+              "id": 1,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "bikingSpeed": {
+              "type": "UserSpeed",
+              "id": 2,
+              "options": {
+                "proto3_optional": true
+              }
+            },
+            "hasEbike": {
+              "type": "bool",
+              "id": 3,
+              "options": {
+                "proto3_optional": true
+              }
+            }
+          }
+        },
+        "model": {
+          "options": {
+            "java_multiple_files": true
+          },
+          "nested": {
+            "enumerations": {
+              "options": {
+                "java_multiple_files": true
+              },
+              "nested": {
+                "TransitMode": {
+                  "values": {
+                    "AIR": 0,
+                    "BUS": 2,
+                    "CABLEWAY": 3,
+                    "WATER": 4,
+                    "FUNICULAR": 5,
+                    "LIFT": 6,
+                    "RAIL": 7,
+                    "METRO": 8,
+                    "TAXI": 9,
+                    "TRAM": 10,
+                    "TROLLEYBUS": 11,
+                    "MONORAIL": 12,
+                    "COACH": 13,
+                    "OTHER_TRANSIT_MODE": 99
+                  }
+                },
+                "NonTransitMode": {
+                  "values": {
+                    "CAR": 0,
+                    "BICYCLE": 1,
+                    "SCOOTER": 2,
+                    "WALK": 3,
+                    "RENTED_BICYCLE": 4,
+                    "RENTED_SCOOTER": 5,
+                    "PUBLIC_STOP_TAXI": 6,
+                    "FLEX": 7,
+                    "OTHER_NON_TRANSIT_MODE": 99
+                  }
+                },
+                "Planner": {
+                  "values": {
+                    "NEGENTWEE": 0,
+                    "OTP": 1,
+                    "NO_PREFERENCE": 99
+                  }
+                },
+                "DirectionType": {
+                  "values": {
+                    "Anticlockwise": 0,
+                    "Clockwise": 1,
+                    "Inbound": 2,
+                    "Outbound": 3,
+                    "Unknown": 4
+                  }
+                }
+              }
+            },
+            "RoutingError": {
+              "fields": {
+                "message": {
+                  "type": "string",
+                  "id": 1
+                },
+                "code": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "PlanResult": {
+              "oneofs": {
+                "_previousPageCursor": {
+                  "oneof": [
+                    "previousPageCursor"
+                  ]
+                },
+                "_nextPageCursor": {
+                  "oneof": [
+                    "nextPageCursor"
+                  ]
+                },
+                "_containsOnDemand": {
+                  "oneof": [
+                    "containsOnDemand"
+                  ]
+                },
+                "_containsWithSurcharge": {
+                  "oneof": [
+                    "containsWithSurcharge"
+                  ]
+                }
+              },
+              "fields": {
+                "trips": {
+                  "rule": "repeated",
+                  "type": "TripPattern",
+                  "id": 1
+                },
+                "timestamp": {
+                  "type": "string",
+                  "id": 2
+                },
+                "previousPageCursor": {
+                  "type": "string",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "nextPageCursor": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "errors": {
+                  "rule": "repeated",
+                  "type": "RoutingError",
+                  "id": 5
+                },
+                "planner": {
+                  "type": "model.enumerations.Planner",
+                  "id": 6
+                },
+                "containsOnDemand": {
+                  "type": "bool",
+                  "id": 7,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "containsWithSurcharge": {
+                  "type": "bool",
+                  "id": 8,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "modifiers": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 9
+                },
+                "grade": {
+                  "type": "double",
+                  "id": 10
+                }
+              }
+            },
+            "TripPattern": {
+              "oneofs": {
+                "_waitingTime": {
+                  "oneof": [
+                    "waitingTime"
+                  ]
+                },
+                "_walkTime": {
+                  "oneof": [
+                    "walkTime"
+                  ]
+                },
+                "_streetDistance": {
+                  "oneof": [
+                    "streetDistance"
+                  ]
+                },
+                "_distance": {
+                  "oneof": [
+                    "distance"
+                  ]
+                }
+              },
+              "fields": {
+                "expectedStartTime": {
+                  "type": "string",
+                  "id": 1
+                },
+                "aimedStartTime": {
+                  "type": "string",
+                  "id": 2
+                },
+                "aimedEndTime": {
+                  "type": "string",
+                  "id": 3
+                },
+                "expectedEndTime": {
+                  "type": "string",
+                  "id": 4
+                },
+                "duration": {
+                  "type": "int32",
+                  "id": 5
+                },
+                "transfers": {
+                  "type": "int32",
+                  "id": 6
+                },
+                "waitingTime": {
+                  "type": "int32",
+                  "id": 7,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "walkTime": {
+                  "type": "int32",
+                  "id": 8,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "streetDistance": {
+                  "type": "double",
+                  "id": 9,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "distance": {
+                  "type": "double",
+                  "id": 10,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "systemNotices": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 11
+                },
+                "legs": {
+                  "rule": "repeated",
+                  "type": "Leg",
+                  "id": 12
+                },
+                "id": {
+                  "type": "string",
+                  "id": 13
+                }
+              }
+            },
+            "Leg": {
+              "oneofs": {
+                "_expectedStartTime": {
+                  "oneof": [
+                    "expectedStartTime"
+                  ]
+                },
+                "_expectedEndTime": {
+                  "oneof": [
+                    "expectedEndTime"
+                  ]
+                },
+                "legType": {
+                  "oneof": [
+                    "transitLeg",
+                    "nonTransitLeg",
+                    "waitingLeg",
+                    "flexibleLeg"
+                  ]
+                }
+              },
+              "fields": {
+                "aimedStartTime": {
+                  "type": "string",
+                  "id": 1
+                },
+                "aimedEndTime": {
+                  "type": "string",
+                  "id": 2
+                },
+                "expectedStartTime": {
+                  "type": "string",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "expectedEndTime": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "duration": {
+                  "type": "int32",
+                  "id": 6
+                },
+                "distance": {
+                  "type": "double",
+                  "id": 7
+                },
+                "pointsOnLink": {
+                  "type": "PointsOnLink",
+                  "id": 8
+                },
+                "transitLeg": {
+                  "type": "TransitLeg",
+                  "id": 10
+                },
+                "nonTransitLeg": {
+                  "type": "NonTransitLeg",
+                  "id": 11
+                },
+                "waitingLeg": {
+                  "type": "WaitingLeg",
+                  "id": 13
+                },
+                "flexibleLeg": {
+                  "type": "FlexibleLeg",
+                  "id": 14
+                },
+                "id": {
+                  "type": "string",
+                  "id": 12
+                }
+              }
+            },
+            "TransitLeg": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "realtime": {
+                  "type": "bool",
+                  "id": 2
+                },
+                "serviceJourney": {
+                  "type": "ServiceJourney",
+                  "id": 3
+                },
+                "serviceDate": {
+                  "type": "string",
+                  "id": 4
+                },
+                "situations": {
+                  "rule": "repeated",
+                  "type": "Situation",
+                  "id": 5
+                },
+                "fromEstimatedCall": {
+                  "type": "EstimatedCall",
+                  "id": 6
+                },
+                "toEstimatedCall": {
+                  "type": "EstimatedCall",
+                  "id": 7
+                },
+                "intermediateEstimatedCalls": {
+                  "rule": "repeated",
+                  "type": "EstimatedCall",
+                  "id": 8
+                },
+                "line": {
+                  "type": "Line",
+                  "id": 9
+                },
+                "authority": {
+                  "type": "Authority",
+                  "id": 10
+                },
+                "mode": {
+                  "type": "enumerations.TransitMode",
+                  "id": 11
+                }
+              }
+            },
+            "NonTransitLeg": {
+              "oneofs": {
+                "_tripWeatherJson": {
+                  "oneof": [
+                    "tripWeatherJson"
+                  ]
+                }
+              },
+              "fields": {
+                "fromPlace": {
+                  "type": "Place",
+                  "id": 1
+                },
+                "toPlace": {
+                  "type": "Place",
+                  "id": 2
+                },
+                "mode": {
+                  "type": "enumerations.NonTransitMode",
+                  "id": 12
+                },
+                "steps": {
+                  "rule": "repeated",
+                  "type": "Step",
+                  "id": 3
+                },
+                "tripWeatherJson": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "rentalNetworks": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 5
+                }
+              }
+            },
+            "FlexibleLeg": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "serviceJourney": {
+                  "type": "FlexibleServiceJourney",
+                  "id": 2
+                },
+                "serviceDate": {
+                  "type": "string",
+                  "id": 4
+                },
+                "fromPlace": {
+                  "type": "Place",
+                  "id": 6
+                },
+                "toPlace": {
+                  "type": "Place",
+                  "id": 7
+                },
+                "line": {
+                  "type": "Line",
+                  "id": 8
+                },
+                "authority": {
+                  "type": "Authority",
+                  "id": 9
+                },
+                "mode": {
+                  "type": "enumerations.TransitMode",
+                  "id": 10
+                },
+                "bookingArrangement": {
+                  "type": "BookingArrangement",
+                  "id": 11
+                }
+              }
+            },
+            "FlexibleServiceJourney": {
+              "oneofs": {
+                "_wheelchairAccessible": {
+                  "oneof": [
+                    "wheelchairAccessible"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "transportMode": {
+                  "type": "enumerations.TransitMode",
+                  "id": 2
+                },
+                "wheelchairAccessible": {
+                  "type": "bool",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            },
+            "WaitingLeg": {
+              "fields": {
+                "startTime": {
+                  "type": "string",
+                  "id": 1
+                },
+                "endTime": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "ServiceJourney": {
+              "oneofs": {
+                "_transportSubmode": {
+                  "oneof": [
+                    "transportSubmode"
+                  ]
+                },
+                "_directionType": {
+                  "oneof": [
+                    "directionType"
+                  ]
+                },
+                "_wheelchairAccessible": {
+                  "oneof": [
+                    "wheelchairAccessible"
+                  ]
+                },
+                "_bikesAllowed": {
+                  "oneof": [
+                    "bikesAllowed"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "transportMode": {
+                  "type": "enumerations.TransitMode",
+                  "id": 2
+                },
+                "publicCode": {
+                  "type": "string",
+                  "id": 3
+                },
+                "transportSubmode": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "directionType": {
+                  "type": "enumerations.DirectionType",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "wheelchairAccessible": {
+                  "type": "bool",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "bikesAllowed": {
+                  "type": "bool",
+                  "id": 7,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "notices": {
+                  "rule": "repeated",
+                  "type": "Notice",
+                  "id": 8
+                },
+                "privateCode": {
+                  "type": "string",
+                  "id": 9
+                }
+              }
+            },
+            "Notice": {
+              "oneofs": {
+                "_id": {
+                  "oneof": [
+                    "id"
+                  ]
+                },
+                "_publicCode": {
+                  "oneof": [
+                    "publicCode"
+                  ]
+                }
+              },
+              "fields": {
+                "text": {
+                  "type": "string",
+                  "id": 1
+                },
+                "id": {
+                  "type": "string",
+                  "id": 2,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "publicCode": {
+                  "type": "string",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            },
+            "Place": {
+              "oneofs": {
+                "_quay": {
+                  "oneof": [
+                    "quay"
+                  ]
+                },
+                "_bikeRentalStation": {
+                  "oneof": [
+                    "bikeRentalStation"
+                  ]
+                },
+                "_rentalVehicle": {
+                  "oneof": [
+                    "rentalVehicle"
+                  ]
+                }
+              },
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "latitude": {
+                  "type": "double",
+                  "id": 2
+                },
+                "longitude": {
+                  "type": "double",
+                  "id": 3
+                },
+                "quay": {
+                  "type": "Quay",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "bikeRentalStation": {
+                  "type": "BikeRentalStation",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "rentalVehicle": {
+                  "type": "RentalVehicle",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            },
+            "Situation": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "description": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "EstimatedCall": {
+              "oneofs": {
+                "_expectedPlatform": {
+                  "oneof": [
+                    "expectedPlatform"
+                  ]
+                },
+                "_expectedArrivalTime": {
+                  "oneof": [
+                    "expectedArrivalTime"
+                  ]
+                },
+                "_actualArrivalTime": {
+                  "oneof": [
+                    "actualArrivalTime"
+                  ]
+                },
+                "_actualDepartureTime": {
+                  "oneof": [
+                    "actualDepartureTime"
+                  ]
+                },
+                "_stopPositionInPattern": {
+                  "oneof": [
+                    "stopPositionInPattern"
+                  ]
+                }
+              },
+              "fields": {
+                "quay": {
+                  "type": "Quay",
+                  "id": 1
+                },
+                "aimedPlatform": {
+                  "type": "string",
+                  "id": 2
+                },
+                "expectedPlatform": {
+                  "type": "string",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "aimedArrivalTime": {
+                  "type": "string",
+                  "id": 4
+                },
+                "expectedArrivalTime": {
+                  "type": "string",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "actualArrivalTime": {
+                  "type": "string",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "aimedDepartureTime": {
+                  "type": "string",
+                  "id": 7
+                },
+                "expectedDepartureTime": {
+                  "type": "string",
+                  "id": 8
+                },
+                "actualDepartureTime": {
+                  "type": "string",
+                  "id": 9,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "stopPositionInPattern": {
+                  "type": "uint32",
+                  "id": 10,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "destinationDisplay": {
+                  "type": "DestinationDisplay",
+                  "id": 11
+                }
+              }
+            },
+            "DestinationDisplay": {
+              "fields": {
+                "frontText": {
+                  "type": "string",
+                  "id": 1
+                },
+                "via": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "Line": {
+              "oneofs": {
+                "_transportSubmode": {
+                  "oneof": [
+                    "transportSubmode"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "publicCode": {
+                  "type": "string",
+                  "id": 2
+                },
+                "name": {
+                  "type": "string",
+                  "id": 3
+                },
+                "transportMode": {
+                  "type": "enumerations.TransitMode",
+                  "id": 4
+                },
+                "transportSubmode": {
+                  "type": "string",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "presentation": {
+                  "type": "Presentation",
+                  "id": 6
+                }
+              }
+            },
+            "Presentation": {
+              "fields": {
+                "colour": {
+                  "type": "string",
+                  "id": 1
+                },
+                "textColour": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "Authority": {
+              "oneofs": {
+                "_url": {
+                  "oneof": [
+                    "url"
+                  ]
+                },
+                "_timezone": {
+                  "oneof": [
+                    "timezone"
+                  ]
+                },
+                "_phone": {
+                  "oneof": [
+                    "phone"
+                  ]
+                },
+                "_language": {
+                  "oneof": [
+                    "language"
+                  ]
+                },
+                "_fareUrl": {
+                  "oneof": [
+                    "fareUrl"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "name": {
+                  "type": "string",
+                  "id": 2
+                },
+                "url": {
+                  "type": "string",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "timezone": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "phone": {
+                  "type": "string",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "language": {
+                  "type": "string",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "fareUrl": {
+                  "type": "string",
+                  "id": 7,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            },
+            "PointsOnLink": {
+              "fields": {
+                "points": {
+                  "type": "string",
+                  "id": 1
+                },
+                "length": {
+                  "type": "int32",
+                  "id": 2
+                }
+              }
+            },
+            "Step": {
+              "fields": {
+                "description": {
+                  "type": "string",
+                  "id": 1
+                },
+                "distance": {
+                  "type": "double",
+                  "id": 2
+                },
+                "duration": {
+                  "type": "int32",
+                  "id": 3
+                }
+              }
+            },
+            "Quay": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "name": {
+                  "type": "string",
+                  "id": 2
+                },
+                "latitude": {
+                  "type": "double",
+                  "id": 3
+                },
+                "longitude": {
+                  "type": "double",
+                  "id": 4
+                },
+                "description": {
+                  "type": "string",
+                  "id": 5
+                },
+                "stopType": {
+                  "type": "string",
+                  "id": 6
+                },
+                "wheelchairAccessible": {
+                  "type": "bool",
+                  "id": 7
+                },
+                "flexibleArea": {
+                  "type": "bool",
+                  "id": 8
+                },
+                "tariffZones": {
+                  "rule": "repeated",
+                  "type": "TariffZone",
+                  "id": 9
+                }
+              }
+            },
+            "TariffZone": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "name": {
+                  "type": "string",
+                  "id": 2
+                }
+              }
+            },
+            "BikeRentalStation": {
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "name": {
+                  "type": "string",
+                  "id": 2
+                },
+                "bikesAvailable": {
+                  "type": "uint32",
+                  "id": 3
+                },
+                "spacesAvailable": {
+                  "type": "uint32",
+                  "id": 4
+                },
+                "realtimeOccupancyAvailable": {
+                  "type": "bool",
+                  "id": 5
+                },
+                "allowDropoff": {
+                  "type": "bool",
+                  "id": 6
+                },
+                "networks": {
+                  "rule": "repeated",
+                  "type": "string",
+                  "id": 7
+                }
+              }
+            },
+            "VehicleType": {
+              "fields": {
+                "name": {
+                  "type": "string",
+                  "id": 1
+                },
+                "formFactor": {
+                  "type": "string",
+                  "id": 2
+                },
+                "propulsionType": {
+                  "type": "string",
+                  "id": 3
+                },
+                "maxRangeMeters": {
+                  "type": "int32",
+                  "id": 4
+                },
+                "vehicleTypeId": {
+                  "type": "string",
+                  "id": 5
+                },
+                "longitude": {
+                  "type": "double",
+                  "id": 6
+                },
+                "latitude": {
+                  "type": "double",
+                  "id": 7
+                }
+              }
+            },
+            "RentalVehicle": {
+              "oneofs": {
+                "_currentRangeMeters": {
+                  "oneof": [
+                    "currentRangeMeters"
+                  ]
+                }
+              },
+              "fields": {
+                "id": {
+                  "type": "string",
+                  "id": 1
+                },
+                "network": {
+                  "type": "string",
+                  "id": 2
+                },
+                "longitude": {
+                  "type": "double",
+                  "id": 3
+                },
+                "latitude": {
+                  "type": "double",
+                  "id": 4
+                },
+                "vehicleType": {
+                  "type": "VehicleType",
+                  "id": 5
+                },
+                "currentRangeMeters": {
+                  "type": "double",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            },
+            "BookingArrangement": {
+              "oneofs": {
+                "_phoneNumber": {
+                  "oneof": [
+                    "phoneNumber"
+                  ]
+                },
+                "_bookingUrl": {
+                  "oneof": [
+                    "bookingUrl"
+                  ]
+                },
+                "_infoUrl": {
+                  "oneof": [
+                    "infoUrl"
+                  ]
+                },
+                "_earliestBookingDayInAdvance": {
+                  "oneof": [
+                    "earliestBookingDayInAdvance"
+                  ]
+                },
+                "_latestBookingTime": {
+                  "oneof": [
+                    "latestBookingTime"
+                  ]
+                },
+                "_note": {
+                  "oneof": [
+                    "note"
+                  ]
+                }
+              },
+              "fields": {
+                "phoneNumber": {
+                  "type": "string",
+                  "id": 1,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "bookingUrl": {
+                  "type": "string",
+                  "id": 2,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "infoUrl": {
+                  "type": "string",
+                  "id": 5,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "earliestBookingDayInAdvance": {
+                  "type": "int32",
+                  "id": 3,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "latestBookingTime": {
+                  "type": "string",
+                  "id": 4,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                },
+                "note": {
+                  "type": "string",
+                  "id": 6,
+                  "options": {
+                    "proto3_optional": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "service": {
+          "nested": {
+            "TripPlanner": {
+              "methods": {
+                "GetPlans": {
+                  "requestType": "PlanRequest",
+                  "responseType": "model.PlanResult",
+                  "responseStream": true
+                },
+                "GetPlan": {
+                  "requestType": "PlanRequest",
+                  "responseType": "model.PlanResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

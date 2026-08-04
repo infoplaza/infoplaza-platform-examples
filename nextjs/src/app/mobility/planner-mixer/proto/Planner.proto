@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package planner.model.enumerations;
+
+option java_multiple_files = true;
+
+enum Planner {
+  NEGENTWEE = 0;
+  OTP = 1;
+
+  /*
+   DO NOT USE: For internal use only.
+   If you have no planner preference, just do not set the preferredPlanner field
+  */
+  NO_PREFERENCE = 99;
+}

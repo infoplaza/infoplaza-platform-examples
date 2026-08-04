@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package planner.model.enumerations;
+
+option java_multiple_files = true;
+
+enum DirectionType {
+    Anticlockwise = 0;
+    Clockwise = 1;
+    Inbound = 2;
+    Outbound = 3;
+    Unknown = 4;
+}

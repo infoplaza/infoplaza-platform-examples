@@ -1,3 +1,6 @@
+# Local scratch area — may contain API keys, never commit
+temp/
+
 # Dependencies
 node_modules/
 

@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package planner.model.enumerations;
+
+option java_multiple_files = true;
+
+enum TransitMode {
+  AIR = 0;
+  BUS = 2;
+  CABLEWAY = 3;
+  WATER = 4;
+  FUNICULAR = 5;
+  LIFT = 6;
+  RAIL = 7;
+  METRO = 8;
+  TAXI = 9;
+  TRAM = 10;
+  TROLLEYBUS = 11;
+  MONORAIL = 12;
+  COACH = 13;
+
+  //Leave room for future modes
+  OTHER_TRANSIT_MODE = 99;
+}
+
+enum NonTransitMode {
+  CAR = 0;
+  BICYCLE = 1;
+  SCOOTER = 2;
+  WALK = 3;
+  RENTED_BICYCLE = 4;
+  RENTED_SCOOTER = 5;
+  PUBLIC_STOP_TAXI = 6;
+
+  //Only used within OTP internally. Will still return transit legs.
+  FLEX = 7; // e.g. dial-a-ride, demand responsive transport
+  //Leave room for future modes
+
+  // DO NOT USE THIS VALUE, IT IS RESERVED FOR FUTURE USE
+  OTHER_NON_TRANSIT_MODE = 99;
+}

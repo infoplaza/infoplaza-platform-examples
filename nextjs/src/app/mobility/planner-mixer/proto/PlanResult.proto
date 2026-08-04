@@ -1,0 +1,305 @@
+syntax = "proto3";
+
+import "Planner.proto";
+import "Modes.proto";
+import "DirectionType.proto";
+
+package planner.model;
+
+option java_multiple_files = true;
+
+message RoutingError {
+  string message = 1;
+  string code = 2;
+}
+
+message PlanResult {
+  repeated TripPattern trips = 1;
+  string timestamp = 2;
+  /* Only used by OTP, not currently used/nor accepted by the API */
+  optional string previousPageCursor = 3;
+  /* Only used by OTP, not currently used/nor accepted by the API */
+  optional string nextPageCursor = 4;
+  repeated RoutingError errors = 5;
+  model.enumerations.Planner planner = 6;
+  optional bool containsOnDemand = 7;
+  optional bool containsWithSurcharge = 8;
+
+  /* Compared to a default plan request which modifications were made to the request such that the result was different */
+  repeated string modifiers = 9;
+  /* What is the "quality" of this result compared to the default plan request, higher is better */
+  double grade = 10;
+}
+
+// Represents a Trip with multiple attributes and associated Legs.
+message TripPattern {
+  string expectedStartTime = 1; // ISO 8601 format
+  string aimedStartTime = 2;   // ISO 8601 format
+  string aimedEndTime = 3;     // ISO 8601 format
+  string expectedEndTime = 4;  // ISO 8601 format
+  int32 duration = 5;          // Duration in minutes
+  int32 transfers = 6;         // Number of transfers
+  optional int32 waitingTime = 7;       // Waiting time in minutes
+  optional int32 walkTime = 8;          // Walking time in minutes
+  optional double streetDistance = 9;   // Street distance in meters
+  optional double distance = 10;        // Total distance in meters
+  repeated string systemNotices = 11; // List of notices or messages
+  repeated Leg legs = 12;      // Details about individual legs of the trip
+  string id = 13;              // Unique identifier for the trip
+}
+
+// Represents a leg, either Transit or NonTransit.
+message Leg {
+  string aimedStartTime = 1;   // ISO 8601 format
+  string aimedEndTime = 2;     // ISO 8601 format
+  optional string expectedStartTime = 3;// ISO 8601 format
+  optional string expectedEndTime = 4;  // ISO 8601 format
+  int32 duration = 6;          // Duration in minutes
+  double distance = 7;         // Distance of the leg in meters
+  PointsOnLink pointsOnLink = 8; // Polyline points representing the leg
+
+  oneof leg_type {
+    TransitLeg transitLeg = 10; // Transit-specific leg details
+    NonTransitLeg nonTransitLeg = 11; // Non-transit-specific leg details
+    WaitingLeg waitingLeg = 13; // Waiting-specific leg details
+    FlexibleLeg flexibleLeg = 14; // Flexible (on-demand) transit leg details
+  }
+
+  string id = 12;              // Unique identifier for the leg
+}
+
+// Represents a transit leg of a Trip.
+message TransitLeg {
+  string id = 1;               // Unique identifier for the leg
+  bool realtime = 2;           // Indicates if the data is real-time
+  ServiceJourney serviceJourney = 3; // Information about the service journey
+  string serviceDate = 4;      // Date of the service in YYYY-MM-DD format
+  repeated Situation situations = 5; // List of associated situations
+  EstimatedCall fromEstimatedCall = 6; // Estimated call at the start
+  EstimatedCall toEstimatedCall = 7;   // Estimated call at the end
+  repeated EstimatedCall intermediateEstimatedCalls = 8; // Intermediate calls
+  Line line = 9;               // Line information
+  Authority authority = 10;    // Authority information
+  enumerations.TransitMode mode = 11;       // Mode of transport
+}
+
+// Represents a non-transit leg of a Trip.
+message NonTransitLeg {        // Base leg details
+  Place fromPlace = 1;         // Starting place
+  Place toPlace = 2;          // Destination place
+  enumerations.NonTransitMode mode = 12;       // Mode of transport
+  repeated Step steps = 3;     // List of steps for non-transit leg
+  optional string tripWeatherJson = 4; // A JSON string with weather information for the trip from the InfoPlaza weather-in-the-planner API
+  repeated string rentalNetworks = 5; // List of bike rental networks that are available for this leg, if it's a shared mobility leg
+}
+
+// Represents a flexible (on-demand) transit leg of a Trip.
+message FlexibleLeg {
+  string id = 1;               // Unique identifier for the leg
+  FlexibleServiceJourney serviceJourney = 2; // Information about the service journey
+  string serviceDate = 4;      // Date of the service in YYYY-MM-DD format
+  Place fromPlace = 6;         // Start place (flex pickup area or point)
+  Place toPlace = 7;           // End place (flex dropoff area or point)
+  Line line = 8;               // Line information
+  Authority authority = 9;     // Authority information
+  enumerations.TransitMode mode = 10;      // Mode of transport
+  BookingArrangement bookingArrangement = 11; // Booking arrangement details
+}
+
+message FlexibleServiceJourney {
+  string id = 1;               // Unique identifier for the service journey
+  enumerations.TransitMode transportMode = 2;    // Mode of transport (probably always "BUS")
+  optional bool wheelchairAccessible = 3; // Wheelchair accessibility info
+}
+
+// Represents a waiting leg inserted between public transport legs.
+message WaitingLeg {
+  string startTime = 1; // Start of waiting period (ISO 8601)
+  string endTime = 2;   // End of waiting period (ISO 8601)
+}
+
+// Represents a service journey (e.g., bus or train trip details).
+message ServiceJourney {
+  string id = 1;               // Unique identifier for the service journey
+  enumerations.TransitMode transportMode = 2;    // Mode of transport (e.g., "RAIL", "TRAM")
+  string publicCode = 3;       // Public-facing code (e.g., train or bus number)
+  optional string transportSubmode = 4; // Transport submode
+  optional enumerations.DirectionType directionType = 5;    // Direction type
+  optional bool wheelchairAccessible = 6; // Wheelchair accessibility info
+  optional bool bikesAllowed = 7;     // Bikes allowed info
+  repeated Notice notices = 8; // Notices associated with the journey
+  string privateCode = 9;     // Private code for the journey
+}
+
+// Represents a notice that may be associated with a journey or leg.
+message Notice {
+  string text = 1; // Notice text
+  optional string id = 2; // Unique identifier for the notice
+  optional string publicCode = 3; // Public-facing code for the notice
+}
+
+// Represents a place with geographic coordinates.
+message Place {
+  string name = 1;             // @required Name of the place, e.g. "Amsterdam Centraal Station"
+  double latitude = 2;         // @required Latitude in WGS84
+  double longitude = 3;        // @required Longitude in WGS84
+
+  optional Quay quay = 4;               // @optional - Only for (flexible) transit places
+  optional BikeRentalStation bikeRentalStation = 5; // @optional - Only for bike rental stations on non-transit legs
+  optional RentalVehicle rentalVehicle = 6; // @optional - Only for rental vehicles on non-transit legs
+}
+
+// Represents a situation (e.g., disruption or alert). - TODO: maybe add more fields?
+message Situation {
+  string id = 1;               // Unique identifier for the situation
+  string description = 2;      // Detailed description
+}
+
+// Represents an estimated call (stop information).
+message EstimatedCall {
+  Quay quay = 1;               // Quay information
+  string aimedPlatform = 2;    // Aimed platform
+  optional string expectedPlatform = 3; // Expected platform
+  string aimedArrivalTime = 4; // Aimed arrival time in ISO 8601 format
+  optional string expectedArrivalTime = 5; // Expected arrival time in ISO 8601 format
+  optional string actualArrivalTime = 6; // Actual arrival time in ISO 8601 format
+  string aimedDepartureTime = 7; // Aimed departure time in ISO 8601 format
+  string expectedDepartureTime = 8; // Expected departure time in ISO 8601 format
+  optional string actualDepartureTime = 9; // Actual departure time in ISO 8601 format
+  optional uint32 stopPositionInPattern = 10; // Stop position in the pattern
+  DestinationDisplay destinationDisplay = 11; // Destination display information
+}
+
+// Represents destination display information.
+message DestinationDisplay {
+  string frontText = 1;        // Front display text
+  repeated string via = 2;     // Via display texts
+}
+
+// Represents a line in public transport.
+message Line {
+  string id = 1;               // Unique identifier for the line
+  string publicCode = 2;       // Public-facing code for the line
+  string name = 3;             // Name of the line
+  enumerations.TransitMode transportMode = 4;    // Mode of transport (e.g., "RAIL", "TRAM")
+  optional string transportSubmode = 5; // Transport submode (E.g. U-Link, Q-Liner)
+  Presentation presentation = 6; // Presentation details
+}
+
+// Represents presentation details like colors for lines.
+message Presentation {
+  string colour = 1;           // Colour of the line
+  string textColour = 2;       // Text colour of the line
+}
+
+// Represents an authority (operator) in public transport.
+message Authority {
+  string id = 1;               // Unique identifier for the authority
+  string name = 2;             // Name of the authority
+  optional string url = 3;              // URL for the authority
+  optional string timezone = 4;         // Timezone of the authority
+  optional string phone = 5;            // Contact phone number
+  optional string language = 6;         // Language of the authority
+  optional string fareUrl = 7;          // URL for fares
+}
+
+// Represents a series of points defining a route.
+message PointsOnLink {
+  string points = 1;           // Encoded polyline points
+  int32 length = 2;            // Length of the polyline
+}
+
+// Represents a step in a non-transit leg.
+message Step {
+  string description = 1;      // Description of the step
+  double distance = 2;         // Distance of the step in kilometers
+  int32 duration = 3;          // Duration of the step in minutes
+}
+
+// Represents a quay or platform in public transport.
+message Quay {
+  string id = 1;               // Unique identifier
+  string name = 2;             // Name of the quay
+  double latitude = 3;         // Latitude in WGS84
+  double longitude = 4;        // Longitude in WGS84
+  string description = 5;      // Description of the quay
+  string stopType = 6;         // Type of stop (e.g., 'regular')
+  bool wheelchairAccessible = 7; // Accessibility info
+  bool flexibleArea = 8;       // Indicates if it's a flexible area
+  repeated TariffZone tariffZones = 9; // Tariff zones of the quay
+}
+
+// Represents a tariff zone in public transport.
+message TariffZone {
+  string id = 1;               // Identifier for the tariff zone
+  string name = 2;             // Name of the tariff zone
+}
+
+//Represents a bike rental station
+message BikeRentalStation {
+  string id = 1; // Unique identifier for the station, specified in GBFS
+  string name = 2;
+  uint32 bikesAvailable = 3;
+  uint32 spacesAvailable = 4;
+  bool realtimeOccupancyAvailable = 5; // Do we have real-time occupancy data?
+  bool allowDropoff = 6;
+  repeated string networks = 7;
+}
+
+// Represents a type of vehicle (e.g., bike, scooter)
+message VehicleType {
+  string name = 1;
+  string formFactor = 2;
+  string propulsionType = 3;
+  int32 maxRangeMeters = 4;
+  string vehicleTypeId = 5;
+
+  double longitude = 6;
+  double latitude = 7;
+}
+
+// Represents a rental vehicle (e.g., shared bike or scooter)
+message RentalVehicle {
+  string id = 1;
+  string network = 2;
+  double longitude = 3;
+  double latitude = 4;
+  VehicleType vehicleType = 5;
+  optional double currentRangeMeters = 6;
+}
+
+/*
+  Details on how to book an on-demand service, if applicable.
+  If not set, no on-demand services are available for the trip.
+ */
+message BookingArrangement {
+  /*
+    The phone number to book the on-demand service, in international format (e.g., +31612345678)
+   */
+  optional string phoneNumber = 1;
+
+  /*
+    The URL to book the on-demand service, if available
+   */
+  optional string bookingUrl = 2;
+
+  /**
+    The url for further information about the on-demand service, if available
+   */
+  optional string infoUrl = 5;
+
+  /*
+    How many days in advance maximum the booking can be made. If not set, there is no limit.
+   */
+  optional int32 earliestBookingDayInAdvance = 3;
+
+  /*
+    The date that the booking must be made latest, if applicable. If not set, there is no limit.
+   */
+  optional string latestBookingTime = 4; // DateTime in ISO 8601 format
+
+  /**
+    Note about booking, e.g. "Booking required", "Book at least 30 minutes in advance", etc.
+   */
+  optional string note = 6;
+}
