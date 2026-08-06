@@ -1,5 +1,5 @@
 /**
- * Client-side helpers and (trimmed-down) types for the Planner Mixer example.
+ * Client-side helpers and (trimmed-down) types for the Transit Planner example.
  * The full response shape is defined by the protobuf files in ./proto.
  */
 
@@ -67,7 +67,7 @@ export interface PlaceSuggestion {
   location?: { latitude: number; longitude: number };
 }
 
-/** "52.3676,4.9041" — the format the Planner Mixer expects for a place. */
+/** "52.3676,4.9041" — the format the Transit Planner expects for a place. */
 export const COORDINATE_PAIR = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
 
 /** "Utrecht Centraal, Utrecht", or just the name when the city adds nothing. */
@@ -106,7 +106,7 @@ export function placeField(place: PlaceSuggestion): PlaceField {
 }
 
 /**
- * The "latitude,longitude" string to send to the Planner Mixer, or null when
+ * The "latitude,longitude" string to send to the Transit Planner, or null when
  * the field does not point at a location yet. Raw coordinates typed by hand
  * are accepted too, so the API can still be poked at directly.
  */

@@ -22,16 +22,22 @@ export const exampleGroups: ExampleGroup[] = [
     title: "Mobility",
     examples: [
       {
-        title: "Planner Mixer",
+        title: "Traffic",
         description:
-          "Stream travel results between two locations in real time.",
-        href: "/mobility/planner-mixer",
+          "Live jams, roadworks and diversions on a map and in a list.",
+        href: "/mobility/traffic",
       },
       {
-        title: "Nearby Stops",
+        title: "Transit Planner",
+        description:
+          "Stream travel results between two locations in real time.",
+        href: "/mobility/transit-planner",
+      },
+      {
+        title: "Transit Stops",
         description:
           "Pick a spot on the map to find transit stops and their departures.",
-        href: "/mobility/nearby-stops",
+        href: "/mobility/transit-stops",
       },
     ],
   },

@@ -1,5 +1,5 @@
 /**
- * Client-side helpers and types for the Nearby Stops example. The shapes
+ * Client-side helpers and types for the Transit Stops example. The shapes
  * below cover the fields this example uses; the APIs return a little more.
  */
 

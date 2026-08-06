@@ -5,7 +5,7 @@ import type { PlaceSuggestion } from "./utils";
 /**
  * Server-side clients for the two Transit APIs this example uses.
  *
- * The Planner Mixer is a WebSocket endpoint that streams protobuf-encoded
+ * The Transit Planner is a WebSocket endpoint that streams protobuf-encoded
  * PlanResult messages: it keeps sending better travel options until the mixer
  * is done and closes the socket. This module opens that socket on the server
  * (so the API key never reaches the browser), decodes each message and hands
@@ -19,7 +19,7 @@ import type { PlaceSuggestion } from "./utils";
  * API reference: https://platform.infoplaza.com/reference/v1-transit-planner-search
  */
 
-const PLANNER_MIXER_URL = "wss://api.infoplaza.com/v1/transit/plannermixer";
+const TRANSIT_PLANNER_URL = "wss://api.infoplaza.com/v1/transit/plannermixer";
 const PLANNER_SEARCH_URL =
   "https://api.infoplaza.com/v1/transit/planner/search";
 
@@ -40,7 +40,7 @@ const root = protobuf.Root.fromJSON(protoJson as protobuf.INamespace);
 const PlanRequest = root.lookupType("planner.PlanRequest");
 const PlanResult = root.lookupType("planner.model.PlanResult");
 
-export interface PlannerMixerRequest {
+export interface TransitPlannerRequest {
   /** Origin as "latitude,longitude". */
   fromPlace: string;
   /** Destination as "latitude,longitude". */
@@ -51,7 +51,7 @@ export interface PlannerMixerRequest {
   timestamp?: string;
 }
 
-export interface PlannerMixerHandlers {
+export interface TransitPlannerHandlers {
   /** Called for every PlanResult the mixer sends. */
   onResult(result: Record<string, unknown>): void;
   /** Called once when the mixer is done and closes the socket. */
@@ -61,16 +61,16 @@ export interface PlannerMixerHandlers {
 }
 
 /**
- * Opens a WebSocket to the Planner Mixer and sends one PlanRequest. Decoded
+ * Opens a WebSocket to the Transit Planner and sends one PlanRequest. Decoded
  * results are delivered through the handlers until the mixer closes the
  * socket. Returns a handle to close the connection early.
  */
-export function openPlannerMixer(
-  request: PlannerMixerRequest,
-  handlers: PlannerMixerHandlers,
+export function openTransitPlanner(
+  request: TransitPlannerRequest,
+  handlers: TransitPlannerHandlers,
 ): { close(): void } {
   const socket = new WebSocket(
-    `${PLANNER_MIXER_URL}?api_key=${requireApiKey()}`,
+    `${TRANSIT_PLANNER_URL}?api_key=${requireApiKey()}`,
   );
   socket.binaryType = "arraybuffer";
   const timeout = setTimeout(() => socket.close(), SOCKET_TIMEOUT_MS);
@@ -99,7 +99,7 @@ export function openPlannerMixer(
     handlers.onResult(PlanResult.toObject(result, { enums: String }));
   };
 
-  socket.onerror = () => settle(new Error("Planner Mixer socket error"));
+  socket.onerror = () => settle(new Error("Transit Planner socket error"));
   socket.onclose = () => settle();
 
   return {

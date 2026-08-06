@@ -36,7 +36,7 @@ const DEFAULT_TO: PlaceSuggestion = {
   location: { latitude: 52.30925105449091, longitude: 4.7618117695963145 },
 };
 
-export function PlannerMixerPanel() {
+export function TransitPlannerPanel() {
   const [from, setFrom] = useState(placeField(DEFAULT_FROM));
   const [to, setTo] = useState(placeField(DEFAULT_TO));
   const [results, setResults] = useState<PlanResultJson[]>([]);
@@ -67,7 +67,7 @@ export function PlannerMixerPanel() {
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const socket = new WebSocket(
-      `${protocol}//${window.location.host}/mobility/planner-mixer/proxy`,
+      `${protocol}//${window.location.host}/mobility/transit-planner/proxy`,
     );
     socketRef.current = socket;
 

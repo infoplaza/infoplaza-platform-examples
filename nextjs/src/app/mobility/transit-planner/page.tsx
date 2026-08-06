@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { PlannerMixerPanel } from "./components/planner-mixer-panel";
+import { TransitPlannerPanel } from "./components/transit-planner-panel";
 
 export const metadata: Metadata = {
-  title: "Planner Mixer — Infoplaza Platform Examples",
+  title: "Transit Planner — Infoplaza Platform Examples",
 };
 
-export default function PlannerMixerPage() {
+export default function TransitPlannerPage() {
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
         Mobility
       </p>
-      <h1 className="mt-1 text-2xl font-semibold">Planner Mixer</h1>
+      <h1 className="mt-1 text-2xl font-semibold">Transit Planner</h1>
       <p className="mt-2 text-gray-600">
         Stream travel results between two locations in real time using the{" "}
         <a
@@ -35,7 +35,7 @@ export default function PlannerMixerPage() {
       </p>
 
       <div className="mt-8">
-        <PlannerMixerPanel />
+        <TransitPlannerPanel />
       </div>
     </div>
   );

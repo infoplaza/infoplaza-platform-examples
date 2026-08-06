@@ -32,15 +32,15 @@ const StopsMap = dynamic(() => import("./stops-map"), {
   ),
 });
 
-interface NearbyStopsPanelProps {
+interface TransitStopsPanelProps {
   initialStops: StopPlace[];
   initialError: string | null;
 }
 
-export function NearbyStopsPanel({
+export function TransitStopsPanel({
   initialStops,
   initialError,
-}: NearbyStopsPanelProps) {
+}: TransitStopsPanelProps) {
   const [picked, setPicked] = useState<LatLon>(DEFAULT_LOCATION);
   const [stops, setStops] = useState<StopPlace[]>(initialStops);
   const [stopsError, setStopsError] = useState<string | null>(initialError);
@@ -80,7 +80,7 @@ export function NearbyStopsPanel({
 
     try {
       const response = await fetch(
-        `/mobility/nearby-stops/nearby?lat=${location.latitude}&lon=${location.longitude}`,
+        `/mobility/transit-stops/nearby?lat=${location.latitude}&lon=${location.longitude}`,
         { signal: controller.signal },
       );
       const body = await response.json();
@@ -109,7 +109,7 @@ export function NearbyStopsPanel({
 
     try {
       const response = await fetch(
-        `/mobility/nearby-stops/departures?stopplace_id=${encodeURIComponent(stop.id)}`,
+        `/mobility/transit-stops/departures?stopplace_id=${encodeURIComponent(stop.id)}`,
         { signal: controller.signal },
       );
       const body = await response.json();

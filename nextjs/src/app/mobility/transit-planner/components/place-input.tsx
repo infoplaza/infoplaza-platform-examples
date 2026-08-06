@@ -12,9 +12,9 @@ import {
 
 /**
  * Autocomplete for a From or To location, backed by the Transit Planner
- * Search API (through the /mobility/planner-mixer/search route, which adds
+ * Search API (through the /mobility/transit-planner/search route, which adds
  * the API key on the server). Picking a suggestion is what gives us the
- * coordinates the Planner Mixer needs.
+ * coordinates the Transit Planner needs.
  */
 
 /** Wait this long after the last keystroke before searching. */
@@ -60,7 +60,7 @@ export function PlaceInput({
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(
-          `/mobility/planner-mixer/search?query=${encodeURIComponent(query)}`,
+          `/mobility/transit-planner/search?query=${encodeURIComponent(query)}`,
           { signal: controller.signal },
         );
         const body = await response.json();

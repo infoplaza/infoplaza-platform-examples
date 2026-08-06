@@ -1,14 +1,14 @@
 import { createServer } from "node:http";
 import next from "next";
 import {
-  handlePlannerMixerUpgrade,
-  PLANNER_MIXER_PROXY_PATH,
-} from "./src/app/mobility/planner-mixer/proxy/socket";
+  handleTransitPlannerUpgrade,
+  TRANSIT_PLANNER_PROXY_PATH,
+} from "./src/app/mobility/transit-planner/proxy/socket";
 
 /**
  * Custom server so we can accept WebSocket connections. Next.js route
  * handlers cannot upgrade to WebSockets, so this server routes upgrade
- * requests for the Planner Mixer proxy to our own handler and leaves
+ * requests for the Transit Planner proxy to our own handler and leaves
  * everything else (pages, assets, HMR in dev) to Next.js.
  */
 
@@ -25,8 +25,8 @@ app.prepare().then(() => {
 
   server.on("upgrade", (request, socket, head) => {
     const { pathname } = new URL(request.url ?? "/", "http://localhost");
-    if (pathname === PLANNER_MIXER_PROXY_PATH) {
-      handlePlannerMixerUpgrade(request, socket, head);
+    if (pathname === TRANSIT_PLANNER_PROXY_PATH) {
+      handleTransitPlannerUpgrade(request, socket, head);
     } else {
       handleUpgrade(request, socket, head);
     }

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { nearbyStops } from "./api";
-import { NearbyStopsPanel } from "./components/nearby-stops-panel";
+import { TransitStopsPanel } from "./components/transit-stops-panel";
 import { DEFAULT_LOCATION, sortByDistance, type StopPlace } from "./utils";
 
 export const metadata: Metadata = {
-  title: "Nearby Stops — Infoplaza Platform Examples",
+  title: "Transit Stops — Infoplaza Platform Examples",
 };
 
 /**
@@ -30,7 +30,7 @@ async function initialStops(): Promise<{
   }
 }
 
-export default async function NearbyStopsPage() {
+export default async function TransitStopsPage() {
   const { stops, error } = await initialStops();
 
   return (
@@ -38,7 +38,7 @@ export default async function NearbyStopsPage() {
       <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
         Mobility
       </p>
-      <h1 className="mt-1 text-2xl font-semibold">Nearby Stops</h1>
+      <h1 className="mt-1 text-2xl font-semibold">Transit Stops</h1>
       <p className="mt-2 text-gray-600">
         Pick a spot on the map to find the transit stops around it with the{" "}
         <a
@@ -62,7 +62,7 @@ export default async function NearbyStopsPage() {
       </p>
 
       <div className="mt-8">
-        <NearbyStopsPanel initialStops={stops} initialError={error} />
+        <TransitStopsPanel initialStops={stops} initialError={error} />
       </div>
     </div>
   );

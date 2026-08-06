@@ -1,11 +1,11 @@
 import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { WebSocketServer, type WebSocket } from "ws";
-import { openPlannerMixer } from "../api";
+import { openTransitPlanner } from "../api";
 import { COORDINATE_PAIR } from "../utils";
 
 /**
- * WebSocket proxy between the browser and the Planner Mixer.
+ * WebSocket proxy between the browser and the Transit Planner.
  *
  * The browser opens a socket to this path and sends one JSON message with the
  * plan request. The proxy opens the upstream socket to api.infoplaza.com with
@@ -18,11 +18,11 @@ import { COORDINATE_PAIR } from "../utils";
  * root).
  */
 
-export const PLANNER_MIXER_PROXY_PATH = "/mobility/planner-mixer/proxy";
+export const TRANSIT_PLANNER_PROXY_PATH = "/mobility/transit-planner/proxy";
 
 const server = new WebSocketServer({ noServer: true });
 
-export function handlePlannerMixerUpgrade(
+export function handleTransitPlannerUpgrade(
   request: IncomingMessage,
   socket: Duplex,
   head: Buffer,
@@ -56,14 +56,14 @@ function handleConnection(client: WebSocket) {
     }
 
     try {
-      const upstream = openPlannerMixer(
+      const upstream = openTransitPlanner(
         { fromPlace, toPlace, arriveBy: arriveBy === true },
         {
           onResult: (result) => client.send(JSON.stringify(result)),
           onClose: () => client.close(1000),
           onError: (error) => {
             client.send(JSON.stringify({ error: error.message }));
-            client.close(1011, "Planner Mixer error");
+            client.close(1011, "Transit Planner error");
           },
         },
       );
@@ -72,7 +72,7 @@ function handleConnection(client: WebSocket) {
       const message =
         error instanceof Error ? error.message : "Failed to plan trip.";
       client.send(JSON.stringify({ error: message }));
-      client.close(1011, "Planner Mixer unavailable");
+      client.close(1011, "Transit Planner unavailable");
     }
   });
 }

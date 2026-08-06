@@ -3,7 +3,7 @@ import { exampleGroups } from "@/lib/examples";
 
 export default function HomePage() {
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold">Infoplaza Platform Examples</h1>
       <p className="mt-2 text-gray-600">
         Example implementations for the{" "}
