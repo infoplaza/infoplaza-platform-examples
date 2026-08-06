@@ -1,42 +1,17 @@
 import type { Metadata } from "next";
-import { portInfo, portList } from "./api";
 import { PortsPanel } from "./components/ports-panel";
-import { DEFAULT_PORT_ID, type Port, type PortInfo } from "./utils";
 
 export const metadata: Metadata = {
   title: "Ports — Infoplaza Platform Examples",
 };
 
 /**
- * The large ports and one of them in full are loaded here so the page arrives
- * with a map that has something on it and details to read; every later port
- * is a click away in the panel.
- *
- * The two calls do not depend on each other, so they go out together.
+ * The page itself only holds the copy: the map needs a browser, and the ports
+ * on it are fetched from there too, through the route handlers next to the
+ * panel. So nothing here waits on the API, and the HTML stays small no matter
+ * how many ports the filter asks for.
  */
-async function initialData(): Promise<{
-  ports: Port[];
-  port: PortInfo | null;
-  error: string | null;
-}> {
-  try {
-    const [ports, port] = await Promise.all([
-      portList(),
-      portInfo(DEFAULT_PORT_ID),
-    ]);
-    return { ports, port, error: null };
-  } catch (error) {
-    return {
-      ports: [],
-      port: null,
-      error: error instanceof Error ? error.message : "Failed to load ports.",
-    };
-  }
-}
-
-export default async function PortsPage() {
-  const { ports, port, error } = await initialData();
-
+export default function PortsPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -70,11 +45,7 @@ export default async function PortsPage() {
       </p>
 
       <div className="mt-8">
-        <PortsPanel
-          initialPorts={ports}
-          initialPort={port}
-          initialError={error}
-        />
+        <PortsPanel />
       </div>
     </div>
   );

@@ -331,8 +331,9 @@ answers for the one that is clicked with the
 Both endpoints take the key as a query parameter, so the browser calls the
 route handlers in [`list/`](src/app/marine/ports/list/route.ts) and
 [`info/`](src/app/marine/ports/info/route.ts), which add `INFOPLAZA_API_KEY`
-server-side. The port list and the port the page opens on are fetched during
-server rendering, so the page arrives with a chart that has something on it.
+server-side. Everything is fetched from the browser, the opening state
+included, so the page itself is static and its HTML does not carry a list of
+up to 3,700 ports.
 
 The list endpoint hands over a whole size grade at once, from 170 large ports
 to 2,134 very small ones, and takes several grades in one call as a

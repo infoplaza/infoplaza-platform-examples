@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
+  DEFAULT_PORT_ID,
   DEFAULT_SIZES,
   SIZES,
   sortSizes,
@@ -18,9 +19,9 @@ import { PortDetails } from "./port-details";
  * into the details below.
  *
  * Both lookups go through the route handlers next to this component, so the
- * API key stays on the server. The port list and the port the page opens on
- * are fetched during server rendering and handed in as props, so the page has
- * content on first paint.
+ * API key stays on the server. Everything is fetched from the browser,
+ * including the opening state, so the page itself renders without waiting on
+ * the API and its HTML does not carry a list of up to 3,700 ports.
  */
 
 // MapLibre needs a browser, so the map is loaded on the client only.
@@ -31,94 +32,116 @@ const PortsMap = dynamic(() => import("./ports-map"), {
   ),
 });
 
-interface PortsPanelProps {
-  initialPorts: Port[];
-  initialPort: PortInfo | null;
-  initialError: string | null;
-}
-
-export function PortsPanel({
-  initialPorts,
-  initialPort,
-  initialError,
-}: PortsPanelProps) {
+export function PortsPanel() {
   const [sizes, setSizes] = useState<PortSize[]>(DEFAULT_SIZES);
-  const [ports, setPorts] = useState<Port[]>(initialPorts);
-  const [portsLoading, setPortsLoading] = useState(false);
-  const [portsError, setPortsError] = useState<string | null>(initialError);
+  const [ports, setPorts] = useState<Port[]>([]);
+  // Both lists are on their way from the mount effect below, so the panel
+  // starts in its loading state rather than briefly reading as empty.
+  const [portsLoading, setPortsLoading] = useState(true);
+  const [portsError, setPortsError] = useState<string | null>(null);
 
-  const [active, setActive] = useState<PortInfo | null>(initialPort);
-  const [activeId, setActiveId] = useState<number | null>(
-    initialPort?.id ?? null,
-  );
-  const [activeLoading, setActiveLoading] = useState(false);
+  const [active, setActive] = useState<PortInfo | null>(null);
+  const [activeId, setActiveId] = useState<number | null>(DEFAULT_PORT_ID);
+  const [activeLoading, setActiveLoading] = useState(true);
   const [activeError, setActiveError] = useState<string | null>(null);
 
   // Aborting the previous request means a quick second click cannot be
   // overtaken by the response to the first one.
   const portsRequestRef = useRef<AbortController | null>(null);
   const activeRequestRef = useRef<AbortController | null>(null);
-  useEffect(
-    () => () => {
-      portsRequestRef.current?.abort();
-      activeRequestRef.current?.abort();
+
+  /**
+   * The two requests, from asking to state. They take a signal rather than
+   * making one, so the mount effect below can call them without first setting
+   * the state the callbacks around them set.
+   */
+  const storePorts = useCallback(
+    async (signal: AbortSignal, requested: PortSize[]) => {
+      try {
+        setPorts(await fetchPorts(requested, signal));
+      } catch (error: unknown) {
+        if (signal.aborted) return;
+        setPorts([]);
+        setPortsError(errorMessage(error, "Failed to load ports."));
+      } finally {
+        if (!signal.aborted) setPortsLoading(false);
+      }
     },
     [],
   );
 
-  const loadPorts = useCallback(async (requested: PortSize[]) => {
-    portsRequestRef.current?.abort();
-    const controller = new AbortController();
-    portsRequestRef.current = controller;
-
-    setPortsError(null);
-    setPortsLoading(true);
-
+  const storePort = useCallback(async (signal: AbortSignal, portId: number) => {
     try {
-      const response = await fetch(
-        `/marine/ports/list?size=${requested.join(",")}`,
-        { signal: controller.signal },
-      );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
-      setPorts(body.ports ?? []);
+      setActive(await fetchPort(portId, signal));
     } catch (error: unknown) {
-      if (controller.signal.aborted) return;
-      setPorts([]);
-      setPortsError(
-        error instanceof Error ? error.message : "Failed to load ports.",
-      );
+      if (signal.aborted) return;
+      setActiveError(errorMessage(error, "Failed to load port."));
     } finally {
-      if (!controller.signal.aborted) setPortsLoading(false);
+      if (!signal.aborted) setActiveLoading(false);
     }
   }, []);
 
-  const selectPort = useCallback(async (portId: number) => {
-    activeRequestRef.current?.abort();
-    const controller = new AbortController();
-    activeRequestRef.current = controller;
+  /** Puts the ports of a filter on the map, replacing the ones there now. */
+  const loadPorts = useCallback(
+    async (requested: PortSize[]) => {
+      portsRequestRef.current?.abort();
+      const controller = new AbortController();
+      portsRequestRef.current = controller;
 
-    setActiveId(portId);
-    setActive(null);
-    setActiveError(null);
-    setActiveLoading(true);
+      setPortsError(null);
+      setPortsLoading(true);
 
-    try {
-      const response = await fetch(`/marine/ports/info?portId=${portId}`, {
-        signal: controller.signal,
-      });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
-      setActive(body.port);
-    } catch (error: unknown) {
-      if (controller.signal.aborted) return;
-      setActiveError(
-        error instanceof Error ? error.message : "Failed to load port.",
-      );
-    } finally {
-      if (!controller.signal.aborted) setActiveLoading(false);
-    }
-  }, []);
+      await storePorts(controller.signal, requested);
+    },
+    [storePorts],
+  );
+
+  /** Makes a port the active one and loads its entry in the index. */
+  const selectPort = useCallback(
+    async (portId: number) => {
+      activeRequestRef.current?.abort();
+      const controller = new AbortController();
+      activeRequestRef.current = controller;
+
+      setActiveId(portId);
+      setActive(null);
+      setActiveError(null);
+      setActiveLoading(true);
+
+      await storePort(controller.signal, portId);
+    },
+    [storePort],
+  );
+
+  /**
+   * The opening state, fetched from the browser like every later change: the
+   * ports of the default grade, and the port the example opens on. The two do
+   * not depend on each other, so they go out together.
+   *
+   * The state the callbacks above set before asking is already the initial
+   * state here, so this skips them and only lets the results land in state —
+   * which is also what keeps the effect from setting state as it runs.
+   */
+  useEffect(() => {
+    const portsRequest = new AbortController();
+    const portRequest = new AbortController();
+    portsRequestRef.current = portsRequest;
+    activeRequestRef.current = portRequest;
+
+    void (async () => {
+      await Promise.all([
+        storePorts(portsRequest.signal, DEFAULT_SIZES),
+        storePort(portRequest.signal, DEFAULT_PORT_ID),
+      ]);
+    })();
+
+    // Whatever is in flight when the panel goes away is dropped, including a
+    // later request that has taken one of these two slots by then.
+    return () => {
+      portsRequestRef.current?.abort();
+      activeRequestRef.current?.abort();
+    };
+  }, [storePorts, storePort]);
 
   /**
    * Ticking a grade off the filter takes its ports off the map. The last one
@@ -211,4 +234,38 @@ export function PortsPanel({
       {active && !activeLoading && <PortDetails port={active} />}
     </div>
   );
+}
+
+/** GETs one of the route handlers next to this component. */
+async function requestJson<T>(url: string, signal: AbortSignal): Promise<T> {
+  const response = await fetch(url, { signal });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? "Request failed.");
+  return body as T;
+}
+
+async function fetchPorts(
+  sizes: PortSize[],
+  signal: AbortSignal,
+): Promise<Port[]> {
+  const body = await requestJson<{ ports?: Port[] }>(
+    `/marine/ports/list?size=${sizes.join(",")}`,
+    signal,
+  );
+  return body.ports ?? [];
+}
+
+async function fetchPort(
+  portId: number,
+  signal: AbortSignal,
+): Promise<PortInfo> {
+  const body = await requestJson<{ port: PortInfo }>(
+    `/marine/ports/info?portId=${portId}`,
+    signal,
+  );
+  return body.port;
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
 }
