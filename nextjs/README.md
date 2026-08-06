@@ -6,7 +6,7 @@ Example implementation of the [Infoplaza Platform API](https://platform.infoplaz
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18.18 or later
+- [Node.js](https://nodejs.org/) 22 or later — the Transit Planner example uses the global `WebSocket`, which is only available without a flag from Node 22 on
 - An Infoplaza Platform API key — sign up at [platform.infoplaza.com](https://platform.infoplaza.com/)
 
 ## Getting started
@@ -38,12 +38,24 @@ Each example lives in its own folder under `src/app/<group>/<example>/`, with it
 
 ```
 nextjs/
-├── server.ts                           # Custom server (WebSocket upgrades)
 ├── scripts/                            # Setup scripts run before dev and build
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx                  # Root layout with sidebar
 │   │   ├── page.tsx                    # Home page listing all examples
+│   │   ├── weather/
+│   │   │   ├── climate/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── api.ts              #   Weather Climate API client
+│   │   │   │   ├── normals/route.ts    #   Climate proxy the browser calls
+│   │   │   │   ├── utils.ts            #   Types, periods and summary helpers
+│   │   │   │   └── components/         #   Panel, map, charts and table
+│   │   │   └── warnings/
+│   │   │       ├── page.tsx            #   Page
+│   │   │       ├── api.ts              #   Weather Warnings API client
+│   │   │       ├── lookup/route.ts     #   Warnings proxy the browser calls
+│   │   │       ├── utils.ts            #   Types, levels and formatting helpers
+│   │   │       └── components/         #   Panel, map and list
 │   │   ├── geo/
 │   │   │   ├── nearby/                 # One example, everything together
 │   │   │   │   ├── page.tsx            #   Page
@@ -61,7 +73,7 @@ nextjs/
 │   │       ├── transit-planner/
 │   │       │   ├── page.tsx            #   Page
 │   │       │   ├── api.ts              #   Transit Planner + Search API clients
-│   │       │   ├── proxy/socket.ts     #   WebSocket proxy the browser calls
+│   │       │   ├── stream/route.ts     #   Streaming proxy the browser calls
 │   │       │   ├── search/route.ts     #   Search proxy the browser calls
 │   │       │   ├── utils.ts            #   Example-specific helpers
 │   │       │   ├── components/         #   Example-specific components
@@ -85,12 +97,13 @@ nextjs/
 └── package.json
 ```
 
-Because WebSocket upgrades are not supported by Next.js route handlers, this
-project runs a small [custom server](server.ts): it routes upgrade requests
-for the Transit Planner proxy to our own handler and leaves everything else to
-Next.js. `npm run dev` and `npm run start` both run this server (via `tsx`).
-Note that this requires a Node.js host — serverless platforms do not support
-WebSockets.
+The Transit Planner speaks WebSocket, and a Next.js route handler cannot
+upgrade to one. Rather than run a custom server for that, the browser leg uses
+[server-sent events](src/app/mobility/transit-planner/stream/route.ts): the
+route keeps the upstream WebSocket to `api.infoplaza.com` on the server and
+pushes each result to the browser as it arrives. Streaming works the same way,
+and the project runs on plain `next dev` and `next start` — no custom server,
+so serverless hosts are fine too.
 
 The maps parse their data in a web worker that MapLibre loads from a file of
 its own, which it can no longer find once Next.js has bundled it. The basemap
@@ -99,7 +112,96 @@ dev` and `npm run build` therefore first run
 [`scripts/copy-maplibre-worker.mjs`](scripts/copy-maplibre-worker.mjs), which
 copies that file to `public/maplibre/` for the map to point at.
 
+## Deployment
+
+This example lives in the `nextjs/` subfolder of the repository, so a host that
+expects the project in the repository root needs to be told where to look. On
+[Vercel](https://vercel.com/):
+
+1. Import the repository and set **Root Directory** to `nextjs` (Settings →
+   General → Root Directory for an existing project). The framework preset
+   picks up Next.js from there.
+2. Leave the build command on its default. Vercel then runs the `build` script
+   from `package.json`, which lets npm run the `prebuild` hook that copies the
+   MapLibre worker into `public/maplibre/`. Overriding the build command with a
+   bare `next build` skips that hook and leaves the vector maps empty.
+3. Add `INFOPLAZA_API_KEY` under Settings → Environment Variables for
+   Production, Preview and Development. No `NEXT_PUBLIC_` prefix: the key is
+   only ever read server-side and should stay that way.
+
+Other hosts work the same way — point the build at the `nextjs/` directory. The
+project needs no custom server, so anything that runs a standard Next.js build
+will do.
+
 ## Examples
+
+### Weather — Climate
+
+Shows what a year normally looks like at a point on the map with the
+[Weather Climate API](https://platform.infoplaza.com/reference/v1-weather-climate).
+
+One call returns the whole climate year for a location: the average daily low
+and high, the rain, the sunshine and the wind for each period. The `period`
+parameter decides how finely the year is cut, into 12 months, 24 half months or
+36 ten-day periods, and the buttons under the map switch between them.
+
+Clicking the map picks a location, marked with a marker that can be dragged to
+adjust it, and every pick is one call through a
+[route handler](src/app/weather/climate/normals/route.ts) that adds
+`INFOPLAZA_API_KEY` server-side. The climate for the location the page opens on
+is fetched during server rendering, so the page arrives with content.
+
+Coverage is not global, and a point outside it comes back as a 500 rather than
+as an empty result, so
+[`climateNormals`](src/app/weather/climate/api.ts) turns that case into a
+`NoClimateDataError` and the route answers it with `covered: false`. The panel
+shows that as a hint to try somewhere else, while a real failure such as a
+missing API key still shows as an error.
+
+The four [charts](src/app/weather/climate/components/climate-chart.tsx) are
+plain SVG in a fixed viewBox, no chart library, so the same component draws 12
+monthly bars and 36 ten-day ones. Temperature is the one that is not a bar from
+zero: it is a range from the average daily low to the average daily high,
+coloured by the middle of that range.
+
+One field needs reading against its name. `sunshineHours` comes back as 8363
+for January in the Netherlands, which is only sensible as seconds per day: 2.3
+hours a day, and 2064 hours over the year. Everything in the example therefore
+runs it through
+[`sunHoursPerDay`](src/app/weather/climate/utils.ts) and shows it as hours per
+day.
+
+### Weather — Warnings
+
+Shows the severe weather warned about at a point on the map with the
+[Weather Warnings API](https://platform.infoplaza.com/reference/v1-weather-warnings).
+
+Warnings have no geometry: the API answers for a coordinate, not for an area.
+The [map](src/app/weather/warnings/components/warnings-map.tsx) is therefore a
+picker with a single marker, and the marker carries the answer — it takes the
+colour of the severest warning in force and shows how many there are, grey when
+the location has none. Clicking the map or dragging the pin looks the new spot
+up through a [route handler](src/app/weather/warnings/lookup/route.ts) that adds
+`INFOPLAZA_API_KEY` server-side, and the warnings for the location the page
+opens on are fetched during server rendering, so the page arrives with content.
+
+A location is often covered by several services at once, and each of them
+reissues a warning as its forecast firms up, so the same warning comes back
+several times — unchanged apart from a newer `created`, or simply repeated.
+Around Milan that turns one heat warning into nine rows, so
+[`weatherWarnings`](src/app/weather/warnings/api.ts) collapses identical
+warnings and keeps the most recent issue of each. Warnings that have not
+started yet arrive alongside the active ones as `active: false`; they are kept
+and marked as upcoming.
+
+Each warning carries a numeric `level`, which is the colour code European
+services warn in — green, yellow, orange, red — and the titles name the same
+colours, so the palette in [`utils.ts`](src/app/weather/warnings/utils.ts)
+keeps the pills and the pin in step with the text beside them. The language
+select changes the `language` parameter the API writes its titles and texts in
+and looks the current location up again, so the two cannot drift apart.
+
+Note that no warnings is the normal answer for most places most of the time.
 
 ### Geo — Geo Nearby
 
@@ -159,12 +261,13 @@ Streams travel results between two locations in real time using the
 [Transit Planner Mixer API](https://platform.infoplaza.com/reference/v1-transit-plannermixer),
 a WebSocket endpoint that speaks Protocol Buffers.
 
-The browser never talks to the API directly: it opens a WebSocket to a small
-[proxy](src/app/mobility/transit-planner/proxy/socket.ts) on our own server and
-sends one JSON message with the plan request. The proxy opens the upstream
+The browser never talks to the API directly: it opens an `EventSource` on a
+small [proxy](src/app/mobility/transit-planner/stream/route.ts) on our own
+server with the plan request in the query string. The proxy opens the upstream
 WebSocket to `api.infoplaza.com` with the API key from `INFOPLAZA_API_KEY`,
-decodes each protobuf `PlanResult` message and forwards it to the browser as
-JSON until the mixer is done. This keeps the API key on the server.
+decodes each protobuf `PlanResult` message and sends it to the browser as a
+server-sent event until the mixer is done. This keeps the API key on the
+server.
 
 The mixer plans between coordinates, so the From and To fields are
 autocompletes backed by the

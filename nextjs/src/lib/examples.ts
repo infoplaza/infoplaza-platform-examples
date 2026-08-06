@@ -36,6 +36,30 @@ export const exampleGroups: ExampleGroup[] = [
     ],
   },
   {
+    title: "Weather",
+    examples: [
+      {
+        title: "Forecast",
+        description:
+          "Pick a spot on the map for its weather by the minute, hour, daypart and day.",
+        href: "/weather/forecast",
+      },
+      {
+        title: "Climate",
+        description:
+          "Pick a location on the map to see the temperature, rain, sun and wind of an average year there.",
+        href: "/weather/climate",
+      },
+      {
+        title: "Warnings",
+        description:
+          "Pick a spot on the map to see the severe weather warned about there.",
+        href: "/weather/warnings",
+      },
+    ],
+  },
+  
+  {
     title: "Mobility",
     examples: [
       {

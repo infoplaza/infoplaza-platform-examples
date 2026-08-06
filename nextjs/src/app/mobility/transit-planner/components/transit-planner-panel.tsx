@@ -43,9 +43,9 @@ export function TransitPlannerPanel() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
-  const socketRef = useRef<WebSocket | null>(null);
+  const sourceRef = useRef<EventSource | null>(null);
 
-  useEffect(() => () => socketRef.current?.close(), []);
+  useEffect(() => () => sourceRef.current?.close(), []);
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -58,42 +58,54 @@ export function TransitPlannerPanel() {
       return;
     }
 
-    socketRef.current?.close();
+    sourceRef.current?.close();
 
     setResults([]);
     setError(null);
     setExpandedTrip(null);
     setStatus("streaming");
 
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const socket = new WebSocket(
-      `${protocol}//${window.location.host}/mobility/transit-planner/proxy`,
+    const query = new URLSearchParams({ fromPlace, toPlace });
+    const source = new EventSource(
+      `/mobility/transit-planner/stream?${query}`,
     );
-    socketRef.current = socket;
+    sourceRef.current = source;
 
-    socket.onopen = () => socket.send(JSON.stringify({ fromPlace, toPlace }));
+    // The proxy sends each PlanResult as a default message event, then one
+    // "done" or "planner-error" event. EventSource reconnects on its own when
+    // a stream ends, so every ending has to close it explicitly or the trip
+    // gets planned over and over.
+    const finish = (update: () => void) => {
+      source.close();
+      if (sourceRef.current !== source) return;
+      update();
+    };
 
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data as string);
-      if (message.error) {
+    source.onmessage = (event) => {
+      if (sourceRef.current !== source) return;
+      const result = JSON.parse(event.data as string) as PlanResultJson;
+      setResults((previous) => [...previous, result]);
+    };
+
+    source.addEventListener("done", () =>
+      finish(() =>
+        setStatus((current) => (current === "streaming" ? "done" : current)),
+      ),
+    );
+
+    source.addEventListener("planner-error", (event) => {
+      const { message } = JSON.parse((event as MessageEvent).data as string);
+      finish(() => {
         setStatus("error");
-        setError(message.error);
-        socket.close();
-        return;
-      }
-      setResults((previous) => [...previous, message as PlanResultJson]);
-    };
+        setError(message ?? "The Transit Planner returned an error.");
+      });
+    });
 
-    socket.onerror = () => {
-      if (socketRef.current !== socket) return;
-      setStatus("error");
-      setError("Connection to the proxy failed.");
-    };
-
-    socket.onclose = () => {
-      if (socketRef.current !== socket) return;
-      setStatus((current) => (current === "streaming" ? "done" : current));
-    };
+    source.onerror = () =>
+      finish(() => {
+        setStatus("error");
+        setError("Connection to the proxy failed.");
+      });
   }
 
   return (

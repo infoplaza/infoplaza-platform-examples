@@ -26,6 +26,9 @@ yarn-error.log*
 # Testing
 coverage/
 
+# Vercel
+.vercel
+
 # Android
 android/.gradle/
 android/local.properties
