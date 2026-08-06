@@ -27,6 +27,12 @@ export const exampleGroups: ExampleGroup[] = [
           "Stream travel results between two locations in real time.",
         href: "/mobility/planner-mixer",
       },
+      {
+        title: "Nearby Stops",
+        description:
+          "Pick a spot on the map to find transit stops and their departures.",
+        href: "/mobility/nearby-stops",
+      },
     ],
   },
 ];
