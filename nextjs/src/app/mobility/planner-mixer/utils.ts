@@ -57,6 +57,65 @@ export interface Place {
   name?: string;
 }
 
+/** One result from the Transit Planner Search API. */
+export interface PlaceSuggestion {
+  name?: string;
+  city?: string;
+  /** e.g. "railStation", "busStop", "address". */
+  type?: string;
+  stopid?: string;
+  location?: { latitude: number; longitude: number };
+}
+
+/** "52.3676,4.9041" — the format the Planner Mixer expects for a place. */
+export const COORDINATE_PAIR = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
+
+/** "Utrecht Centraal, Utrecht", or just the name when the city adds nothing. */
+export function placeLabel(place: PlaceSuggestion): string {
+  const name = place.name ?? "";
+  if (!place.city || name.includes(place.city)) return name;
+  return `${name}, ${place.city}`;
+}
+
+/** "52.089728,5.109853", or null when the result has no coordinates. */
+export function placeCoordinates(place: PlaceSuggestion): string | null {
+  if (!place.location) return null;
+  const { latitude, longitude } = place.location;
+  return `${latitude},${longitude}`;
+}
+
+/** "railStation" → "Rail station" */
+export function placeTypeLabel(type?: string): string {
+  if (!type) return "";
+  const words = type.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * State of one From/To field: what is in the input box, plus the suggestion
+ * that was picked from the search results (null while someone is still
+ * typing).
+ */
+export interface PlaceField {
+  query: string;
+  place: PlaceSuggestion | null;
+}
+
+export function placeField(place: PlaceSuggestion): PlaceField {
+  return { query: placeLabel(place), place };
+}
+
+/**
+ * The "latitude,longitude" string to send to the Planner Mixer, or null when
+ * the field does not point at a location yet. Raw coordinates typed by hand
+ * are accepted too, so the API can still be poked at directly.
+ */
+export function placeFieldCoordinates(field: PlaceField): string | null {
+  if (field.place) return placeCoordinates(field.place);
+  const query = field.query.trim();
+  return COORDINATE_PAIR.test(query) ? query : null;
+}
+
 /** "2026-08-04T14:03:00+02:00" → "14:03" */
 export function formatTime(iso?: string): string {
   if (!iso) return "–";

@@ -8,16 +8,37 @@ import {
   legEndpoints,
   legLabel,
   legStartTime,
+  placeField,
+  placeFieldCoordinates,
   plannerLabel,
   PlanResultJson,
+  PlaceSuggestion,
   Trip,
 } from "../utils";
+import { PlaceInput } from "./place-input";
 
 type Status = "idle" | "streaming" | "done" | "error";
 
+/** Prefilled example trip, in the shape the search API returns. */
+const DEFAULT_FROM: PlaceSuggestion = {
+  name: "Amsterdam Centraal",
+  city: "Amsterdam",
+  type: "railStation",
+  stopid: "NL:S:asd",
+  location: { latitude: 52.37907127278363, longitude: 4.900129970858263 },
+};
+
+const DEFAULT_TO: PlaceSuggestion = {
+  name: "Schiphol Airport",
+  city: "Schiphol",
+  type: "railStation",
+  stopid: "NL:S:shl",
+  location: { latitude: 52.30925105449091, longitude: 4.7618117695963145 },
+};
+
 export function PlannerMixerPanel() {
-  const [fromPlace, setFromPlace] = useState("52.3676,4.9041"); // Amsterdam
-  const [toPlace, setToPlace] = useState("52.3105,4.7683"); // Schiphol
+  const [from, setFrom] = useState(placeField(DEFAULT_FROM));
+  const [to, setTo] = useState(placeField(DEFAULT_TO));
   const [results, setResults] = useState<PlanResultJson[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +49,15 @@ export function PlannerMixerPanel() {
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
+
+    const fromPlace = placeFieldCoordinates(from);
+    const toPlace = placeFieldCoordinates(to);
+    if (!fromPlace || !toPlace) {
+      setStatus("error");
+      setError("Pick a From and To location from the search suggestions.");
+      return;
+    }
+
     socketRef.current?.close();
 
     setResults([]);
@@ -68,26 +98,12 @@ export function PlannerMixerPanel() {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-gray-600">From (lat,lon)</span>
-          <input
-            value={fromPlace}
-            onChange={(event) => setFromPlace(event.target.value)}
-            className="w-44 rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:border-gray-500 focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-gray-600">To (lat,lon)</span>
-          <input
-            value={toPlace}
-            onChange={(event) => setToPlace(event.target.value)}
-            className="w-44 rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:border-gray-500 focus:outline-none"
-          />
-        </label>
+      <form onSubmit={onSubmit} className="flex flex-wrap items-start gap-3">
+        <PlaceInput label="From" value={from} onChange={setFrom} />
+        <PlaceInput label="To" value={to} onChange={setTo} />
         <button
           type="submit"
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+          className="mt-6 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
         >
           Plan trip
         </button>

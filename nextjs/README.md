@@ -46,8 +46,9 @@ nextjs/
 │   │   └── mobility/
 │   │       └── planner-mixer/          # One example, everything together
 │   │           ├── page.tsx            #   Page
-│   │           ├── api.ts              #   Planner Mixer WebSocket client
+│   │           ├── api.ts              #   Planner Mixer + Search API clients
 │   │           ├── proxy/socket.ts     #   WebSocket proxy the browser calls
+│   │           ├── search/route.ts     #   Search proxy the browser calls
 │   │           ├── utils.ts            #   Example-specific helpers
 │   │           ├── components/         #   Example-specific components
 │   │           └── proto/              #   Protobuf message definitions
@@ -69,7 +70,7 @@ WebSockets.
 
 ### Mobility — Planner Mixer
 
-Streams travel results between two coordinates in real time using the
+Streams travel results between two locations in real time using the
 [Transit Planner Mixer API](https://platform.infoplaza.com/reference/v1-transit-plannermixer),
 a WebSocket endpoint that speaks Protocol Buffers.
 
@@ -79,6 +80,16 @@ sends one JSON message with the plan request. The proxy opens the upstream
 WebSocket to `api.infoplaza.com` with the API key from `INFOPLAZA_API_KEY`,
 decodes each protobuf `PlanResult` message and forwards it to the browser as
 JSON until the mixer is done. This keeps the API key on the server.
+
+The mixer plans between coordinates, so the From and To fields are
+autocompletes backed by the
+[Transit Planner Search API](https://platform.infoplaza.com/reference/v1-transit-planner-search):
+while you type, the browser calls a
+[route handler](src/app/mobility/planner-mixer/search/route.ts) that forwards
+the term to `/v1/transit/planner/search` — again adding the API key
+server-side — and returns the matching stations, stops and addresses. Picking
+a suggestion supplies the coordinates sent to the mixer. Typing a raw
+`latitude,longitude` pair still works too.
 
 The protobuf schema lives in
 [`proto/`](src/app/mobility/planner-mixer/proto/); `proto.json` is generated

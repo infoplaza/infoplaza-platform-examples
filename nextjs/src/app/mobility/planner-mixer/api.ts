@@ -1,8 +1,9 @@
 import protobuf from "protobufjs";
 import protoJson from "./proto/proto.json";
+import type { PlaceSuggestion } from "./utils";
 
 /**
- * Server-side client for the Transit Planner Mixer API.
+ * Server-side clients for the two Transit APIs this example uses.
  *
  * The Planner Mixer is a WebSocket endpoint that streams protobuf-encoded
  * PlanResult messages: it keeps sending better travel options until the mixer
@@ -10,13 +11,30 @@ import protoJson from "./proto/proto.json";
  * (so the API key never reaches the browser), decodes each message and hands
  * the results to the caller as plain JSON objects.
  *
+ * The Planner Search is a plain REST endpoint that turns a search term into
+ * transit locations with coordinates, which is how the From and To fields on
+ * the page are filled in.
+ *
  * API reference: https://platform.infoplaza.com/reference/v1-transit-plannermixer
+ * API reference: https://platform.infoplaza.com/reference/v1-transit-planner-search
  */
 
 const PLANNER_MIXER_URL = "wss://api.infoplaza.com/v1/transit/plannermixer";
+const PLANNER_SEARCH_URL =
+  "https://api.infoplaza.com/v1/transit/planner/search";
 
 /** How long to wait for results before closing the socket ourselves. */
 const SOCKET_TIMEOUT_MS = 30_000;
+
+function requireApiKey(): string {
+  const apiKey = process.env.INFOPLAZA_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
+    );
+  }
+  return apiKey;
+}
 
 const root = protobuf.Root.fromJSON(protoJson as protobuf.INamespace);
 const PlanRequest = root.lookupType("planner.PlanRequest");
@@ -51,14 +69,9 @@ export function openPlannerMixer(
   request: PlannerMixerRequest,
   handlers: PlannerMixerHandlers,
 ): { close(): void } {
-  const apiKey = process.env.INFOPLAZA_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
-    );
-  }
-
-  const socket = new WebSocket(`${PLANNER_MIXER_URL}?api_key=${apiKey}`);
+  const socket = new WebSocket(
+    `${PLANNER_MIXER_URL}?api_key=${requireApiKey()}`,
+  );
   socket.binaryType = "arraybuffer";
   const timeout = setTimeout(() => socket.close(), SOCKET_TIMEOUT_MS);
 
@@ -95,4 +108,39 @@ export function openPlannerMixer(
       socket.close();
     },
   };
+}
+
+/** Envelope every Platform REST endpoint wraps its payload in. */
+interface PlatformResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: { message?: string };
+}
+
+/**
+ * Looks up transit locations (stations, stops, addresses) matching a search
+ * term. Used to turn what someone types into the coordinates the Planner
+ * Mixer expects.
+ */
+export async function searchPlaces(
+  query: string,
+  limit = 8,
+): Promise<PlaceSuggestion[]> {
+  const url = new URL(PLANNER_SEARCH_URL);
+  url.searchParams.set("query", query);
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("api_key", requireApiKey());
+
+  const response = await fetch(url, { cache: "no-store" });
+  const body = (await response.json().catch(() => null)) as PlatformResponse<{
+    items?: PlaceSuggestion[];
+  }> | null;
+
+  if (!response.ok || !body?.success) {
+    throw new Error(
+      body?.error?.message ??
+        `Planner Search returned HTTP ${response.status}.`,
+    );
+  }
+  return body.data?.items ?? [];
 }

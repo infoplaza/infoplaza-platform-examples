@@ -24,7 +24,7 @@ export const exampleGroups: ExampleGroup[] = [
       {
         title: "Planner Mixer",
         description:
-          "Stream travel results between two coordinates in real time.",
+          "Stream travel results between two locations in real time.",
         href: "/mobility/planner-mixer",
       },
     ],

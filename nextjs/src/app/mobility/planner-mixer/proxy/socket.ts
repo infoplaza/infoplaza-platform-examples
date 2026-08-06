@@ -2,6 +2,7 @@ import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { WebSocketServer, type WebSocket } from "ws";
 import { openPlannerMixer } from "../api";
+import { COORDINATE_PAIR } from "../utils";
 
 /**
  * WebSocket proxy between the browser and the Planner Mixer.
@@ -18,8 +19,6 @@ import { openPlannerMixer } from "../api";
  */
 
 export const PLANNER_MIXER_PROXY_PATH = "/mobility/planner-mixer/proxy";
-
-const COORDINATE_PAIR = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
 
 const server = new WebSocketServer({ noServer: true });
 
