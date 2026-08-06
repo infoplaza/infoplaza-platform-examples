@@ -50,6 +50,13 @@ nextjs/
 │   │   │   │   ├── normals/route.ts    #   Climate proxy the browser calls
 │   │   │   │   ├── utils.ts            #   Types, periods and summary helpers
 │   │   │   │   └── components/         #   Panel, map, charts and table
+│   │   │   ├── forecast/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── api.ts              #   Weather Forecast API client
+│   │   │   │   ├── lookup/route.ts     #   Forecast proxy the browser calls
+│   │   │   │   ├── utils.ts            #   Types, limits and formatting helpers
+│   │   │   │   ├── conditions.ts       #   Icon code → wording, from the icon set
+│   │   │   │   └── components/         #   Panel, map, chart and tables
 │   │   │   └── warnings/
 │   │   │       ├── page.tsx            #   Page
 │   │   │       ├── api.ts              #   Weather Warnings API client
@@ -69,6 +76,14 @@ nextjs/
 │   │   │       ├── places/route.ts     #   Search proxy the browser calls
 │   │   │       ├── utils.ts            #   Types and formatting helpers
 │   │   │       └── components/         #   Search panel, list and map
+│   │   ├── marine/
+│   │   │   └── ports/
+│   │   │       ├── page.tsx            #   Page
+│   │   │       ├── api.ts              #   Port List + Port Info API clients
+│   │   │       ├── list/route.ts       #   Port-list proxy the browser calls
+│   │   │       ├── info/route.ts       #   Port-info proxy the browser calls
+│   │   │       ├── utils.ts            #   Types, sizes and label helpers
+│   │   │       └── components/         #   Panel, sea chart and details
 │   │   └── mobility/
 │   │       ├── transit-planner/
 │   │       │   ├── page.tsx            #   Page
@@ -94,6 +109,7 @@ nextjs/
 │   └── lib/
 │       └── examples.ts                 # Registry of all examples
 ├── public/                             # Static assets
+│   └── weather-icons/                  # The extended weather icon set, one SVG per code
 └── package.json
 ```
 
@@ -134,6 +150,56 @@ project needs no custom server, so anything that runs a standard Next.js build
 will do.
 
 ## Examples
+
+### Weather — Forecast
+
+Shows the weather forecast for a point on the map with the
+[Weather Forecast API](https://platform.infoplaza.com/reference/v1-weather-forecast).
+
+One call returns five blocks at once — what it is doing now, then the coming
+minutes, hours, dayparts and days — so the four tabs under the map cost one
+request between them rather than one each. How much of each block comes back is
+set by the `max_*` parameters, gathered in `FORECAST_LIMITS` in
+[`utils.ts`](src/app/weather/forecast/utils.ts). They sit at the API's own
+defaults on purpose: staying at or below those keeps a call at 1 credit, and
+asking for more of any one block puts the whole call at 3. There is room to go
+further — 120 minutes, 168 hours, 30 dayparts, 15 days — at that price.
+
+The minutely block is the one worth reading carefully. `max_minutely` is a
+number of minutes but the answer comes in five-minute steps, so 60 returns
+twelve of them and anything under 5 returns none. It also holds two numbers in
+different units, how hard precipitation would fall and how likely it is at all,
+which is why the
+[chart](src/app/weather/forecast/components/precipitation-chart.tsx) gives them
+a panel each over one shared timeline instead of putting two scales on one
+plot. The three remaining blocks describe the same weather at coarser zoom and
+carry nearly the same fields, so they share their cells in
+[`forecast-tables.tsx`](src/app/weather/forecast/components/forecast-tables.tsx).
+
+A forecast is read in the local time of the place it is for, not in the
+timezone of whoever is looking at it, so every timestamp goes through `Intl`
+with the IANA zone the API returns beside it: click Tokyo and the hours are
+Tokyo's. Which day counts as "Today" comes from `currently.time` rather than
+from the clock, so the label cannot differ between the server render and the
+browser.
+
+The API answers for the nearest place it forecasts for, not for the exact point
+asked about — inland that is a village away, out at sea it can be an ocean away
+— so the [map](src/app/weather/forecast/components/forecast-map.tsx) marks both:
+the pin where you clicked, and a dot where the forecast turned out to be for
+once the two are far enough apart to tell apart.
+
+Every block carries an icon code rather than a description, and `currently`
+carries only the basic-set code while the rest also carry the extended one. The
+extended SVGs are checked in under
+[`public/weather-icons/`](public/weather-icons/) with the code as the filename,
+and the wording that goes with each code is in
+[`conditions.ts`](src/app/weather/forecast/conditions.ts). Both come from the
+[weather icon set](https://platform.infoplaza.com/docs/assets/icon-sets) — the
+`WeatherExtended` folder, light-background variant, with `icons.json` supplying
+the English text; the same download ships a dark-background variant and Dutch.
+Since `currently` has no extended code of its own, its icon and wording come
+from the hour the current moment falls in.
 
 ### Weather — Climate
 
@@ -254,6 +320,41 @@ South Africa and Suriname — so the
 with `fitBounds` instead of holding a fixed view. Picking a result, in the list
 or on the map, highlights it in both. Each row also shows the current time at
 that place, from the IANA timezone the API returns alongside the coordinates.
+
+### Marine — Ports
+
+Puts every seaport in the world on a sea chart with the
+[Port List API](https://platform.infoplaza.com/reference/v1-port-list), and
+answers for the one that is clicked with the
+[Port Info API](https://platform.infoplaza.com/reference/v1-port-info).
+
+Both endpoints take the key as a query parameter, so the browser calls the
+route handlers in [`list/`](src/app/marine/ports/list/route.ts) and
+[`info/`](src/app/marine/ports/info/route.ts), which add `INFOPLAZA_API_KEY`
+server-side. The port list and the port the page opens on are fetched during
+server rendering, so the page arrives with a chart that has something on it.
+
+The list endpoint hands over a whole size grade at once, from 170 large ports
+to 2,134 very small ones, and takes several grades in one call as a
+comma-separated `size` — repeating the parameter keeps only the last value.
+Nearly 3,700 dots is more than DOM markers can pan smoothly, so the
+[chart](src/app/marine/ports/components/ports-map.tsx) draws them as a GeoJSON
+source with a circle layer, sized per grade. The active port is the same
+source drawn again through a second layer filtered to its id, which is cheaper
+than rewriting the data on every click.
+
+The basemap is OpenStreetMap with the
+[OpenSeaMap](https://www.openseamap.org/) seamark tiles over it — buoys,
+beacons and lights, which appear from zoom 9 in, where the overlay has
+something to draw.
+
+Port Info answers with a hundred-odd fields, most of them "Yes", "No" or
+"Unknown" rather than booleans. The
+[details](src/app/marine/ports/components/port-details.tsx) keep that third
+answer visible instead of reading it as a no: an unsurveyed port is not a port
+without cranes. A port id that does not exist is not an error to the endpoint
+— it answers 200 with an `error` string where the port should be — so
+[`portInfo`](src/app/marine/ports/api.ts) turns that into a real failure.
 
 ### Mobility — Transit Planner
 

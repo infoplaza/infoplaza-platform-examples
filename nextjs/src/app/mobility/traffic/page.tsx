@@ -1,47 +1,17 @@
 import type { Metadata } from "next";
-import { trafficGeo, trafficOverview } from "./api";
 import { TrafficPanel } from "./components/traffic-panel";
-import { mergeEvents, type TrafficEvent, type TrafficSummary } from "./utils";
 
 export const metadata: Metadata = {
   title: "Traffic — Infoplaza Platform Examples",
 };
 
-/** Traffic changes by the minute, so nothing here is cached. */
-export const dynamic = "force-dynamic";
-
 /**
- * Both APIs are called during server rendering, side by side since neither
- * depends on the other, and merged into the single list the page shows.
+ * The page itself only holds the text around the example. The traffic is
+ * loaded in the browser by the panel below, through the route handler in
+ * events/, so the map and the list are built entirely on the client and the
+ * times in them are the visitor's own.
  */
-async function currentTraffic(): Promise<{
-  events: TrafficEvent[];
-  summary: TrafficSummary | null;
-  error: string | null;
-}> {
-  try {
-    const [features, overview] = await Promise.all([
-      trafficGeo(),
-      trafficOverview(),
-    ]);
-    return {
-      events: mergeEvents(features, overview.events),
-      summary: overview.summary,
-      error: null,
-    };
-  } catch (error) {
-    return {
-      events: [],
-      summary: null,
-      error:
-        error instanceof Error ? error.message : "Failed to load traffic.",
-    };
-  }
-}
-
-export default async function TrafficPage() {
-  const { events, summary, error } = await currentTraffic();
-
+export default function TrafficPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -71,11 +41,7 @@ export default async function TrafficPage() {
       </p>
 
       <div className="mt-8">
-        {error ? (
-          <p className="text-sm text-red-600">{error}</p>
-        ) : (
-          <TrafficPanel events={events} summary={summary!} />
-        )}
+        <TrafficPanel />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   causeColor,
@@ -13,8 +13,12 @@ import {
 
 /**
  * Ties the example together: the same events on the map and in the list, with
- * one selection shared between them. Everything is already loaded by the page
- * on the server, so this component only tracks which event is selected.
+ * one selection shared between them.
+ *
+ * The traffic is fetched here rather than during server rendering, so the map
+ * and the list are built in the browser only. That keeps MapLibre away from
+ * the server and keeps the times in the list the visitor's own: they are
+ * formatted in the local zone, which the server does not know.
  */
 
 // MapLibre needs a browser, so the map is loaded on the client only.
@@ -25,13 +29,59 @@ const TrafficMap = dynamic(() => import("./traffic-map"), {
   ),
 });
 
-interface TrafficPanelProps {
-  events: TrafficEvent[];
-  summary: TrafficSummary;
+/** What the route handler in events/ returns. */
+interface TrafficResponse {
+  events?: TrafficEvent[];
+  summary?: TrafficSummary;
+  error?: string;
 }
 
-export function TrafficPanel({ events, summary }: TrafficPanelProps) {
+export function TrafficPanel() {
+  const [traffic, setTraffic] = useState<{
+    events: TrafficEvent[];
+    summary: TrafficSummary;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // One call on mount: the route handler talks to both APIs and merges them.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const response = await fetch("/mobility/traffic/events", {
+          signal: controller.signal,
+        });
+        const body = (await response.json()) as TrafficResponse;
+
+        if (!response.ok || !body.events || !body.summary) {
+          throw new Error(body.error ?? "Failed to load traffic.");
+        }
+        setTraffic({ events: body.events, summary: body.summary });
+      } catch (cause) {
+        if (controller.signal.aborted) return;
+        setError(
+          cause instanceof Error ? cause.message : "Failed to load traffic.",
+        );
+      }
+    })();
+
+    return () => controller.abort();
+  }, []);
+
+  if (error) return <p className="text-sm text-red-600">{error}</p>;
+
+  if (!traffic) {
+    return (
+      <div className="space-y-6">
+        <div className="h-10 w-64 animate-pulse rounded bg-gray-100" />
+        <div className="h-[460px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+      </div>
+    );
+  }
+
+  const { events, summary } = traffic;
 
   return (
     <div className="space-y-6">

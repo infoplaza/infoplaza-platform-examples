@@ -391,7 +391,9 @@ function Row({
       <td className="py-1">
         <WeatherIcon code={icon} size={28} />
       </td>
-      <td className="py-2.5 pr-4 text-gray-600">{conditionLabel(icon)}</td>
+      <td className="whitespace-nowrap py-2.5 pr-4 text-gray-600">
+        {conditionLabel(icon)}
+      </td>
       {children}
     </tr>
   );

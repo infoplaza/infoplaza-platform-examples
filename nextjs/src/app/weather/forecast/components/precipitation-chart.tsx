@@ -67,9 +67,9 @@ export function PrecipitationChart({
   if (minutes.length === 0) {
     return (
       <p className="text-sm text-gray-500">
-        No minutely precipitation forecast here. It is the one block that is
-        not worldwide: it comes from precipitation radar, so it stops where the
-        radar does.
+        No minutely precipitation forecast for this location. Asking for fewer
+        than five minutes does the same thing, since that is shorter than one
+        step.
       </p>
     );
   }
