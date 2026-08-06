@@ -49,8 +49,8 @@ export function TrafficPanel({ events, summary }: TrafficPanelProps) {
       />
 
       <p className="text-xs text-gray-500">
-        Click a road or a dot on the map to select an event, or pick one from
-        the list.
+        Hover a road or a dot on the map for the details, click it to select
+        the event, or pick one from the list.
       </p>
 
       <section>

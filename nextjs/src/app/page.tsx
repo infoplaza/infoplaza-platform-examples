@@ -24,12 +24,12 @@ export default function HomePage() {
           <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
             {group.title}
           </h2>
-          <ul className="mt-3 grid gap-4 sm:grid-cols-2">
+          <ul className="mt-3 grid auto-rows-fr gap-4 sm:grid-cols-2">
             {group.examples.map((example) => (
-              <li key={example.href}>
+              <li key={example.href} className="h-full">
                 <Link
                   href={example.href}
-                  className="block rounded-lg border border-gray-200 p-5 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  className="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition-colors hover:border-gray-300 hover:bg-gray-50"
                 >
                   <span className="font-medium">{example.title}</span>
                   <span className="mt-1 block text-sm text-gray-600">

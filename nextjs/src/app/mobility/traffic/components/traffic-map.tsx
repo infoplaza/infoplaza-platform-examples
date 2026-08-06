@@ -5,16 +5,24 @@ import {
   LngLatBounds,
   Map as MapLibreMap,
   NavigationControl,
+  Popup,
   setWorkerUrl,
   type ExpressionSpecification,
   type GeoJSONSource,
   type StyleSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { causeColor, type TrafficEvent } from "../utils";
+import {
+  causeColor,
+  causeLabel,
+  formatTime,
+  locationLabel,
+  type TrafficEvent,
+} from "../utils";
 
 /**
- * The map: every traffic event drawn where it is, click one to select it.
+ * The map: every traffic event drawn where it is, hover one for the details,
+ * click one to select it.
  *
  * The events come in as GeoJSON already, so they go into a single source and
  * are styled by their own properties: a line layer for the stretches of road
@@ -120,6 +128,13 @@ export default function TrafficMap({
     });
     map.addControl(new NavigationControl(), "top-right");
 
+    const tooltip = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 12,
+      maxWidth: "280px",
+    });
+
     map.on("load", () => {
       map.addSource(SOURCE_ID, {
         type: "geojson",
@@ -155,11 +170,25 @@ export default function TrafficMap({
           const id = event.features?.[0]?.properties?.id;
           if (typeof id === "string") onSelectRef.current(id);
         });
-        map.on("mouseenter", layer, () => {
+        // The tooltip follows the cursor along a road, so it is kept up to
+        // date on every move rather than only when the shape is entered.
+        map.on("mousemove", layer, (event) => {
+          const id = event.features?.[0]?.properties?.id;
+          const hovered = eventsRef.current.find((item) => item.id === id);
+          if (!hovered) return;
+
           map.getCanvas().style.cursor = "pointer";
+          tooltip
+            .setLngLat(event.lngLat)
+            .setDOMContent(tooltipContent(hovered))
+            .addTo(map);
+          // The tooltip sits under the cursor, so it has to let the clicks and
+          // moves meant for the shape below it through.
+          tooltip.getElement().style.pointerEvents = "none";
         });
         map.on("mouseleave", layer, () => {
           map.getCanvas().style.cursor = "";
+          tooltip.remove();
         });
       }
 
@@ -170,6 +199,7 @@ export default function TrafficMap({
 
     mapRef.current = map;
     return () => {
+      tooltip.remove();
       map.remove();
       mapRef.current = null;
       loadedRef.current = false;
@@ -217,6 +247,51 @@ function highlight(map: MapLibreMap, selectedId: string | null) {
     "circle-radius",
     whenSelected(selectedId, 10, 6),
   );
+}
+
+/**
+ * What the tooltip shows for one event: the same fields the list row has, so
+ * the map is readable on its own. It is built as DOM rather than as an HTML
+ * string, which keeps the text from the API text instead of markup.
+ */
+function tooltipContent(event: TrafficEvent): HTMLElement {
+  const root = document.createElement("div");
+  root.className = "space-y-1";
+
+  const header = document.createElement("div");
+  header.className = "flex items-center gap-2";
+
+  const road = document.createElement("span");
+  road.className = "rounded px-1.5 py-0.5 text-xs font-semibold text-white";
+  road.style.backgroundColor = causeColor(event.causeType);
+  road.textContent = event.roadNumber === "?" ? "–" : event.roadNumber;
+
+  const kind = document.createElement("span");
+  kind.className = "text-xs text-gray-500";
+  kind.textContent = causeLabel(event.causeType);
+  header.append(road, kind);
+
+  const where = document.createElement("p");
+  where.className = "text-sm font-medium text-gray-900";
+  where.textContent = locationLabel(event);
+
+  const what = document.createElement("p");
+  what.className = "text-xs text-gray-600";
+  what.textContent = event.description;
+
+  const facts = document.createElement("p");
+  facts.className = "text-xs text-gray-500";
+  facts.textContent = [
+    event.delayMinutes > 0 ? `+${event.delayMinutes} min delay` : null,
+    event.queueKm > 0 ? `${event.queueKm} km queue` : null,
+    event.cause,
+    `since ${formatTime(event.startTime)}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  root.append(header, where, what, facts);
+  return root;
 }
 
 /** The area a geometry covers, so the map can zoom to it. */

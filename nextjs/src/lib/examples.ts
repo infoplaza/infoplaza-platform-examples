@@ -19,6 +19,23 @@ export interface ExampleGroup {
  */
 export const exampleGroups: ExampleGroup[] = [
   {
+    title: "Geo",
+    examples: [
+      {
+        title: "Nearby",
+        description:
+          "Pick a spot on the map to find the places around it, from village to region.",
+        href: "/geo/nearby",
+      },
+      {
+        title: "Search",
+        description:
+          "Search for a place by name and see every match listed and mapped.",
+        href: "/geo/search",
+      },
+    ],
+  },
+  {
     title: "Mobility",
     examples: [
       {
