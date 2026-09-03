@@ -95,7 +95,10 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
       <button
         type="button"
         onClick={() => writeOpen(true)}
-        className="fixed right-6 top-6 z-40 flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3.5 py-2 text-sm text-gray-700 shadow-sm backdrop-blur transition-colors hover:border-gray-300 hover:text-gray-900"
+        // On a narrow screen it sits in the bar the sidebar puts across the
+        // top, level with the menu button; on a wide one there is no bar and
+        // it keeps its own corner.
+        className="fixed right-3 top-2.5 z-40 flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3.5 py-2 text-sm text-gray-700 shadow-sm backdrop-blur transition-colors hover:border-gray-300 hover:text-gray-900 lg:right-6 lg:top-6"
       >
         API requests
         <Count value={calls.length} />

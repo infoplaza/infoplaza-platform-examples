@@ -27,7 +27,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-screen bg-white text-gray-900">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto px-10 py-10">{children}</main>
+        {/* The top padding is room for the fixed bar the sidebar puts there
+            on a narrow screen; on a wide one there is no bar and no padding.
+            `min-w-0` keeps a wide table or map inside the column instead of
+            pushing the whole page sideways. */}
+        <main className="min-w-0 flex-1 overflow-y-auto px-4 pt-20 pb-10 lg:px-10 lg:py-10">
+          {children}
+        </main>
       </body>
     </html>
   );
