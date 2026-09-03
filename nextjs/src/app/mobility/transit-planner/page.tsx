@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ApiLink, ExamplePage } from "@/components/example-page";
 import { TransitPlannerPanel } from "./components/transit-planner-panel";
 
 export const metadata: Metadata = {
@@ -7,36 +8,28 @@ export const metadata: Metadata = {
 
 export default function TransitPlannerPage() {
   return (
-    <div className="mx-auto max-w-5xl">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        Mobility
-      </p>
-      <h1 className="mt-1 text-2xl font-semibold">Transit Planner</h1>
-      <p className="mt-2 text-gray-600">
-        Stream travel results between two locations in real time using the{" "}
-        <a
-          href="https://platform.infoplaza.com/reference/v1-transit-plannermixer"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          Transit Planner Mixer API
-        </a>
-        . The From and To fields look up stations, stops and addresses with the{" "}
-        <a
-          href="https://platform.infoplaza.com/reference/v1-transit-planner-search"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          Transit Planner Search API
-        </a>
-        .
-      </p>
-
-      <div className="mt-8">
-        <TransitPlannerPanel />
-      </div>
-    </div>
+    <ExamplePage
+      group="Mobility"
+      title="Transit Planner"
+      intro={
+        <>
+          Stream travel results between two locations in real time using the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-transit-plannermixer">
+            Transit Planner Mixer API
+          </ApiLink>
+          . The From and To fields look up stations, stops and addresses with
+          the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-transit-planner-search">
+            Transit Planner Search API
+          </ApiLink>
+          . The Mixer is a WebSocket rather than a request and a response, so
+          the API log below shows the whole exchange at once: the PlanRequest
+          that went out, and every result that came back before the socket
+          closed.
+        </>
+      }
+    >
+      <TransitPlannerPanel />
+    </ExamplePage>
   );
 }

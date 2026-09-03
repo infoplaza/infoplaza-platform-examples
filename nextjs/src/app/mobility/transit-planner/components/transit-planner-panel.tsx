@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { recordApiCalls } from "@/lib/api-log";
 import {
   formatDistance,
   formatDuration,
@@ -86,6 +87,13 @@ export function TransitPlannerPanel() {
       const result = JSON.parse(event.data as string) as PlanResultJson;
       setResults((previous) => [...previous, result]);
     };
+
+    // The whole upstream socket, once the mixer is done with it, for the API
+    // log at the bottom of the page. A stream has no response body to carry
+    // it in, so it arrives as an event of its own.
+    source.addEventListener("api-call", (event) => {
+      recordApiCalls([JSON.parse((event as MessageEvent).data as string)]);
+    });
 
     source.addEventListener("done", () =>
       finish(() =>

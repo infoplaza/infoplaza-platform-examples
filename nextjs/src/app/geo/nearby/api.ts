@@ -1,3 +1,4 @@
+import { platformRequest, type Endpoint } from "@/lib/platform";
 import {
   DEFAULT_LANGUAGE,
   placeKey,
@@ -13,27 +14,16 @@ import {
  * it is called from the server only and the browser talks to the route handler
  * in ./places instead. That keeps the key out of the client bundle.
  *
- * API reference: https://platform.infoplaza.com/reference/v1-geo-nearby
+ * The calls go out through @/lib/platform, which attaches the key and records
+ * each request and its answer for the API log at the bottom of the page. One
+ * lookup is several calls here, and the log shows all of them.
  */
 
-const GEO_NEARBY_URL = "https://api.infoplaza.com/v1/geo/nearby";
-
-function requireApiKey(): string {
-  const apiKey = process.env.INFOPLAZA_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
-    );
-  }
-  return apiKey;
-}
-
-/** Envelope every Platform REST endpoint wraps its payload in. */
-interface PlatformResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: { message?: string };
-}
+const GEO_NEARBY: Endpoint = {
+  name: "Geo Nearby",
+  url: "https://api.infoplaza.com/v1/geo/nearby",
+  docsUrl: "https://platform.infoplaza.com/reference/v1-geo-nearby",
+};
 
 /**
  * The most prominent place within `radius` of the point, or null when the API
@@ -46,21 +36,19 @@ async function nearbyPlace(
   radius: number,
   language: string,
 ): Promise<Place | null> {
-  const url = new URL(GEO_NEARBY_URL);
-  url.searchParams.set("lat", String(latitude));
-  url.searchParams.set("lon", String(longitude));
-  url.searchParams.set("radius", String(radius));
-  url.searchParams.set("language", language);
-  url.searchParams.set("api_key", requireApiKey());
+  const { status, ok, body } = await platformRequest<Partial<Place>>(
+    GEO_NEARBY,
+    {
+      lat: String(latitude),
+      lon: String(longitude),
+      radius: String(radius),
+      language,
+    },
+  );
 
-  const response = await fetch(url, { cache: "no-store" });
-  const body = (await response
-    .json()
-    .catch(() => null)) as PlatformResponse<Partial<Place>> | null;
-
-  if (!response.ok || !body?.success) {
+  if (!ok || !body?.success) {
     throw new Error(
-      body?.error?.message ?? `Infoplaza returned HTTP ${response.status}.`,
+      body?.error?.message ?? `Infoplaza returned HTTP ${status}.`,
     );
   }
   // An answer without a name is the API's way of saying it found nothing.

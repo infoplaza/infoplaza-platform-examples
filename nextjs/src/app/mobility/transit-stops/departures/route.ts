@@ -1,3 +1,4 @@
+import { apiRoute, HttpError } from "@/lib/platform";
 import { stopDepartures } from "../api";
 
 /**
@@ -6,23 +7,15 @@ import { stopDepartures } from "../api";
  * Called when someone picks a stop, either from the list or from the map. It
  * forwards the stop place id to the Transit Stop Departures API with the API
  * key from INFOPLAZA_API_KEY and returns the next hour of departures.
+ *
+ * `apiRoute` wraps the answer: it adds the Platform calls this route made, so
+ * the API log on the page can show them, and turns a failure into a status.
  */
-export async function GET(request: Request) {
+export const GET = apiRoute("Failed to load departures.", async (request) => {
   const stopPlaceId =
     new URL(request.url).searchParams.get("stopplace_id")?.trim() ?? "";
 
-  if (!stopPlaceId) {
-    return Response.json(
-      { error: "stopplace_id is required." },
-      { status: 400 },
-    );
-  }
+  if (!stopPlaceId) throw new HttpError(400, "stopplace_id is required.");
 
-  try {
-    return Response.json(await stopDepartures(stopPlaceId));
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load departures.";
-    return Response.json({ error: message }, { status: 502 });
-  }
-}
+  return stopDepartures(stopPlaceId);
+});

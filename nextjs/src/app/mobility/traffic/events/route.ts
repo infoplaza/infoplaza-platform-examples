@@ -1,3 +1,4 @@
+import { apiRoute } from "@/lib/platform";
 import { trafficGeo, trafficOverview } from "../api";
 import { mergeEvents } from "../utils";
 
@@ -9,24 +10,21 @@ import { mergeEvents } from "../utils";
  * list the page shows and returns that. The key stays server-side.
  *
  * Traffic changes by the minute, so nothing here is cached.
+ *
+ * `apiRoute` wraps the answer: it adds both Platform calls to it, so the API
+ * log on the page can show them, and turns a failure into a status.
  */
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  try {
-    // Neither call depends on the other, so they go out side by side.
-    const [features, overview] = await Promise.all([
-      trafficGeo(),
-      trafficOverview(),
-    ]);
+export const GET = apiRoute("Failed to load traffic.", async () => {
+  // Neither call depends on the other, so they go out side by side.
+  const [features, overview] = await Promise.all([
+    trafficGeo(),
+    trafficOverview(),
+  ]);
 
-    return Response.json({
-      events: mergeEvents(features, overview.events),
-      summary: overview.summary,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load traffic.";
-    return Response.json({ error: message }, { status: 502 });
-  }
-}
+  return {
+    events: mergeEvents(features, overview.events),
+    summary: overview.summary,
+  };
+});

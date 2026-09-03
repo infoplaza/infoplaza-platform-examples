@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   countryFlag,
   DEFAULT_LOCATION,
@@ -71,12 +72,10 @@ export function GeoNearbyPanel({
     setSelected(null);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ places?: NearbyPlace[] }>(
         `/geo/nearby/places?lat=${location.latitude}&lon=${location.longitude}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
 
       const found: NearbyPlace[] = body.places ?? [];
       setPlaces(found);

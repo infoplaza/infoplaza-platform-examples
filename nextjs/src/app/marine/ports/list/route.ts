@@ -1,3 +1,4 @@
+import { apiRoute } from "@/lib/platform";
 import { portList } from "../api";
 import { DEFAULT_SIZES, isPortSize } from "../utils";
 
@@ -7,18 +8,13 @@ import { DEFAULT_SIZES, isPortSize } from "../utils";
  * The browser calls this route with the size grades ticked in the filter; it
  * forwards them to the Port List API with the API key from INFOPLAZA_API_KEY
  * and returns the ports it finds. The key stays server-side.
+ *
+ * `apiRoute` wraps the answer: it adds the Platform calls this route made, so
+ * the API log on the page can show them, and turns a failure into a status.
  */
-export async function GET(request: Request) {
+export const GET = apiRoute("Failed to load ports.", async (request) => {
   const requested = new URL(request.url).searchParams.get("size") ?? "";
   const sizes = requested.split(",").filter(isPortSize);
 
-  try {
-    return Response.json({
-      ports: await portList(sizes.length > 0 ? sizes : DEFAULT_SIZES),
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load ports.";
-    return Response.json({ error: message }, { status: 502 });
-  }
-}
+  return { ports: await portList(sizes.length > 0 ? sizes : DEFAULT_SIZES) };
+});

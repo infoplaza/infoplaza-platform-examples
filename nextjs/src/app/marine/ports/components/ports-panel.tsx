@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   DEFAULT_PORT_ID,
   DEFAULT_SIZES,
@@ -236,19 +237,11 @@ export function PortsPanel() {
   );
 }
 
-/** GETs one of the route handlers next to this component. */
-async function requestJson<T>(url: string, signal: AbortSignal): Promise<T> {
-  const response = await fetch(url, { signal });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error ?? "Request failed.");
-  return body as T;
-}
-
 async function fetchPorts(
   sizes: PortSize[],
   signal: AbortSignal,
 ): Promise<Port[]> {
-  const body = await requestJson<{ ports?: Port[] }>(
+  const body = await fetchJson<{ ports?: Port[] }>(
     `/marine/ports/list?size=${sizes.join(",")}`,
     signal,
   );
@@ -259,7 +252,7 @@ async function fetchPort(
   portId: number,
   signal: AbortSignal,
 ): Promise<PortInfo> {
-  const body = await requestJson<{ port: PortInfo }>(
+  const body = await fetchJson<{ port: PortInfo }>(
     `/marine/ports/info?portId=${portId}`,
     signal,
   );

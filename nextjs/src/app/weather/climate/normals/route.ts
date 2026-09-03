@@ -1,3 +1,4 @@
+import { apiRoute, HttpError } from "@/lib/platform";
 import { climateNormals, NoClimateDataError } from "../api";
 import { GRANULARITIES, type Granularity } from "../utils";
 
@@ -11,44 +12,39 @@ import { GRANULARITIES, type Granularity } from "../utils";
  *
  * A point the API has no data for answers 404 with `covered: false`, which the
  * panel shows as a hint rather than as an error.
+ *
+ * `apiRoute` wraps the answer: it adds the Platform calls this route made, so
+ * the API log on the page can show them, and turns an HttpError into its own
+ * status and anything else into a 502.
  */
-export async function GET(request: Request) {
+export const GET = apiRoute("Failed to load climate data.", async (request) => {
   const params = new URL(request.url).searchParams;
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lon"));
   const granularity = params.get("period") ?? "month";
 
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    return Response.json(
-      { error: "lat and lon are required and must be numbers." },
-      { status: 400 },
-    );
+    throw new HttpError(400, "lat and lon are required and must be numbers.");
   }
   if (!GRANULARITIES.some(({ value }) => value === granularity)) {
-    return Response.json(
-      {
-        error: `period must be one of ${GRANULARITIES.map(({ value }) => value).join(", ")}.`,
-      },
-      { status: 400 },
+    throw new HttpError(
+      400,
+      `period must be one of ${GRANULARITIES.map(({ value }) => value).join(", ")}.`,
     );
   }
 
   try {
-    const climate = await climateNormals(
-      latitude,
-      longitude,
-      granularity as Granularity,
-    );
-    return Response.json({ climate });
+    return {
+      climate: await climateNormals(
+        latitude,
+        longitude,
+        granularity as Granularity,
+      ),
+    };
   } catch (error) {
     if (error instanceof NoClimateDataError) {
-      return Response.json(
-        { error: error.message, covered: false },
-        { status: 404 },
-      );
+      throw new HttpError(404, error.message, { covered: false });
     }
-    const message =
-      error instanceof Error ? error.message : "Failed to load climate data.";
-    return Response.json({ error: message }, { status: 502 });
+    throw error;
   }
-}
+});

@@ -67,6 +67,12 @@ export const exampleGroups: ExampleGroup[] = [
           "Click a port on the sea chart to see how deep it is and what it can handle.",
         href: "/marine/ports",
       },
+      {
+        title: "Shipping",
+        description:
+          "Lay out a voyage on the sea chart and read the wind, sea and swell along it.",
+        href: "/marine/shipping",
+      },
     ],
   },
   {

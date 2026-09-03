@@ -1,3 +1,4 @@
+import { apiRoute, HttpError } from "@/lib/platform";
 import { weatherForecast } from "../api";
 
 /**
@@ -7,26 +8,18 @@ import { weatherForecast } from "../api";
  * map; it forwards them to the Weather Forecast API with the API key from
  * INFOPLAZA_API_KEY and returns the forecast it gets back. The key stays
  * server-side.
+ *
+ * `apiRoute` wraps the answer: it adds the Platform calls this route made, so
+ * the API log on the page can show them, and turns a failure into a status.
  */
-export async function GET(request: Request) {
+export const GET = apiRoute("Failed to load the forecast.", async (request) => {
   const params = new URL(request.url).searchParams;
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lon"));
 
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    return Response.json(
-      { error: "lat and lon are required and must be numbers." },
-      { status: 400 },
-    );
+    throw new HttpError(400, "lat and lon are required and must be numbers.");
   }
 
-  try {
-    return Response.json({
-      forecast: await weatherForecast(latitude, longitude),
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to load the forecast.";
-    return Response.json({ error: message }, { status: 502 });
-  }
-}
+  return { forecast: await weatherForecast(latitude, longitude) };
+});

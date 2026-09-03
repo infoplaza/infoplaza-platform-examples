@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson, RouteError } from "@/lib/api-log";
 import {
   DEFAULT_GRANULARITY,
   DEFAULT_LOCATION,
@@ -72,19 +73,17 @@ export function ClimatePanel({
     setLoading(true);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ climate: Climate }>(
         `/weather/climate/normals?lat=${location.latitude}&lon=${location.longitude}&period=${period}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) {
-        setClimate(null);
-        setUncovered(body.covered === false);
-        throw new Error(body.error ?? "Request failed.");
-      }
-      setClimate(body.climate as Climate);
+      setClimate(body.climate);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
+      setClimate(null);
+      // A location the API has no climate year for is not a failure of the
+      // example, so the route marks it and the panel says so in its own words.
+      if (error instanceof RouteError) setUncovered(error.body.covered === false);
       setError(
         error instanceof Error ? error.message : "Failed to load climate data.",
       );

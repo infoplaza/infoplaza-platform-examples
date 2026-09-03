@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   causeColor,
   causeLabel,
@@ -33,7 +34,6 @@ const TrafficMap = dynamic(() => import("./traffic-map"), {
 interface TrafficResponse {
   events?: TrafficEvent[];
   summary?: TrafficSummary;
-  error?: string;
 }
 
 export function TrafficPanel() {
@@ -50,13 +50,13 @@ export function TrafficPanel() {
 
     (async () => {
       try {
-        const response = await fetch("/mobility/traffic/events", {
-          signal: controller.signal,
-        });
-        const body = (await response.json()) as TrafficResponse;
+        const body = await fetchJson<TrafficResponse>(
+          "/mobility/traffic/events",
+          controller.signal,
+        );
 
-        if (!response.ok || !body.events || !body.summary) {
-          throw new Error(body.error ?? "Failed to load traffic.");
+        if (!body.events || !body.summary) {
+          throw new Error("Failed to load traffic.");
         }
         setTraffic({ events: body.events, summary: body.summary });
       } catch (cause) {

@@ -1,3 +1,4 @@
+import { platformGet, type Endpoint } from "@/lib/platform";
 import {
   DEFAULT_SIZES,
   sortSizes,
@@ -14,54 +15,21 @@ import {
  * handlers in ./list and ./info instead. That keeps the key out of the client
  * bundle.
  *
- * API reference:
- * - https://platform.infoplaza.com/reference/v1-port-list
- * - https://platform.infoplaza.com/reference/v1-port-info
+ * The calls go out through @/lib/platform, which attaches the key and records
+ * each request and its answer for the API log at the bottom of the page.
  */
 
-const PORT_LIST_URL = "https://api.infoplaza.com/v1/port/list";
-const PORT_INFO_URL = "https://api.infoplaza.com/v1/port/info";
+const PORT_LIST: Endpoint = {
+  name: "Port List",
+  url: "https://api.infoplaza.com/v1/port/list",
+  docsUrl: "https://platform.infoplaza.com/reference/v1-port-list",
+};
 
-function requireApiKey(): string {
-  const apiKey = process.env.INFOPLAZA_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
-    );
-  }
-  return apiKey;
-}
-
-/** Envelope every Platform REST endpoint wraps its payload in. */
-interface PlatformResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: { message?: string };
-}
-
-/** Calls a Platform endpoint with the API key attached and unwraps `data`. */
-async function platformGet<T>(
-  endpoint: string,
-  params: Record<string, string>,
-): Promise<T> {
-  const url = new URL(endpoint);
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
-  url.searchParams.set("api_key", requireApiKey());
-
-  const response = await fetch(url, { cache: "no-store" });
-  const body = (await response
-    .json()
-    .catch(() => null)) as PlatformResponse<T> | null;
-
-  if (!response.ok || !body?.success || !body.data) {
-    throw new Error(
-      body?.error?.message ?? `Infoplaza returned HTTP ${response.status}.`,
-    );
-  }
-  return body.data;
-}
+const PORT_INFO: Endpoint = {
+  name: "Port Info",
+  url: "https://api.infoplaza.com/v1/port/info",
+  docsUrl: "https://platform.infoplaza.com/reference/v1-port-info",
+};
 
 /** What the list endpoint answers with. */
 interface PortListData {
@@ -85,7 +53,7 @@ export async function portList(
   sizes: PortSize[] = DEFAULT_SIZES,
 ): Promise<Port[]> {
   const requested = sizes.length > 0 ? sortSizes(sizes) : DEFAULT_SIZES;
-  const data = await platformGet<PortListData>(PORT_LIST_URL, {
+  const data = await platformGet<PortListData>(PORT_LIST, {
     size: requested.join(","),
   });
   return data.ports ?? [];
@@ -100,7 +68,7 @@ export async function portList(
  * so that case is turned into a real failure here.
  */
 export async function portInfo(portId: number): Promise<PortInfo> {
-  const data = await platformGet<PortInfo | { error: string }>(PORT_INFO_URL, {
+  const data = await platformGet<PortInfo | { error: string }>(PORT_INFO, {
     portId: String(portId),
   });
 

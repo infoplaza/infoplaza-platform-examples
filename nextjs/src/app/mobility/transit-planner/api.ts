@@ -1,4 +1,11 @@
 import protobuf from "protobufjs";
+import {
+  buildApiCall,
+  platformRequest,
+  requireApiKey,
+  type ApiCall,
+  type Endpoint,
+} from "@/lib/platform";
 import protoJson from "./proto/proto.json";
 import type { PlaceSuggestion } from "./utils";
 
@@ -15,26 +22,30 @@ import type { PlaceSuggestion } from "./utils";
  * transit locations with coordinates, which is how the From and To fields on
  * the page are filled in.
  *
+ * Both are recorded for the API log on the page: the search through
+ * @/lib/platform like every other REST call, the socket by hand, because
+ * there is no request and response to record until the mixer is done.
+ *
  * API reference: https://platform.infoplaza.com/reference/v1-transit-plannermixer
  * API reference: https://platform.infoplaza.com/reference/v1-transit-planner-search
  */
 
-const TRANSIT_PLANNER_URL = "wss://api.infoplaza.com/v1/transit/plannermixer";
-const PLANNER_SEARCH_URL =
-  "https://api.infoplaza.com/v1/transit/planner/search";
+const TRANSIT_PLANNER: Endpoint = {
+  name: "Transit Planner Mixer",
+  url: "wss://api.infoplaza.com/v1/transit/plannermixer",
+  docsUrl:
+    "https://platform.infoplaza.com/reference/v1-transit-plannermixer",
+};
+
+const PLANNER_SEARCH: Endpoint = {
+  name: "Transit Planner Search",
+  url: "https://api.infoplaza.com/v1/transit/planner/search",
+  docsUrl:
+    "https://platform.infoplaza.com/reference/v1-transit-planner-search",
+};
 
 /** How long to wait for results before closing the socket ourselves. */
 const SOCKET_TIMEOUT_MS = 30_000;
-
-function requireApiKey(): string {
-  const apiKey = process.env.INFOPLAZA_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
-    );
-  }
-  return apiKey;
-}
 
 const root = protobuf.Root.fromJSON(protoJson as protobuf.INamespace);
 const PlanRequest = root.lookupType("planner.PlanRequest");
@@ -58,6 +69,13 @@ export interface TransitPlannerHandlers {
   onClose(): void;
   /** Called instead of onClose when the connection fails. */
   onError(error: Error): void;
+  /**
+   * Called once the socket is finished, with the whole exchange as one record
+   * for the API log: the request that was sent and every result that came
+   * back. A socket has no single answer to record while it is open, so this
+   * arrives last, just before onClose or onError.
+   */
+  onApiCall(call: ApiCall): void;
 }
 
 /**
@@ -69,17 +87,45 @@ export function openTransitPlanner(
   request: TransitPlannerRequest,
   handlers: TransitPlannerHandlers,
 ): { close(): void } {
-  const socket = new WebSocket(
-    `${TRANSIT_PLANNER_URL}?api_key=${requireApiKey()}`,
-  );
+  const url = `${TRANSIT_PLANNER.url}?api_key=${requireApiKey()}`;
+  const socket = new WebSocket(url);
   socket.binaryType = "arraybuffer";
   const timeout = setTimeout(() => socket.close(), SOCKET_TIMEOUT_MS);
+
+  // What the exchange is reported as once it is over: the PlanRequest that
+  // was encoded, and the results that came back decoded.
+  const startedAt = Date.now();
+  const clockedAt = performance.now();
+  let sent = "";
+  const received: Record<string, unknown>[] = [];
 
   let settled = false;
   const settle = (error?: Error) => {
     if (settled) return;
     settled = true;
     clearTimeout(timeout);
+
+    handlers.onApiCall(
+      buildApiCall({
+        endpoint: TRANSIT_PLANNER,
+        method: "WS",
+        url,
+        requestBody: sent,
+        // A socket that opened and did its work has no status of its own;
+        // 101 is the handshake that got it there.
+        status: error ? 502 : 101,
+        durationMs: performance.now() - clockedAt,
+        startedAt,
+        body: error
+          ? error.message
+          : JSON.stringify(
+              { messages: received.length, results: received },
+              null,
+              2,
+            ),
+      }),
+    );
+
     if (error) handlers.onError(error);
     else handlers.onClose();
   };
@@ -91,12 +137,17 @@ export function openTransitPlanner(
       timestamp: request.timestamp ?? new Date().toISOString(),
       arriveBy: request.arriveBy,
     });
+    // Recorded as JSON rather than as the protobuf bytes actually sent: the
+    // bytes say nothing to read, and these are the fields they encode.
+    sent = JSON.stringify(PlanRequest.toObject(message), null, 2);
     socket.send(PlanRequest.encode(message).finish());
   };
 
   socket.onmessage = (event) => {
     const result = PlanResult.decode(new Uint8Array(event.data as ArrayBuffer));
-    handlers.onResult(PlanResult.toObject(result, { enums: String }));
+    const decoded = PlanResult.toObject(result, { enums: String });
+    received.push(decoded);
+    handlers.onResult(decoded);
   };
 
   socket.onerror = () => settle(new Error("Transit Planner socket error"));
@@ -110,13 +161,6 @@ export function openTransitPlanner(
   };
 }
 
-/** Envelope every Platform REST endpoint wraps its payload in. */
-interface PlatformResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: { message?: string };
-}
-
 /**
  * Looks up transit locations (stations, stops, addresses) matching a search
  * term. Used to turn what someone types into the coordinates the Planner
@@ -126,20 +170,13 @@ export async function searchPlaces(
   query: string,
   limit = 8,
 ): Promise<PlaceSuggestion[]> {
-  const url = new URL(PLANNER_SEARCH_URL);
-  url.searchParams.set("query", query);
-  url.searchParams.set("limit", String(limit));
-  url.searchParams.set("api_key", requireApiKey());
-
-  const response = await fetch(url, { cache: "no-store" });
-  const body = (await response.json().catch(() => null)) as PlatformResponse<{
+  const { status, ok, body } = await platformRequest<{
     items?: PlaceSuggestion[];
-  }> | null;
+  }>(PLANNER_SEARCH, { query, limit: String(limit) });
 
-  if (!response.ok || !body?.success) {
+  if (!ok || !body?.success) {
     throw new Error(
-      body?.error?.message ??
-        `Planner Search returned HTTP ${response.status}.`,
+      body?.error?.message ?? `Planner Search returned HTTP ${status}.`,
     );
   }
   return body.data?.items ?? [];

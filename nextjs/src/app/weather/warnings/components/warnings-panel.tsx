@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   countryFlag,
   DEFAULT_LANGUAGE,
@@ -79,12 +80,10 @@ export function WarningsPanel({
     setSelected(null);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ warnings?: Warning[] }>(
         `/weather/warnings/lookup?lat=${location.latitude}&lon=${location.longitude}&language=${code}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
 
       const found: Warning[] = body.warnings ?? [];
       setWarnings(found);

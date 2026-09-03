@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ApiLink, ExamplePage } from "@/components/example-page";
+import { collectApiCalls } from "@/lib/platform";
 import { weatherWarnings } from "./api";
 import { WarningsPanel } from "./components/warnings-panel";
 import { DEFAULT_LOCATION, type Warning } from "./utils";
@@ -33,34 +35,33 @@ async function initialWarnings(): Promise<{
 }
 
 export default async function WeatherWarningsPage() {
-  const { warnings, error } = await initialWarnings();
+  // The call made while rendering is recorded like the ones the panel makes
+  // later, so the API log opens with the request behind what is on screen.
+  const { result, apiCalls } = await collectApiCalls(initialWarnings);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        Weather
-      </p>
-      <h1 className="mt-1 text-2xl font-semibold">Weather Warnings</h1>
-      <p className="mt-2 text-gray-600">
-        Pick a spot on the map to see the severe weather warned about there
-        with the{" "}
-        <a
-          href="https://platform.infoplaza.com/reference/v1-weather-warnings"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          Weather Warnings API
-        </a>
-        . One call answers for one point with the warnings the national
-        services have in force for it — heat, thunderstorms, wind, wildfire —
-        each with the colour code it was issued under and the text explaining
-        what to expect.
-      </p>
-
-      <div className="mt-8">
-        <WarningsPanel initialWarnings={warnings} initialError={error} />
-      </div>
-    </div>
+    <ExamplePage
+      group="Weather"
+      title="Weather Warnings"
+      apiCalls={apiCalls}
+      intro={
+        <>
+          Pick a spot on the map to see the severe weather warned about there
+          with the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-warnings">
+            Weather Warnings API
+          </ApiLink>
+          . One call answers for one point with the warnings the national
+          services have in force for it — heat, thunderstorms, wind, wildfire —
+          each with the colour code it was issued under and the text explaining
+          what to expect.
+        </>
+      }
+    >
+      <WarningsPanel
+        initialWarnings={result.warnings}
+        initialError={result.error}
+      />
+    </ExamplePage>
   );
 }

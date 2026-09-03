@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   DEFAULT_LANGUAGE,
   DEFAULT_QUERY,
@@ -71,12 +72,10 @@ export function GeoSearchPanel({
     setSelectedKey(null);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ places?: Place[] }>(
         `/geo/search/places?query=${encodeURIComponent(term)}&language=${code}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
       setPlaces(body.places ?? []);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;

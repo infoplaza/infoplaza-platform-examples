@@ -15,6 +15,10 @@ import { COORDINATE_PAIR } from "../utils";
  * custom Node.js server, which serverless hosts do not run. Only the browser
  * leg changes — the upstream connection is still the WebSocket the Planner
  * Mixer speaks.
+ *
+ * The stream carries the API log along with the results: an `api-call` event
+ * with the whole socket exchange once the mixer is done. The REST routes get
+ * the same thing from `apiRoute`; a stream has to send it as it goes.
  */
 
 /** The stream stays open while the mixer works; never prerender this route. */
@@ -64,6 +68,9 @@ export async function GET(request: Request) {
             // server-sent "error" event to the same listener as connection
             // failures, which makes the two impossible to tell apart.
             onResult: (result) => send(`data: ${JSON.stringify(result)}\n\n`),
+            // The socket as one record for the API log. It arrives before
+            // the stream ends, so the page has it either way.
+            onApiCall: (call) => send(event("api-call", call)),
             onClose: () => {
               send(event("done", {}));
               close();

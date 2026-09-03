@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   DEFAULT_LOCATION,
   distanceMeters,
@@ -79,12 +80,10 @@ export function TransitStopsPanel({
     setLoadingDepartures(false);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ stopplaces?: StopPlace[] }>(
         `/mobility/transit-stops/nearby?lat=${location.latitude}&lon=${location.longitude}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
       setStops(sortByDistance(body.stopplaces ?? [], location));
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
@@ -108,12 +107,10 @@ export function TransitStopsPanel({
     setLoadingDepartures(true);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ departures?: Departure[] }>(
         `/mobility/transit-stops/departures?stopplace_id=${encodeURIComponent(stop.id)}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
       setDepartures(body.departures ?? []);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;

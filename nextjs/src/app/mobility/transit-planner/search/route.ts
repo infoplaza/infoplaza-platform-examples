@@ -1,3 +1,4 @@
+import { apiRoute } from "@/lib/platform";
 import { searchPlaces } from "../api";
 
 /**
@@ -7,35 +8,31 @@ import { searchPlaces } from "../api";
  * the Transit Planner Search API with the API key from INFOPLAZA_API_KEY and
  * returns the matching locations. Same reason as the WebSocket proxy: the key
  * stays on the server.
+ *
+ * `apiRoute` wraps the answer: it adds the Platform calls this route made, so
+ * the API log on the page can show them, and turns a failure into a status.
  */
 
 /** Below this the search term is too broad to be useful. */
 const MIN_QUERY_LENGTH = 2;
 
-export async function GET(request: Request) {
-  const query =
-    new URL(request.url).searchParams.get("query")?.trim() ?? "";
+export const GET = apiRoute("Failed to search places.", async (request) => {
+  const query = new URL(request.url).searchParams.get("query")?.trim() ?? "";
 
-  if (query.length < MIN_QUERY_LENGTH) {
-    return Response.json({ items: [] });
-  }
+  // A term this short is not asked about at all, so this answer costs no call.
+  if (query.length < MIN_QUERY_LENGTH) return { items: [] };
 
-  try {
-    const items = await searchPlaces(query);
-    // Results also carry the lines serving each stop; the fields below are
-    // all the suggestion list needs, so we leave the rest on the server.
-    return Response.json({
-      items: items.map(({ name, city, type, stopid, location }) => ({
-        name,
-        city,
-        type,
-        stopid,
-        location,
-      })),
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to search places.";
-    return Response.json({ error: message }, { status: 502 });
-  }
-}
+  const items = await searchPlaces(query);
+
+  // Results also carry the lines serving each stop; the fields below are
+  // all the suggestion list needs, so we leave the rest on the server.
+  return {
+    items: items.map(({ name, city, type, stopid, location }) => ({
+      name,
+      city,
+      type,
+      stopid,
+      location,
+    })),
+  };
+});

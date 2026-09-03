@@ -1,6 +1,7 @@
 "use client";
 
 import { KeyboardEvent, useEffect, useId, useState } from "react";
+import { fetchJson } from "@/lib/api-log";
 import {
   PlaceField,
   placeField,
@@ -59,11 +60,10 @@ export function PlaceInput({
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(
+        const body = await fetchJson<{ items?: PlaceSuggestion[] }>(
           `/mobility/transit-planner/search?query=${encodeURIComponent(query)}`,
-          { signal: controller.signal },
+          controller.signal,
         );
-        const body = await response.json();
         setResults({ query, items: body.items ?? [] });
         setHighlighted(0);
       } catch {

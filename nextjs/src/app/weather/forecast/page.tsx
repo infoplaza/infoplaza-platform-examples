@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ApiLink, ExamplePage } from "@/components/example-page";
+import { collectApiCalls } from "@/lib/platform";
 import { weatherForecast } from "./api";
 import { ForecastPanel } from "./components/forecast-panel";
 import { DEFAULT_LOCATION, FORECAST_LIMITS, type Forecast } from "./utils";
@@ -33,34 +35,33 @@ async function initialForecast(): Promise<{
 }
 
 export default async function WeatherForecastPage() {
-  const { forecast, error } = await initialForecast();
+  // The call made while rendering is recorded like the ones the panel makes
+  // later, so the API log opens with the request behind what is on screen.
+  const { result, apiCalls } = await collectApiCalls(initialForecast);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        Weather
-      </p>
-      <h1 className="mt-1 text-2xl font-semibold">Forecast</h1>
-      <p className="mt-2 text-gray-600">
-        Pick a spot on the map to see the weather forecast for it with the{" "}
-        <a
-          href="https://platform.infoplaza.com/reference/v1-weather-forecast"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          Weather Forecast API
-        </a>
-        . One call answers with five blocks at once — what it is doing now,
-        then the next {FORECAST_LIMITS.minutely} minutes of precipitation,{" "}
-        {FORECAST_LIMITS.hourly} hours, {FORECAST_LIMITS.daypartly} dayparts
-        and {FORECAST_LIMITS.daily} days — so the tabs below the map cost one
-        request between them, not one each.
-      </p>
-
-      <div className="mt-8">
-        <ForecastPanel initialForecast={forecast} initialError={error} />
-      </div>
-    </div>
+    <ExamplePage
+      group="Weather"
+      title="Forecast"
+      apiCalls={apiCalls}
+      intro={
+        <>
+          Pick a spot on the map to see the weather forecast for it with the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-forecast">
+            Weather Forecast API
+          </ApiLink>
+          . One call answers with five blocks at once — what it is doing now,
+          then the next {FORECAST_LIMITS.minutely} minutes of precipitation,{" "}
+          {FORECAST_LIMITS.hourly} hours, {FORECAST_LIMITS.daypartly} dayparts
+          and {FORECAST_LIMITS.daily} days — so the tabs below the map cost one
+          request between them, not one each.
+        </>
+      }
+    >
+      <ForecastPanel
+        initialForecast={result.forecast}
+        initialError={result.error}
+      />
+    </ExamplePage>
   );
 }

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ApiLink, ExamplePage } from "@/components/example-page";
+import { collectApiCalls } from "@/lib/platform";
 import { nearbyPlaces } from "./api";
 import { GeoNearbyPanel } from "./components/geo-nearby-panel";
 import {
@@ -41,33 +43,33 @@ async function initialPlaces(): Promise<{
 }
 
 export default async function GeoNearbyPage() {
-  const { places, error } = await initialPlaces();
+  // The calls made while rendering are recorded like the ones the panel makes
+  // later, so the API log opens with the requests behind what is on screen —
+  // one per radius, which is what makes this example worth watching.
+  const { result, apiCalls } = await collectApiCalls(initialPlaces);
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
-        Geo
-      </p>
-      <h1 className="mt-1 text-2xl font-semibold">Geo Nearby</h1>
-      <p className="mt-2 text-gray-600">
-        Pick a spot on the map to find the places around it with the{" "}
-        <a
-          href="https://platform.infoplaza.com/reference/v1-geo-nearby"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
-        >
-          Geo Nearby API
-        </a>
-        . One call answers with one place, the most prominent one within the
-        radius asked for, so this example asks {SEARCH_RADII.length} times — from{" "}
-        {formatRadius(SEARCH_RADII[0])} out to {formatRadius(MAX_RADIUS)} — and
-        collects the distinct answers into the list below.
-      </p>
-
-      <div className="mt-8">
-        <GeoNearbyPanel initialPlaces={places} initialError={error} />
-      </div>
-    </div>
+    <ExamplePage
+      group="Geo"
+      title="Geo Nearby"
+      apiCalls={apiCalls}
+      intro={
+        <>
+          Pick a spot on the map to find the places around it with the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-geo-nearby">
+            Geo Nearby API
+          </ApiLink>
+          . One call answers with one place, the most prominent one within the
+          radius asked for, so this example asks {SEARCH_RADII.length} times —
+          from {formatRadius(SEARCH_RADII[0])} out to {formatRadius(MAX_RADIUS)}{" "}
+          — and collects the distinct answers into the list below.
+        </>
+      }
+    >
+      <GeoNearbyPanel
+        initialPlaces={result.places}
+        initialError={result.error}
+      />
+    </ExamplePage>
   );
 }

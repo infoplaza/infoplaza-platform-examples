@@ -1,3 +1,4 @@
+import { platformGet, type Endpoint } from "@/lib/platform";
 import type { Departure, StopPlace } from "./utils";
 
 /**
@@ -8,54 +9,22 @@ import type { Departure, StopPlace } from "./utils";
  * handlers in ./nearby and ./departures instead. That keeps the key out of
  * the client bundle.
  *
- * API reference: https://platform.infoplaza.com/reference/v1-transit-stop-nearby
- * API reference: https://platform.infoplaza.com/reference/v1-transit-stop-departures
+ * The calls go out through @/lib/platform, which attaches the key and records
+ * each request and its answer for the API log at the bottom of the page.
  */
 
-const STOP_NEARBY_URL = "https://api.infoplaza.com/v1/transit/stop/nearby";
-const STOP_DEPARTURES_URL =
-  "https://api.infoplaza.com/v1/transit/stop/departures";
+const STOP_NEARBY: Endpoint = {
+  name: "Transit Stop Nearby",
+  url: "https://api.infoplaza.com/v1/transit/stop/nearby",
+  docsUrl: "https://platform.infoplaza.com/reference/v1-transit-stop-nearby",
+};
 
-function requireApiKey(): string {
-  const apiKey = process.env.INFOPLAZA_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      "INFOPLAZA_API_KEY is not set. Copy .env.example to .env.local and add your API key.",
-    );
-  }
-  return apiKey;
-}
-
-/** Envelope every Platform REST endpoint wraps its payload in. */
-interface PlatformResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: { message?: string };
-}
-
-/** Calls a Platform endpoint with the API key attached and unwraps `data`. */
-async function platformGet<T>(
-  endpoint: string,
-  params: Record<string, string>,
-): Promise<T> {
-  const url = new URL(endpoint);
-  for (const [key, value] of Object.entries(params)) {
-    url.searchParams.set(key, value);
-  }
-  url.searchParams.set("api_key", requireApiKey());
-
-  const response = await fetch(url, { cache: "no-store" });
-  const body = (await response
-    .json()
-    .catch(() => null)) as PlatformResponse<T> | null;
-
-  if (!response.ok || !body?.success || !body.data) {
-    throw new Error(
-      body?.error?.message ?? `Infoplaza returned HTTP ${response.status}.`,
-    );
-  }
-  return body.data;
-}
+const STOP_DEPARTURES: Endpoint = {
+  name: "Transit Stop Departures",
+  url: "https://api.infoplaza.com/v1/transit/stop/departures",
+  docsUrl:
+    "https://platform.infoplaza.com/reference/v1-transit-stop-departures",
+};
 
 /**
  * Transit stops around a point. The API widens its own radius when the area
@@ -66,10 +35,10 @@ export async function nearbyStops(
   latitude: number,
   longitude: number,
 ): Promise<StopPlace[]> {
-  const data = await platformGet<{ stopplaces?: StopPlace[] }>(
-    STOP_NEARBY_URL,
-    { lat: String(latitude), lon: String(longitude) },
-  );
+  const data = await platformGet<{ stopplaces?: StopPlace[] }>(STOP_NEARBY, {
+    lat: String(latitude),
+    lon: String(longitude),
+  });
   return data.stopplaces ?? [];
 }
 
@@ -85,7 +54,7 @@ export async function stopDepartures(stopPlaceId: string): Promise<{
   const data = await platformGet<{
     stopplace: StopPlace;
     departures?: Departure[];
-  }>(STOP_DEPARTURES_URL, { stopplace_id: stopPlaceId });
+  }>(STOP_DEPARTURES, { stopplace_id: stopPlaceId });
 
   return { stopplace: data.stopplace, departures: data.departures ?? [] };
 }

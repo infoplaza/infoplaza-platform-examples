@@ -77,13 +77,20 @@ nextjs/
 │   │   │       ├── utils.ts            #   Types and formatting helpers
 │   │   │       └── components/         #   Search panel, list and map
 │   │   ├── marine/
-│   │   │   └── ports/
+│   │   │   ├── ports/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── api.ts              #   Port List + Port Info API clients
+│   │   │   │   ├── list/route.ts       #   Port-list proxy the browser calls
+│   │   │   │   ├── info/route.ts       #   Port-info proxy the browser calls
+│   │   │   │   ├── utils.ts            #   Types, sizes and label helpers
+│   │   │   │   └── components/         #   Panel, sea chart and details
+│   │   │   └── shipping/
 │   │   │       ├── page.tsx            #   Page
-│   │   │       ├── api.ts              #   Port List + Port Info API clients
-│   │   │       ├── list/route.ts       #   Port-list proxy the browser calls
-│   │   │       ├── info/route.ts       #   Port-info proxy the browser calls
-│   │   │       ├── utils.ts            #   Types, sizes and label helpers
-│   │   │       └── components/         #   Panel, sea chart and details
+│   │   │       ├── api.ts              #   Shipping Route + Point API clients
+│   │   │       ├── route/route.ts      #   Route-forecast proxy the browser calls
+│   │   │       ├── point/route.ts      #   Point-forecast proxy the browser calls
+│   │   │       ├── utils.ts            #   Types, columns and formatting helpers
+│   │   │       └── components/         #   Panel, sea chart and forecast tables
 │   │   └── mobility/
 │   │       ├── transit-planner/
 │   │       │   ├── page.tsx            #   Page
@@ -356,6 +363,62 @@ answer visible instead of reading it as a no: an unsurveyed port is not a port
 without cranes. A port id that does not exist is not an error to the endpoint
 — it answers 200 with an `error` string where the port should be — so
 [`portInfo`](src/app/marine/ports/api.ts) turns that into a real failure.
+
+### Marine — Shipping
+
+Lays a voyage out on the sea chart and reads the weather along it with the
+[Shipping Route API](https://platform.infoplaza.com/reference/v1-marine-shipping-route),
+then answers for a single waypoint with the
+[Shipping Point API](https://platform.infoplaza.com/reference/v1-marine-shipping-point).
+
+Both endpoints take the key as a query parameter, so the browser calls the
+route handlers in [`route/`](src/app/marine/shipping/route/route.ts) and
+[`point/`](src/app/marine/shipping/point/route.ts), which add
+`INFOPLAZA_API_KEY` server-side.
+
+Clicking the [chart](src/app/marine/shipping/components/shipping-map.tsx) adds
+a waypoint, dragging one moves it, and clicking one asks for the point
+forecast there. The waypoints are DOM markers rather than a layer: there are
+only ever a handful, MapLibre already drags markers, and their clicks never
+reach the map — which is what keeps selecting a waypoint from dropping a new
+one underneath it. A drag ends with a click on the marker, so the marker
+remembers it was dragged and lets that one go. The track and its hourly
+positions are a GeoJSON source, redrawn whenever the voyage changes. The 2D/3D
+switch is the map's projection: mercator is the flat chart, globe is the
+sphere it is drawn from, which is worth seeing on a long leg — a great circle
+is a curve on the flat map and a straight line on the globe.
+
+The route request takes the waypoints, a departure, a speed and a routing.
+Three things about it are worth knowing:
+
+- `speeds` is per leg, and takes a value for every waypoint or one fewer and
+  nothing else, so the single speed the form offers is repeated across the
+  legs in [`shippingRoute`](src/app/marine/shipping/api.ts).
+- `speeds` is in knots, whatever the reference says: a voyage asked for at 30
+  comes back covering 15.4 metres a second, which is 30 knots and not 30 km/h.
+- `distance` and `distanceTime` are measured from the last waypoint rather
+  than from the departure, so both start over at every waypoint.
+  [`sailedDistances`](src/app/marine/shipping/utils.ts) adds the legs up, and
+  the passage is taken as the time from leaving to arriving.
+
+Leaving the departure empty is not a missing departure: the API reads no
+`start` as leaving now, and answers with the moment it used. `Date.parse`
+would not have said so — it reads an empty field as `":00Z"` and hands back
+the first of January 2000 — so the field is checked for shape before it is
+parsed.
+
+Both endpoints answer in the same shape: a list of elements, each one quantity
+from one model with its own unit and an array of values. A row of either
+[table](src/app/marine/shipping/components/forecast-tables.tsx) is one index
+into all of those arrays, which is why the two tables share their cells. The
+columns are the nine readings a bridge works from; clicking a row opens the
+other fifteen underneath it, per model. An element the API could not answer —
+the currents are regularly a run behind — comes back with an `error` and an
+empty array, which is shown as unanswered rather than failing the forecast.
+
+The route forecast reads one hour at each position; the point forecast is the
+whole model run at one spot, so the hours either side of the passage can be
+read as well. The hour the ship is there is marked and scrolled to.
 
 ### Mobility — Transit Planner
 

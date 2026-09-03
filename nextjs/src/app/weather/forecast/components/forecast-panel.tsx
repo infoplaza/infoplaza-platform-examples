@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { fetchJson } from "@/lib/api-log";
 import {
   BLOCKS,
   DEFAULT_LOCATION,
@@ -63,13 +64,11 @@ export function ForecastPanel({
     setLoading(true);
 
     try {
-      const response = await fetch(
+      const body = await fetchJson<{ forecast: Forecast }>(
         `/weather/forecast/lookup?lat=${location.latitude}&lon=${location.longitude}`,
-        { signal: controller.signal },
+        controller.signal,
       );
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Request failed.");
-      setForecast(body.forecast as Forecast);
+      setForecast(body.forecast);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
       setForecast(null);
