@@ -1,39 +1,39 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import type { ApiCall } from "./api-call";
 
 /**
- * The browser's side of the API log: a small store the panel at the bottom of
- * every page reads from, and the fetch helper that fills it.
+ * The browser's side of the API log: a small store the drawer reads from, and
+ * the fetch helper that fills it.
  *
  * It sits outside React because the recordings arrive from ordinary fetch
  * helpers, some of them module-level functions rather than components. A
  * plain store with `useSyncExternalStore` lets any of them report a call
  * without threading a context through the panel.
+ *
+ * The log holds one visit to one example: opening another example empties it,
+ * which the drawer does as it goes. So what is listed is always what the
+ * example on screen has asked, and nothing from before it.
  */
-
-/** A recorded call, with the page it was made from. */
-export interface LoggedApiCall extends ApiCall {
-  page: string;
-}
 
 /** Enough to look back over a session of clicking; the rest falls off. */
 const MAX_CALLS = 50;
 
-let calls: LoggedApiCall[] = [];
+let calls: ApiCall[] = [];
 const listeners = new Set<() => void>();
 
 /** Stable empty snapshot, so server rendering has nothing to hydrate wrong. */
-const NONE: LoggedApiCall[] = [];
+const NONE: ApiCall[] = [];
 
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-function publish(next: LoggedApiCall[]): void {
+function publish(next: ApiCall[]): void {
   calls = next;
   for (const listener of listeners) listener();
 }
@@ -43,46 +43,32 @@ function publish(next: LoggedApiCall[]): void {
  *
  * The newest lookup goes on top, and the calls within it stay in the order
  * they went out — a lookup that fans out into seven calls reads down the
- * page the way it happened. Ids that are already listed are ignored, so a
+ * drawer the way it happened. Ids that are already listed are ignored, so a
  * recording that arrives twice — React runs effects twice in development —
  * is only shown once.
  */
-export function recordApiCalls(
-  recorded: ApiCall[] | undefined,
-  page: string = window.location.pathname,
-): void {
+export function recordApiCalls(recorded: ApiCall[] | undefined): void {
   if (!recorded?.length) return;
 
   const known = new Set(calls.map((call) => call.id));
-  const added = recorded
-    .filter((call) => !known.has(call.id))
-    .map((call) => ({ ...call, page }));
+  const added = recorded.filter((call) => !known.has(call.id));
   if (added.length === 0) return;
 
   publish([...added, ...calls].slice(0, MAX_CALLS));
 }
 
-/** Empties the log for one page, leaving the other pages' calls alone. */
-export function clearApiCalls(page: string): void {
-  publish(calls.filter((call) => call.page !== page));
+/** Empties the log. Done on the Clear button, and on leaving an example. */
+export function clearApiCalls(): void {
+  if (calls.length === 0) return;
+  publish([]);
 }
 
-/**
- * The calls made from the page this is rendered on. Filtering by page rather
- * than clearing on navigation keeps a request that is still in flight from
- * wiping the log of the page it lands on.
- */
-export function useApiCalls(): LoggedApiCall[] {
-  const pathname = usePathname();
-  const all = useSyncExternalStore(
+/** The calls made since this example was opened, newest lookup first. */
+export function useApiCalls(): ApiCall[] {
+  return useSyncExternalStore(
     subscribe,
     () => calls,
     () => NONE,
-  );
-
-  return useMemo(
-    () => all.filter((call) => call.page === pathname),
-    [all, pathname],
   );
 }
 

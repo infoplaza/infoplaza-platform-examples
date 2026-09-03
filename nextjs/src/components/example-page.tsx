@@ -7,7 +7,8 @@ import type { ApiCall } from "@/lib/api-call";
  * the example itself, and the log of the Platform requests it made.
  *
  * Having it in one place is what makes the API log arrive in the same spot on
- * every page — and keeps a new example from having to remember it.
+ * every page — a drawer down the right-hand side, a button in the corner when
+ * it is closed — and keeps a new example from having to remember it.
  */
 export function ExamplePage({
   group,
@@ -41,6 +42,8 @@ export function ExamplePage({
 
       <div className="mt-8">{children}</div>
 
+      {/* Fixed to the right of the viewport, so where it sits here does not
+          matter; it is rendered last because that is where it belongs. */}
       <ApiLog initialCalls={apiCalls} />
     </div>
   );

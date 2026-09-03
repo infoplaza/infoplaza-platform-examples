@@ -112,13 +112,39 @@ nextjs/
 │   │           ├── api.ts              #   Traffic Geo + Overview API clients
 │   │           ├── utils.ts            #   Types, merge and formatting helpers
 │   │           └── components/         #   Map and list
-│   ├── components/                     # Shared components (sidebar)
+│   ├── components/                     # Shared components
+│   │   ├── sidebar.tsx                 #   Navigation down the left
+│   │   ├── example-page.tsx            #   The frame every example page uses
+│   │   └── api-log.tsx                 #   The API request drawer on the right
 │   └── lib/
-│       └── examples.ts                 # Registry of all examples
+│       ├── examples.ts                 # Registry of all examples
+│       ├── platform.ts                 # Calling the Platform, server-side
+│       ├── api-call.ts                 # What one recorded call looks like
+│       └── api-log.ts                  # The recorded calls, browser-side
 ├── public/                             # Static assets
 │   └── weather-icons/                  # The extended weather icon set, one SVG per code
 └── package.json
 ```
+
+Every example talks to the Platform the same way, through
+[`src/lib/platform.ts`](src/lib/platform.ts). It attaches the API key, unwraps
+the envelope the endpoints answer in, and records the call. The route handlers
+wrap their work in `apiRoute` from the same module, which returns the payload
+with the calls that produced it and turns a failure into a status.
+
+Those recordings are what fills the **API requests** drawer on the right of
+every example page. The calls that matter are made on the server, so the
+browser's own network tab shows nothing but the route handler in front of them;
+the drawer shows the real ones — the URL with the key replaced by a
+placeholder, the parameters, how long it took and the answer that came back,
+with a cURL command to try it yourself. Pages that load their opening state
+while rendering pass those calls to
+[`ExamplePage`](src/components/example-page.tsx), so the drawer is filled before
+anything has been clicked. The log holds one visit to one example: opening
+another one empties it, so what is listed is always what the example on screen
+has asked. The Transit Planner has no request and response to
+record, so its route sends the whole socket exchange as an `api-call` event on
+the stream instead.
 
 The Transit Planner speaks WebSocket, and a Next.js route handler cannot
 upgrade to one. Rather than run a custom server for that, the browser leg uses
