@@ -42,7 +42,7 @@ function publish(next: ApiCall[]): void {
  * Files the calls a route handler reported.
  *
  * The newest lookup goes on top, and the calls within it stay in the order
- * they went out — a lookup that fans out into seven calls reads down the
+ * they went out, so a lookup that fans out into several calls reads down the
  * drawer the way it happened. Ids that are already listed are ignored, so a
  * recording that arrives twice — React runs effects twice in development —
  * is only shown once.

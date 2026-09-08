@@ -24,7 +24,7 @@ export const exampleGroups: ExampleGroup[] = [
       {
         title: "Nearby",
         description:
-          "Pick a spot on the map to find the places around it, from village to region.",
+          "Pick a spot on the map and a radius to find the place around it.",
         href: "/geo/nearby",
       },
       {

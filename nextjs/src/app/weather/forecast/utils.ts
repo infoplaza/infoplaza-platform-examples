@@ -150,37 +150,103 @@ export interface Forecast {
   daily: Day[];
 }
 
-/**
- * How much of each block to ask for.
- *
- * These are the API's own defaults, and staying at or below them keeps a call
- * at 1 credit; asking for more of any block costs 3. The ceilings are 120
- * minutes, 168 hours, 15 days and 30 dayparts, so there is room to go
- * further — at the higher price.
- */
-export const FORECAST_LIMITS = {
-  /** Minutes of precipitation forecast. Steps are five minutes apart. */
-  minutely: 60,
-  hourly: 48,
-  daily: 5,
-  daypartly: 8,
-};
-
-/** Houten — the point the API reference uses in its own example. */
+/** Houten, the point the API reference uses in its own example. */
 export const DEFAULT_LOCATION: LatLon = {
   latitude: 52.02,
   longitude: 5.16,
 };
 
-/** The blocks the forecast is shown in, in the order the tabs offer them. */
-export const BLOCKS = [
-  { value: "minutely", label: "Minutely" },
-  { value: "hourly", label: "Hourly" },
-  { value: "daypartly", label: "Dayparts" },
-  { value: "daily", label: "Daily" },
-] as const;
+/** The four blocks the forecast is shown in, one per tab. */
+export type BlockName = "minutely" | "hourly" | "daypartly" | "daily";
 
-export type BlockName = (typeof BLOCKS)[number]["value"];
+interface Block {
+  value: BlockName;
+  label: string;
+  /** What the block's `max_*` parameter counts. */
+  unit: string;
+  /** The sizes the picker offers: the API's default first, its ceiling last. */
+  sizes: readonly number[];
+}
+
+/**
+ * The blocks in the order the tabs offer them, each with the sizes it can be
+ * asked for.
+ *
+ * The size of a block is a `max_*` parameter on the one call, so the four
+ * travel together and every tab is filled by the same request. The first size
+ * listed is the API's own default and the last is its ceiling: leaving all
+ * four at their default keeps a call at 1 credit, and raising any single one
+ * of them puts the whole call at 3, which the API log at the bottom of the
+ * page reports back.
+ *
+ * `minutely` counts minutes rather than steps: the answer comes in
+ * five-minute steps, so 60 returns twelve of them.
+ */
+export const BLOCKS: readonly Block[] = [
+  {
+    value: "minutely",
+    label: "Minutely",
+    unit: "minutes",
+    sizes: [60, 90, 120],
+  },
+  {
+    value: "hourly",
+    label: "Hourly",
+    unit: "hours",
+    sizes: [48, 72, 120, 168],
+  },
+  {
+    value: "daypartly",
+    label: "Dayparts",
+    unit: "dayparts",
+    sizes: [8, 12, 20, 30],
+  },
+  { value: "daily", label: "Daily", unit: "days", sizes: [5, 7, 10, 15] },
+];
+
+/** How much of each block to ask for: one `max_*` parameter per block. */
+export type ForecastSizes = Record<BlockName, number>;
+
+/** The block a tab stands for, with its label and the sizes it offers. */
+export function blockByName(name: BlockName): Block {
+  return BLOCKS.find((block) => block.value === name) ?? BLOCKS[0];
+}
+
+/** The API's own defaults, which are the first size every block offers. */
+export const FORECAST_DEFAULTS: ForecastSizes = Object.fromEntries(
+  BLOCKS.map((block) => [block.value, block.sizes[0]]),
+) as ForecastSizes;
+
+/** Whether nothing is raised above its default, so the call costs 1 credit. */
+export function isDefaultSizes(sizes: ForecastSizes): boolean {
+  return BLOCKS.every(
+    (block) => sizes[block.value] <= FORECAST_DEFAULTS[block.value],
+  );
+}
+
+/**
+ * The sizes a request asked for, kept inside what the API accepts.
+ *
+ * The panel only ever sends sizes from the lists above, but the route handler
+ * is a URL anyone can type, so a missing, unreadable or out-of-range number
+ * falls back to the default instead of reaching the API.
+ */
+export function readSizes(params: URLSearchParams): ForecastSizes {
+  const sizes = { ...FORECAST_DEFAULTS };
+
+  for (const block of BLOCKS) {
+    const asked = params.get(block.value);
+    if (!asked) continue;
+
+    const size = Number(asked);
+    const ceiling = block.sizes[block.sizes.length - 1];
+    if (Number.isInteger(size) && size >= 0 && size <= ceiling) {
+      sizes[block.value] = size;
+    }
+  }
+
+  return sizes;
+}
 
 /* -------------------------------------------------------------------------
  * Time

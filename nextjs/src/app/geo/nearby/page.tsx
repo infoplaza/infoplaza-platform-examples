@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { ApiLink, ExamplePage } from "@/components/example-page";
 import { collectApiCalls } from "@/lib/platform";
-import { nearbyPlaces } from "./api";
+import { nearbyPlace } from "./api";
 import { GeoNearbyPanel } from "./components/geo-nearby-panel";
 import {
   DEFAULT_LOCATION,
+  DEFAULT_RADIUS,
   formatRadius,
-  MAX_RADIUS,
-  SEARCH_RADII,
-  type NearbyPlace,
+  type Place,
 } from "./utils";
 
 export const metadata: Metadata = {
@@ -16,37 +15,37 @@ export const metadata: Metadata = {
 };
 
 /**
- * The places around the default location are loaded here so the page arrives
- * with content; every later lookup is a click away in the panel.
+ * The place around the default location is loaded here so the page arrives
+ * with content; every later lookup is a click or a radius away in the panel.
  */
-async function initialPlaces(): Promise<{
-  places: NearbyPlace[];
+async function initialPlace(): Promise<{
+  place: Place | null;
   error: string | null;
 }> {
   try {
     return {
-      places: await nearbyPlaces(
+      place: await nearbyPlace(
         DEFAULT_LOCATION.latitude,
         DEFAULT_LOCATION.longitude,
+        DEFAULT_RADIUS,
       ),
       error: null,
     };
   } catch (error) {
     return {
-      places: [],
+      place: null,
       error:
         error instanceof Error
           ? error.message
-          : "Failed to load nearby places.",
+          : "Failed to load the nearby place.",
     };
   }
 }
 
 export default async function GeoNearbyPage() {
-  // The calls made while rendering are recorded like the ones the panel makes
-  // later, so the API log opens with the requests behind what is on screen —
-  // one per radius, which is what makes this example worth watching.
-  const { result, apiCalls } = await collectApiCalls(initialPlaces);
+  // The call made while rendering is recorded like the ones the panel makes
+  // later, so the API log opens with the request behind what is on screen.
+  const { result, apiCalls } = await collectApiCalls(initialPlace);
 
   return (
     <ExamplePage
@@ -55,19 +54,20 @@ export default async function GeoNearbyPage() {
       apiCalls={apiCalls}
       intro={
         <>
-          Pick a spot on the map to find the places around it with the{" "}
+          Pick a spot on the map to find the place around it with the{" "}
           <ApiLink href="https://platform.infoplaza.com/reference/v1-geo-nearby">
             Geo Nearby API
           </ApiLink>
-          . One call answers with one place, the most prominent one within the
-          radius asked for, so this example asks {SEARCH_RADII.length} times —
-          from {formatRadius(SEARCH_RADII[0])} out to {formatRadius(MAX_RADIUS)}{" "}
-          — and collects the distinct answers into the list below.
+          . One call answers with one place: the most prominent one within the
+          radius asked for, so widening the radius does not add places, it
+          swaps the answer for a bigger one. The circle on the map is the{" "}
+          {formatRadius(DEFAULT_RADIUS)} the page opens on; every lookup, at
+          any radius, is a single request.
         </>
       }
     >
       <GeoNearbyPanel
-        initialPlaces={result.places}
+        initialPlace={result.place}
         initialError={result.error}
       />
     </ExamplePage>

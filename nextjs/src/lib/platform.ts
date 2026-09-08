@@ -19,7 +19,17 @@ export type { ApiCall } from "./api-call";
 export interface PlatformResponse<T> {
   success: boolean;
   data?: T;
+  meta?: PlatformMeta;
   error?: { message?: string };
+}
+
+/** What the Platform says about the call itself, next to the payload. */
+export interface PlatformMeta {
+  /**
+   * What the call cost. Every REST answer carries it, an answer that refused
+   * to do the work as a 0, so this is what is charged rather than a guess.
+   */
+  credits?: number;
 }
 
 /** A Platform endpoint: where it lives, what it is called, where it is documented. */
@@ -52,10 +62,10 @@ export function requireApiKey(): string {
 /**
  * The calls made while handling one request.
  *
- * A lookup can fan out — the Nearby example asks six times, the Traffic
- * example twice — and the calls are made several layers below the route
- * handler that has to report them. Async local storage carries the collection
- * down without every function in between having to pass it along.
+ * A lookup can fan out, as in the Traffic example asking two endpoints for
+ * the same events, and the calls are made several layers below the route
+ * handler that has to report them. Async local storage carries the collection down without
+ * every function in between having to pass it along.
  */
 const recording = new AsyncLocalStorage<ApiCall[]>();
 
@@ -95,6 +105,8 @@ export function buildApiCall(call: {
   requestBody?: string;
   status: number;
   durationMs: number;
+  /** What the answer said it cost. Null where nothing said. */
+  credits: number | null;
   /** When the call went out, as unix milliseconds. */
   startedAt: number;
   /** The answer as it arrived, before any shortening. */
@@ -111,6 +123,7 @@ export function buildApiCall(call: {
     requestBody: call.requestBody,
     status: call.status,
     durationMs: Math.round(call.durationMs),
+    credits: call.credits,
     startedAt: call.startedAt,
     response: truncated ? call.body.slice(0, MAX_RESPONSE_CHARS) : call.body,
     responseBytes: new TextEncoder().encode(call.body).length,
@@ -157,6 +170,9 @@ export async function platformRequest<T>(
       url: url.toString(),
       status: response.status,
       durationMs,
+      // Straight from the envelope: the endpoints price a call themselves,
+      // and a call they refused is reported as costing nothing.
+      credits: body?.meta?.credits ?? null,
       startedAt,
       // Pretty-printed so the panel can show it as it is, and left verbatim
       // when it is not JSON at all — which an error page from a proxy is.

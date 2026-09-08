@@ -115,6 +115,9 @@ export function openTransitPlanner(
         // 101 is the handshake that got it there.
         status: error ? 502 : 101,
         durationMs: performance.now() - clockedAt,
+        // The REST endpoints price each answer in `meta.credits`; the mixer
+        // streams protobuf results with no envelope to say it in.
+        credits: null,
         startedAt,
         body: error
           ? error.message

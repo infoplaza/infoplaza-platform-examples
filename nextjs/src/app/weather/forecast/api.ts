@@ -1,5 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
-import { FORECAST_LIMITS, type Forecast } from "./utils";
+import { FORECAST_DEFAULTS, type Forecast, type ForecastSizes } from "./utils";
 
 /**
  * Server-side client for the Weather Forecast API.
@@ -23,9 +23,11 @@ const WEATHER_FORECAST: Endpoint = {
  * dayparts and days.
  *
  * One call answers with all five blocks at once, sized by the `max_*`
- * parameters — so the four tabs the example shows cost one request between
- * them, not one each. The sizes come from FORECAST_LIMITS, which stays at the
- * API's own defaults to keep a call at 1 credit.
+ * parameters, so the four tabs the example shows cost one request between
+ * them, not one each. `sizes` says how much of each block to ask for; it
+ * falls back to the API's own defaults, which keeps a call at 1 credit, and
+ * the picker beside the tabs can raise any of them at the cost of putting the
+ * whole call at 3.
  *
  * The point in the answer is not the point that was asked for: the API snaps
  * to the nearest place it forecasts for, which over open sea can be hundreds
@@ -35,14 +37,15 @@ const WEATHER_FORECAST: Endpoint = {
 export async function weatherForecast(
   latitude: number,
   longitude: number,
+  sizes: ForecastSizes = FORECAST_DEFAULTS,
 ): Promise<Forecast> {
   const data = await platformGet<Partial<Forecast>>(WEATHER_FORECAST, {
     lat: String(latitude),
     lon: String(longitude),
-    max_minutely: String(FORECAST_LIMITS.minutely),
-    max_hourly: String(FORECAST_LIMITS.hourly),
-    max_daily: String(FORECAST_LIMITS.daily),
-    max_daypartly: String(FORECAST_LIMITS.daypartly),
+    max_minutely: String(sizes.minutely),
+    max_hourly: String(sizes.hourly),
+    max_daily: String(sizes.daily),
+    max_daypartly: String(sizes.daypartly),
   });
 
   // A block the API has nothing for is left out rather than sent empty, and a

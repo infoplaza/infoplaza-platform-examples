@@ -67,9 +67,9 @@ nextjs/
 │   │   │   ├── nearby/                 # One example, everything together
 │   │   │   │   ├── page.tsx            #   Page
 │   │   │   │   ├── api.ts              #   Geo Nearby API client
-│   │   │   │   ├── places/route.ts     #   Nearby proxy the browser calls
+│   │   │   │   ├── place/route.ts      #   Nearby proxy the browser calls
 │   │   │   │   ├── utils.ts            #   Types, radii and formatting helpers
-│   │   │   │   └── components/         #   Panel, list and map
+│   │   │   │   └── components/         #   Panel and map
 │   │   │   └── search/
 │   │   │       ├── page.tsx            #   Page
 │   │   │       ├── api.ts              #   Geo Search API client
@@ -136,9 +136,11 @@ Those recordings are what fills the **API requests** drawer on the right of
 every example page. The calls that matter are made on the server, so the
 browser's own network tab shows nothing but the route handler in front of them;
 the drawer shows the real ones — the URL with the key replaced by a
-placeholder, the parameters, how long it took and the answer that came back,
-with a cURL command to try it yourself. Pages that load their opening state
-while rendering pass those calls to
+placeholder, the parameters, how long it took, what it cost in credits and the
+answer that came back, with a cURL command to try it yourself. The cost is not
+a guess: every REST answer reports it in `meta.credits`, and the drawer totals
+those for the visit. Pages that load their opening state while rendering pass
+those calls to
 [`ExamplePage`](src/components/example-page.tsx), so the drawer is filled before
 anything has been clicked. The log holds one visit to one example: opening
 another one empties it, so what is listed is always what the example on screen
@@ -189,14 +191,16 @@ will do.
 Shows the weather forecast for a point on the map with the
 [Weather Forecast API](https://platform.infoplaza.com/reference/v1-weather-forecast).
 
-One call returns five blocks at once — what it is doing now, then the coming
-minutes, hours, dayparts and days — so the four tabs under the map cost one
+One call returns five blocks at once, what it is doing now and then the coming
+minutes, hours, dayparts and days, so the four tabs under the map cost one
 request between them rather than one each. How much of each block comes back is
-set by the `max_*` parameters, gathered in `FORECAST_LIMITS` in
-[`utils.ts`](src/app/weather/forecast/utils.ts). They sit at the API's own
-defaults on purpose: staying at or below those keeps a call at 1 credit, and
-asking for more of any one block puts the whole call at 3. There is room to go
-further — 120 minutes, 168 hours, 30 dayparts, 15 days — at that price.
+set by the `max_*` parameters, and the picker beside the tabs sets the one
+belonging to the tab that is open. The sizes each block offers are listed with
+it in `BLOCKS` in [`utils.ts`](src/app/weather/forecast/utils.ts), the API's own
+default first and its ceiling last: 120 minutes, 168 hours, 30 dayparts, 15
+days. Leaving all four at their default keeps a call at 1 credit, and raising
+any single one of them puts the whole call at 3, which the API log at the bottom
+of the page shows happening.
 
 The minutely block is the one worth reading carefully. `max_minutely` is a
 number of minutes but the answer comes in five-minute steps, so 60 returns
@@ -304,33 +308,35 @@ Note that no warnings is the normal answer for most places most of the time.
 
 ### Geo — Geo Nearby
 
-Finds the places around a point on the map with the
+Finds the place around a point on the map with the
 [Geo Nearby API](https://platform.infoplaza.com/reference/v1-geo-nearby).
 
 That API answers with a single place: the most prominent one within the
 `radius` asked for. Widening the radius does not add places, it swaps the
-answer for a bigger one — around Houten a 1 km radius returns Houten, 8 km
-returns Utrecht and 64 km returns Amsterdam. Learning what is around a point
-therefore takes several calls, so
-[`nearbyPlaces`](src/app/geo/nearby/api.ts) asks the radii in `SEARCH_RADII`
-in parallel and deduplicates the answers, keeping the tightest circle each
-place was found in. Change that list to trade calls for detail: one click on
-the map costs one call per radius.
+answer for a bigger one. Around Houten 2 km returns Houten, 10 km returns
+Utrecht and 50 km returns Amsterdam, so the radius is the one thing worth
+choosing. It sits in a select below the map, and every lookup costs a single
+call whichever radius is picked.
 
-An empty search comes back as an error rather than as an empty result, so a
-radius that finds nothing drops out quietly. Failing radii only surface as an
-error when not a single one succeeded, which is what makes a wrong API key or
-an outage still visible.
+`RADIUS_OPTIONS` in [`utils.ts`](src/app/geo/nearby/utils.ts) is the list the
+select offers; add your own there. The endpoint wants at least 1 km and stops
+somewhere past 250 km, and answers a radius outside that range with an error
+rather than with an empty result, which is why the
+[route handler](src/app/geo/nearby/place/route.ts) only passes on the radii in
+that list. A search that finds nothing, over open sea or with a radius too
+tight to reach the nearest place, does come back as a success with an empty
+payload, so the only thing that surfaces as an error is a genuine failure such
+as a wrong API key or an outage.
 
 Clicking the map picks a location, marked with a pin that can be dragged to
-adjust it; the places found around it are drawn as dots on the
-[map](src/app/geo/nearby/components/nearby-map.tsx) and listed next to it, with
-the distance from the pin worked out client-side from the two coordinates.
-Picking a place, on the map or in the list, shows the country, continent,
-timezone and coordinates the API returned for it. The browser calls a
-[route handler](src/app/geo/nearby/places/route.ts) that adds
-`INFOPLAZA_API_KEY` server-side, and the places for the location the page opens
-on are fetched during server rendering, so the page arrives with content.
+adjust it. The circle around the pin is the radius being asked about, and the
+place found inside it is drawn as a dot on the
+[map](src/app/geo/nearby/components/nearby-map.tsx) and described next to it,
+with the distance from the pin worked out client-side from the two
+coordinates. The browser calls a
+[route handler](src/app/geo/nearby/place/route.ts) that adds
+`INFOPLAZA_API_KEY` server-side, and the place for the location the page opens
+on is fetched during server rendering, so the page arrives with content.
 
 ### Geo — Geo Search
 

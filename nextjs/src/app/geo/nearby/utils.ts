@@ -14,12 +14,6 @@ export interface Place {
   continent: { name: string };
 }
 
-/** A place together with the radius it was found at. */
-export interface NearbyPlace extends Place {
-  /** The smallest radius from SEARCH_RADII that returned this place. */
-  radius: number;
-}
-
 /** A point on the map. */
 export interface LatLon {
   latitude: number;
@@ -29,39 +23,33 @@ export interface LatLon {
 /**
  * The API answers with a single place: the most prominent one within the
  * radius asked for. Widening the radius therefore does not add places, it
- * swaps the answer for a bigger one, so the way to learn what is around a
- * point is to ask several times and collect the distinct answers. These are
- * the radii this example asks for, in meters, from a village up to a region.
+ * swaps the answer for a bigger one. Around Houten 2 km returns Houten,
+ * 10 km returns Utrecht and 50 km returns Amsterdam.
  *
- * Every radius is a call of its own, so this is also what one click on the map
- * costs. Shorten the list to spend fewer calls.
+ * That makes the radius the one thing worth choosing, so these are the radii
+ * the select on the page offers, in meters, from a village up to a region.
+ * Every lookup is a single call whichever one is picked. Add your own here:
+ * the endpoint wants at least 1 km and stops somewhere past 250 km, and
+ * answers a radius outside that with an error rather than an empty result.
  */
-export const SEARCH_RADII = [1000, 2000, 4000, 8000, 16000, 32000, 64000];
+export const RADIUS_OPTIONS = [1000, 2000, 5000, 10000, 25000, 50000, 100000];
 
-/** The widest circle the example looks in, which is the last radius asked. */
-export const MAX_RADIUS = SEARCH_RADII[SEARCH_RADII.length - 1];
+/** The radius the page opens on, which around Houten returns Houten itself. */
+export const DEFAULT_RADIUS = 5000;
+
+/** Whether `meters` is one of the radii above. Guards the route handler. */
+export function isRadiusOption(meters: number): boolean {
+  return RADIUS_OPTIONS.includes(meters);
+}
 
 /** The language the API translates country and continent names into. */
 export const DEFAULT_LANGUAGE = "en";
 
-/** Houten — the point the API reference uses in its own example. */
+/** Houten, the point the API reference uses in its own example. */
 export const DEFAULT_LOCATION: LatLon = {
   latitude: 52.02,
   longitude: 5.16,
 };
-
-/**
- * Places carry no identifier, and a name can repeat across countries, so the
- * coordinates are what make a result unique.
- */
-export function placeKey(place: Place): string {
-  return `${place.name}|${place.latitude}|${place.longitude}`;
-}
-
-/** "Netherlands · Europe" */
-export function placeRegion(place: Place): string {
-  return [place.country.name, place.continent.name].filter(Boolean).join(" · ");
-}
 
 /** "52.09083, 5.12222" */
 export function formatCoordinates(point: LatLon): string {
@@ -82,7 +70,8 @@ export function countryFlag(code: string): string {
   );
 }
 
-const EARTH_RADIUS_METERS = 6_371_000;
+/** Mean radius of the earth, the sphere the geometry here assumes. */
+export const EARTH_RADIUS_METERS = 6_371_000;
 
 /** Great-circle distance in meters between two points. */
 export function distanceMeters(from: LatLon, to: LatLon): number {

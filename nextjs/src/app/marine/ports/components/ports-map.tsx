@@ -143,7 +143,14 @@ export default function PortsMap({ ports, activeId, onSelect }: PortsMapProps) {
       offset: 12,
     });
 
-    map.on("load", () => {
+    // `style.load`, not `load`: MapLibre only fires `load` once every source
+    // has settled, which for this style means every OpenStreetMap tile in the
+    // opening view has come back. Those tiles are rate limited, so one slow
+    // request would hold the ports off the map, and a request that never
+    // settles would keep them off it altogether. `style.load` fires as soon as
+    // the style is parsed, which is all that adding a source and its layers
+    // needs.
+    map.on("style.load", () => {
       map.addSource(PORTS_SOURCE, {
         type: "geojson",
         data: toFeatureCollection(portsRef.current),

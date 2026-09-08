@@ -1,32 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { fetchJson } from "@/lib/api-log";
 import {
   countryFlag,
   DEFAULT_LOCATION,
+  DEFAULT_RADIUS,
   distanceMeters,
   formatCoordinates,
   formatDistance,
   formatRadius,
-  MAX_RADIUS,
-  placeKey,
-  SEARCH_RADII,
+  RADIUS_OPTIONS,
   type LatLon,
-  type NearbyPlace,
+  type Place,
 } from "../utils";
-import { PlaceList } from "./place-list";
 
 /**
- * Ties the example together: a picked location fills the list of places and
- * the dots on the map, and picking a place in either view shows what the API
- * returned for it.
+ * Ties the example together: a picked location and a radius make one call,
+ * and the place that comes back is drawn on the map and described beside it.
  *
  * The lookup goes through the route handler next to this component, so the API
- * key stays on the server. The places for the location the page opens on are
- * fetched during server rendering and handed in as props, so the page has
- * content on first paint.
+ * key stays on the server. The place for the location and radius the page
+ * opens on is fetched during server rendering and handed in as props, so the
+ * page has content on first paint.
  */
 
 // MapLibre needs a browser, so the map is loaded on the client only.
@@ -38,152 +35,137 @@ const NearbyMap = dynamic(() => import("./nearby-map"), {
 });
 
 interface GeoNearbyPanelProps {
-  initialPlaces: NearbyPlace[];
+  initialPlace: Place | null;
   initialError: string | null;
 }
 
 export function GeoNearbyPanel({
-  initialPlaces,
+  initialPlace,
   initialError,
 }: GeoNearbyPanelProps) {
   const [picked, setPicked] = useState<LatLon>(DEFAULT_LOCATION);
-  const [places, setPlaces] = useState<NearbyPlace[]>(initialPlaces);
+  const [radius, setRadius] = useState(DEFAULT_RADIUS);
+  const [place, setPlace] = useState<Place | null>(initialPlace);
   const [error, setError] = useState<string | null>(initialError);
   const [loading, setLoading] = useState(false);
-  // The nearest place is what the point is in, so it opens selected.
-  const [selected, setSelected] = useState<NearbyPlace | null>(
-    initialPlaces[0] ?? null,
-  );
+
+  const radiusId = `${useId()}-radius`;
 
   // Aborting the previous request means a quick second click cannot be
   // overtaken by the response to the first one.
   const requestRef = useRef<AbortController | null>(null);
   useEffect(() => () => requestRef.current?.abort(), []);
 
-  async function pickLocation(location: LatLon) {
+  const lookup = useCallback(async (location: LatLon, meters: number) => {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
 
-    setPicked(location);
     setError(null);
     setLoading(true);
-    setPlaces([]);
-    setSelected(null);
+    setPlace(null);
 
     try {
-      const body = await fetchJson<{ places?: NearbyPlace[] }>(
-        `/geo/nearby/places?lat=${location.latitude}&lon=${location.longitude}`,
+      const body = await fetchJson<{ place?: Place | null }>(
+        `/geo/nearby/place?lat=${location.latitude}&lon=${location.longitude}&radius=${meters}`,
         controller.signal,
       );
-
-      const found: NearbyPlace[] = body.places ?? [];
-      setPlaces(found);
-      setSelected(found[0] ?? null);
+      setPlace(body.place ?? null);
     } catch (error: unknown) {
       if (controller.signal.aborted) return;
-      setPlaces([]);
+      setPlace(null);
       setError(
-        error instanceof Error ? error.message : "Failed to load places.",
+        error instanceof Error ? error.message : "Failed to load the place.",
       );
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
+  }, []);
+
+  // Both controls change one half of the same question, so either one asks it
+  // again with the other half as it stands.
+  function pickLocation(location: LatLon) {
+    setPicked(location);
+    lookup(location, radius);
   }
 
-  const selectedKey = selected ? placeKey(selected) : null;
+  function pickRadius(meters: number) {
+    setRadius(meters);
+    lookup(picked, meters);
+  }
 
   return (
     <div className="space-y-6">
       <NearbyMap
         picked={picked}
-        places={places}
-        selectedKey={selectedKey}
+        radius={radius}
+        place={place}
         onPick={pickLocation}
-        onSelectPlace={setSelected}
       />
+
+      <div className="flex flex-col gap-1 text-sm">
+        <label htmlFor={radiusId} className="text-gray-600">
+          Radius
+        </label>
+        <select
+          id={radiusId}
+          value={radius}
+          onChange={(event) => pickRadius(Number(event.target.value))}
+          className="w-40 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+        >
+          {RADIUS_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              {formatRadius(option)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <p className="text-xs text-gray-500">
         Click the map or drag the pin to move the search. Picked location:{" "}
         <span className="tabular-nums">{formatCoordinates(picked)}</span>
       </p>
 
-      <div className="grid gap-8 md:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
-            Nearby places
-            {places.length > 0 && (
-              <span className="ml-2 font-normal text-gray-400">
-                {places.length}
+      <section className="max-w-md">
+        <h2 className="text-sm font-medium text-gray-900">
+          {place ? place.name : "Place"}
+        </h2>
+
+        {loading && (
+          <p className="mt-3 text-sm text-gray-500">Looking around…</p>
+        )}
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {!loading && !error && !place && (
+          <p className="mt-3 text-sm text-gray-500">
+            No place within {formatRadius(radius)} of here. Widen the radius or
+            try a spot closer to land.
+          </p>
+        )}
+
+        {place && !loading && (
+          <dl className="mt-2 divide-y divide-gray-100 text-sm">
+            <Detail label="Country">
+              <span aria-hidden className="mr-1.5">
+                {countryFlag(place.country.code)}
               </span>
-            )}
-          </h2>
-
-          {loading && (
-            <p className="mt-3 text-sm text-gray-500">
-              Looking around, {SEARCH_RADII.length} radii…
-            </p>
-          )}
-          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-          {!loading && !error && places.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">
-              No place within {formatRadius(MAX_RADIUS)} of here. Try a spot
-              closer to land.
-            </p>
-          )}
-
-          {places.length > 0 && !loading && (
-            <div className="mt-2">
-              <PlaceList
-                places={places}
-                origin={picked}
-                selectedKey={selectedKey}
-                onSelect={setSelected}
-              />
-            </div>
-          )}
-        </section>
-
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
-            {selected ? selected.name : "Place"}
-          </h2>
-
-          {!selected ? (
-            <p className="mt-3 text-sm text-gray-500">
-              Pick a place from the list or the map to see what the API returned
-              for it.
-            </p>
-          ) : (
-            <dl className="mt-2 divide-y divide-gray-100 text-sm">
-              <Detail label="Country">
-                <span aria-hidden className="mr-1.5">
-                  {countryFlag(selected.country.code)}
-                </span>
-                {selected.country.name} ({selected.country.code})
-              </Detail>
-              <Detail label="Continent">{selected.continent.name}</Detail>
-              <Detail label="Timezone">{selected.timezone}</Detail>
-              <Detail label="Coordinates">
-                <span className="font-mono text-xs">
-                  {formatCoordinates(selected)}
-                </span>
-              </Detail>
-              <Detail label="Distance">
-                <span className="tabular-nums">
-                  {formatDistance(distanceMeters(picked, selected))}
-                </span>{" "}
-                from the pin
-              </Detail>
-              <Detail label="Found at radius">
-                <span className="tabular-nums">
-                  {formatRadius(selected.radius)}
-                </span>
-              </Detail>
-            </dl>
-          )}
-        </section>
-      </div>
+              {place.country.name} ({place.country.code})
+            </Detail>
+            <Detail label="Continent">{place.continent.name}</Detail>
+            <Detail label="Timezone">{place.timezone}</Detail>
+            <Detail label="Coordinates">
+              <span className="font-mono text-xs">
+                {formatCoordinates(place)}
+              </span>
+            </Detail>
+            <Detail label="Distance">
+              <span className="tabular-nums">
+                {formatDistance(distanceMeters(picked, place))}
+              </span>{" "}
+              from the pin
+            </Detail>
+          </dl>
+        )}
+      </section>
     </div>
   );
 }

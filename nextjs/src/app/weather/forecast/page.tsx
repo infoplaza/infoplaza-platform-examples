@@ -3,7 +3,7 @@ import { ApiLink, ExamplePage } from "@/components/example-page";
 import { collectApiCalls } from "@/lib/platform";
 import { weatherForecast } from "./api";
 import { ForecastPanel } from "./components/forecast-panel";
-import { DEFAULT_LOCATION, FORECAST_LIMITS, type Forecast } from "./utils";
+import { DEFAULT_LOCATION, type Forecast } from "./utils";
 
 export const metadata: Metadata = {
   title: "Weather Forecast — Infoplaza Platform Examples",
@@ -50,11 +50,11 @@ export default async function WeatherForecastPage() {
           <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-forecast">
             Weather Forecast API
           </ApiLink>
-          . One call answers with five blocks at once — what it is doing now,
-          then the next {FORECAST_LIMITS.minutely} minutes of precipitation,{" "}
-          {FORECAST_LIMITS.hourly} hours, {FORECAST_LIMITS.daypartly} dayparts
-          and {FORECAST_LIMITS.daily} days — so the tabs below the map cost one
-          request between them, not one each.
+          . One call answers with five blocks at once: what it is doing now,
+          then the coming minutes of precipitation, hours, dayparts and days, so
+          the tabs below the map cost one request between them, not one each.
+          How much of each block comes back is a parameter on that same call,
+          which the picker beside the tabs sets.
         </>
       }
     >

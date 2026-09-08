@@ -27,6 +27,11 @@ export interface ApiCall {
   status: number;
   /** How long the call took, in milliseconds. */
   durationMs: number;
+  /**
+   * What the call cost, as the answer reported it in `meta.credits`. Null for
+   * the WebSocket endpoints, which send no such count.
+   */
+  credits: number | null;
   /** When it went out, as unix milliseconds, so a fan-out lists in order. */
   startedAt: number;
   /** The answer, pretty-printed when it is JSON and verbatim when it is not. */
@@ -66,6 +71,20 @@ export function formatBytes(bytes: number): string {
   if (bytes < 1000) return `${bytes} B`;
   if (bytes < 1_000_000) return `${(bytes / 1000).toFixed(1)} kB`;
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
+}
+
+/**
+ * What a list of calls cost together. A call that reported no count adds
+ * nothing to it, so the total is what the Platform actually charged for.
+ */
+export function totalCredits(calls: ApiCall[]): number {
+  return calls.reduce((total, call) => total + (call.credits ?? 0), 0);
+}
+
+/** "1 credit", "12 credits", and what a WebSocket exchange says: nothing. */
+export function formatCredits(credits: number | null): string {
+  if (credits === null) return "credits not reported";
+  return `${credits} ${credits === 1 ? "credit" : "credits"}`;
 }
 
 /**
