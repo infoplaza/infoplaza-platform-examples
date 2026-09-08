@@ -47,6 +47,23 @@ const PLANNER_SEARCH: Endpoint = {
 /** How long to wait for results before closing the socket ourselves. */
 const SOCKET_TIMEOUT_MS = 30_000;
 
+/**
+ * What the mixer charged for the exchange, taken from the reason it closes
+ * with: close code 1000 and `{"credits":1}` as the reason. A socket has no
+ * envelope like the REST endpoints to report a price in, so the close frame is
+ * where the Platform puts it. Null when the socket ended without one, as it
+ * does when the connection failed or when this side closed it first.
+ */
+function closeCredits(reason: string): number | null {
+  if (!reason) return null;
+  try {
+    const { credits } = JSON.parse(reason) as { credits?: unknown };
+    return typeof credits === "number" ? credits : null;
+  } catch {
+    return null;
+  }
+}
+
 const root = protobuf.Root.fromJSON(protoJson as protobuf.INamespace);
 const PlanRequest = root.lookupType("planner.PlanRequest");
 const PlanResult = root.lookupType("planner.model.PlanResult");
@@ -65,7 +82,10 @@ export interface TransitPlannerRequest {
 export interface TransitPlannerHandlers {
   /** Called for every PlanResult the mixer sends. */
   onResult(result: Record<string, unknown>): void;
-  /** Called once when the mixer is done and closes the socket. */
+  /**
+   * Called once when the mixer is done and closes the socket. What the close
+   * frame carries, the price of the exchange, goes to `onApiCall` instead.
+   */
   onClose(): void;
   /** Called instead of onClose when the connection fails. */
   onError(error: Error): void;
@@ -98,6 +118,7 @@ export function openTransitPlanner(
   const clockedAt = performance.now();
   let sent = "";
   const received: Record<string, unknown>[] = [];
+  let credits: number | null = null;
 
   let settled = false;
   const settle = (error?: Error) => {
@@ -116,8 +137,9 @@ export function openTransitPlanner(
         status: error ? 502 : 101,
         durationMs: performance.now() - clockedAt,
         // The REST endpoints price each answer in `meta.credits`; the mixer
-        // streams protobuf results with no envelope to say it in.
-        credits: null,
+        // streams protobuf results and prices the whole exchange in the
+        // reason it closes with, which is what this is.
+        credits,
         startedAt,
         body: error
           ? error.message
@@ -154,7 +176,10 @@ export function openTransitPlanner(
   };
 
   socket.onerror = () => settle(new Error("Transit Planner socket error"));
-  socket.onclose = () => settle();
+  socket.onclose = (event) => {
+    credits = closeCredits(event.reason);
+    settle();
+  };
 
   return {
     close() {

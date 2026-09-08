@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { recordApiCalls } from "@/lib/api-log";
 import {
   formatDistance,
@@ -9,6 +9,7 @@ import {
   legEndpoints,
   legLabel,
   legStartTime,
+  placeCoordinates,
   placeField,
   placeFieldCoordinates,
   plannerLabel,
@@ -18,7 +19,7 @@ import {
 } from "../utils";
 import { PlaceInput } from "./place-input";
 
-type Status = "idle" | "streaming" | "done" | "error";
+type Status = "streaming" | "done" | "error";
 
 /** Prefilled example trip, in the shape the search API returns. */
 const DEFAULT_FROM: PlaceSuggestion = {
@@ -41,30 +42,19 @@ export function TransitPlannerPanel() {
   const [from, setFrom] = useState(placeField(DEFAULT_FROM));
   const [to, setTo] = useState(placeField(DEFAULT_TO));
   const [results, setResults] = useState<PlanResultJson[]>([]);
-  const [status, setStatus] = useState<Status>("idle");
+  // The page plans the prefilled trip on its own, so it opens streaming.
+  const [status, setStatus] = useState<Status>("streaming");
   const [error, setError] = useState<string | null>(null);
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
 
-  useEffect(() => () => sourceRef.current?.close(), []);
-
-  function onSubmit(event: FormEvent) {
-    event.preventDefault();
-
-    const fromPlace = placeFieldCoordinates(from);
-    const toPlace = placeFieldCoordinates(to);
-    if (!fromPlace || !toPlace) {
-      setStatus("error");
-      setError("Pick a From and To location from the search suggestions.");
-      return;
-    }
-
+  // Opens the stream for one trip and wires it to state. Takes the trip as
+  // coordinates rather than reading the fields, so it depends on nothing that
+  // changes and the effect below can run it once. Clearing what the previous
+  // trip left behind is the caller's job: on the first plan there is nothing
+  // to clear, which keeps that out of the effect.
+  const openStream = useCallback((fromPlace: string, toPlace: string) => {
     sourceRef.current?.close();
-
-    setResults([]);
-    setError(null);
-    setExpandedTrip(null);
-    setStatus("streaming");
 
     const query = new URLSearchParams({ fromPlace, toPlace });
     const source = new EventSource(
@@ -114,6 +104,33 @@ export function TransitPlannerPanel() {
         setStatus("error");
         setError("Connection to the proxy failed.");
       });
+  }, []);
+
+  // The prefilled trip is planned as the page opens, so the streaming results
+  // and the API log are there to look at without pressing the button first.
+  useEffect(() => {
+    const fromPlace = placeCoordinates(DEFAULT_FROM);
+    const toPlace = placeCoordinates(DEFAULT_TO);
+    if (fromPlace && toPlace) openStream(fromPlace, toPlace);
+    return () => sourceRef.current?.close();
+  }, [openStream]);
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault();
+
+    const fromPlace = placeFieldCoordinates(from);
+    const toPlace = placeFieldCoordinates(to);
+    if (!fromPlace || !toPlace) {
+      setStatus("error");
+      setError("Pick a From and To location from the search suggestions.");
+      return;
+    }
+
+    setResults([]);
+    setError(null);
+    setExpandedTrip(null);
+    setStatus("streaming");
+    openStream(fromPlace, toPlace);
   }
 
   return (

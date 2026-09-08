@@ -28,8 +28,8 @@ export interface ApiCall {
   /** How long the call took, in milliseconds. */
   durationMs: number;
   /**
-   * What the call cost, as the answer reported it in `meta.credits`. Null for
-   * the WebSocket endpoints, which send no such count.
+   * What the call cost: `meta.credits` for a REST answer, the reason of the
+   * closing frame for a WebSocket. Null where neither said.
    */
   credits: number | null;
   /** When it went out, as unix milliseconds, so a fan-out lists in order. */
@@ -81,7 +81,7 @@ export function totalCredits(calls: ApiCall[]): number {
   return calls.reduce((total, call) => total + (call.credits ?? 0), 0);
 }
 
-/** "1 credit", "12 credits", and what a WebSocket exchange says: nothing. */
+/** "1 credit", "12 credits", and what a call that reported no count says. */
 export function formatCredits(credits: number | null): string {
   if (credits === null) return "credits not reported";
   return `${credits} ${credits === 1 ? "credit" : "credits"}`;
