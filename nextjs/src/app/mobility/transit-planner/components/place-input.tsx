@@ -57,23 +57,27 @@ export function PlaceInput({
   useEffect(() => {
     if (!searchable) return;
 
-    const controller = new AbortController();
+    // A request already on its way is left to finish when the term moves on,
+    // rather than aborted: the route has asked the Platform by then, and a
+    // call that was made belongs in the API log, which is filled from the
+    // answer. Only the answer itself is stale, so that is all this drops.
+    let current = true;
     const timer = setTimeout(async () => {
       try {
         const body = await fetchJson<{ items?: PlaceSuggestion[] }>(
           `/mobility/transit-planner/search?query=${encodeURIComponent(query)}`,
-          controller.signal,
         );
+        if (!current) return;
         setResults({ query, items: body.items ?? [] });
         setHighlighted(0);
       } catch {
-        if (!controller.signal.aborted) setResults({ query, items: [] });
+        if (current) setResults({ query, items: [] });
       }
     }, DEBOUNCE_MS);
 
     return () => {
       clearTimeout(timer);
-      controller.abort();
+      current = false;
     };
   }, [query, searchable]);
 
