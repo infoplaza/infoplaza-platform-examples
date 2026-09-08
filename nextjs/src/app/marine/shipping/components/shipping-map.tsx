@@ -5,11 +5,12 @@ import {
   Map as MapLibreMap,
   Marker,
   NavigationControl,
-  setWorkerUrl,
   type GeoJSONSource,
   type StyleSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// Sets the MapLibre worker URL, which every map on the page shares.
+import "@/lib/maplibre";
 import type { RoutePoint, Waypoint } from "../utils";
 
 /**
@@ -81,14 +82,6 @@ const MAP_STYLE: StyleSpecification = {
     },
   ],
 };
-
-/**
- * GeoJSON sources are parsed in a web worker, and MapLibre cannot find its own
- * worker file once Next.js has bundled it, which leaves the layers empty
- * without any error. `scripts/copy-maplibre-worker.mjs` puts the worker under
- * public/maplibre/, and this points MapLibre at it.
- */
-setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 /** Opens on the southern North Sea, where the default voyage runs. */
 const INITIAL_CENTER: [number, number] = [2.8, 53];

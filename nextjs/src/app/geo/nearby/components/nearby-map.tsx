@@ -10,6 +10,8 @@ import {
   type StyleSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// Sets the MapLibre worker URL, which every map on the page shares.
+import "@/lib/maplibre";
 import { EARTH_RADIUS_METERS, type LatLon, type Place } from "../utils";
 
 /**

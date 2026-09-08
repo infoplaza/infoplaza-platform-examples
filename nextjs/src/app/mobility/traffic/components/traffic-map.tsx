@@ -6,12 +6,13 @@ import {
   Map as MapLibreMap,
   NavigationControl,
   Popup,
-  setWorkerUrl,
   type ExpressionSpecification,
   type GeoJSONSource,
   type StyleSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// Sets the MapLibre worker URL, which every map on the page shares.
+import "@/lib/maplibre";
 import {
   causeColor,
   causeLabel,
@@ -54,14 +55,6 @@ const MAP_STYLE: StyleSpecification = {
 /** The whole country fits on screen, which is what the APIs cover. */
 const INITIAL_CENTER: [number, number] = [5.3, 52.15];
 const INITIAL_ZOOM = 6.3;
-
-/**
- * GeoJSON sources are parsed in a web worker, and MapLibre cannot find its own
- * worker file once Next.js has bundled it, which leaves the layers empty
- * without any error. `scripts/copy-maplibre-worker.mjs` puts the worker under
- * public/maplibre/, and this points MapLibre at it.
- */
-setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 const SOURCE_ID = "traffic";
 const LINE_LAYER_ID = "traffic-lines";
