@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import NumberFlow from "@number-flow/react";
 import { clearApiCalls, recordApiCalls, useApiCalls } from "@/lib/api-log";
 import {
   curlCommand,
@@ -185,10 +186,17 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
   );
 }
 
+/**
+ * How many calls have been made. The number rolls rather than swaps, because
+ * the badge sits still on the page while the example is used: a click on the
+ * map and the request it causes are easier to connect when the count is seen
+ * moving. `inline-flex` and a fixed height keep the pill the size it was, as
+ * NumberFlow measures its own line box.
+ */
 function Count({ value }: { value: number }) {
   return (
-    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs tabular-nums text-gray-600">
-      {value}
+    <span className="inline-flex h-5 items-center rounded-full bg-gray-100 px-2 text-xs tabular-nums text-gray-600">
+      <NumberFlow value={value} />
     </span>
   );
 }
@@ -225,7 +233,13 @@ function CreditAmount({ value }: { value: number | null }) {
       }`}
     >
       <CreditToken />
-      <span aria-hidden="true">{value ?? "–"}</span>
+      {/* Hidden from anything reading the page out, which gets the words in
+          the label below instead of the digits NumberFlow announces. */}
+      {value === null ? (
+        <span aria-hidden="true">–</span>
+      ) : (
+        <NumberFlow value={value} aria-hidden="true" />
+      )}
       <span className="sr-only">{label}</span>
     </span>
   );

@@ -46,13 +46,22 @@ export interface ApiCall {
 export const API_KEY_PLACEHOLDER = "YOUR_API_KEY";
 
 /**
+ * The parameters the key is sent as. Every Platform endpoint takes it as
+ * `api_key`; the component library defaults to `token` for the map endpoints,
+ * so both are covered.
+ */
+const API_KEY_PARAMS = ["api_key", "token"];
+
+/**
  * Takes the API key out of a URL. It is a query parameter on every Platform
  * endpoint, so this is the only place it can hide.
  */
 export function redactApiKey(url: string): string {
   const redacted = new URL(url);
-  if (redacted.searchParams.has("api_key")) {
-    redacted.searchParams.set("api_key", API_KEY_PLACEHOLDER);
+  for (const parameter of API_KEY_PARAMS) {
+    if (redacted.searchParams.has(parameter)) {
+      redacted.searchParams.set(parameter, API_KEY_PLACEHOLDER);
+    }
   }
   return redacted.toString();
 }

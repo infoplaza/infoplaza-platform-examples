@@ -43,7 +43,15 @@ nextjs/
 │   ├── app/
 │   │   ├── layout.tsx                  # Root layout with sidebar
 │   │   ├── page.tsx                    # Home page listing all examples
+│   │   ├── api/
+│   │   │   ├── platform/               # Handler the component library fetches from
+│   │   │   │   └── [...platform]/route.ts
+│   │   │   └── platform-log/route.ts   #   What it forwarded, for the API log
 │   │   ├── weather/
+│   │   │   ├── charts/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── utils.ts            #   Types and coordinate helpers
+│   │   │   │   └── components/         #   Map, tabs, hourly table and ensemble graph
 │   │   │   ├── climate/
 │   │   │   │   ├── page.tsx            #   Page
 │   │   │   │   ├── api.ts              #   Weather Climate API client
@@ -57,6 +65,10 @@ nextjs/
 │   │   │   │   ├── utils.ts            #   Types, limits and formatting helpers
 │   │   │   │   ├── conditions.ts       #   Icon code → wording, from the icon set
 │   │   │   │   └── components/         #   Panel, map, chart and tables
+│   │   │   ├── maps/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── utils.ts            #   View state and layer defaults
+│   │   │   │   └── components/         #   Panel and the composed weather map
 │   │   │   └── warnings/
 │   │   │       ├── page.tsx            #   Page
 │   │   │       ├── api.ts              #   Weather Warnings API client
@@ -120,7 +132,9 @@ nextjs/
 │       ├── examples.ts                 # Registry of all examples
 │       ├── platform.ts                 # Calling the Platform, server-side
 │       ├── api-call.ts                 # What one recorded call looks like
-│       └── api-log.ts                  # The recorded calls, browser-side
+│       ├── api-log.ts                  # The recorded calls, browser-side
+│       ├── platform-proxy.ts           # The component library's calls, server-side
+│       └── platform-proxy-log.ts       # Collecting those into the log, browser-side
 ├── public/                             # Static assets
 │   └── weather-icons/                  # The extended weather icon set, one SVG per code
 └── package.json
@@ -147,6 +161,19 @@ another one empties it, so what is listed is always what the example on screen
 has asked. The Transit Planner has no request and response to
 record, so its route sends the whole socket exchange as an `api-call` event on
 the stream instead.
+
+The two examples built on the component library are the exception. Their
+components fetch for themselves, so there is no answer for a recording to ride
+along with. The mounted handler files what it forwarded in
+[`src/lib/platform-proxy.ts`](src/lib/platform-proxy.ts) instead, and the pages
+collect those from
+[`/api/platform-log`](src/app/api/platform-log/route.ts) for as long as they are
+open. The call is made inside the package, so the handler watches it rather
+than making it: `fetch` is wrapped for the duration of the request, which is
+what gives the drawer the URL that went out, the answer as the Platform gave it
+and the credits in it. Watching is the only place that cost can still be read,
+because the package unpacks the envelope carrying it before its components ever
+see the payload.
 
 The Transit Planner speaks WebSocket, and a Next.js route handler cannot
 upgrade to one. Rather than run a custom server for that, the browser leg uses
@@ -305,6 +332,77 @@ select changes the `language` parameter the API writes its titles and texts in
 and looks the current location up again, so the two cannot drift apart.
 
 Note that no warnings is the normal answer for most places most of the time.
+
+### Weather — Maps
+
+Draws the weather models on a map with
+[`@infoplaza/platform`](https://github.com/infoplaza/platform-components), the
+component library for the Platform.
+
+Everything on the map comes from the package. `Providers` holds the weather
+configuration and loads the model catalog, `BaseMap` draws the basemap and
+hands down the `beforeId` the weather layers have to be inserted under so they
+land below the labels, `MapEventsProvider` turns the camera and the selected
+moment into the tile requests that answer it, `LayerComposer` turns those into Deck.gl
+layers, `Overlay` puts them on the map and `MapControlHud` is the panel that
+changes the model, the layer and the time. What
+[this example writes](src/app/weather/maps/components/weather-map.tsx) is the
+composition around them, a basemap picker and the route they fetch through.
+
+The components fetch for themselves, from the browser, and they all fetch from
+one place. The package ships its own catch-all route handler, mounted once at
+[`src/app/api/platform/[...platform]/route.ts`](src/app/api/platform/%5B...platform%5D/route.ts),
+which attaches `INFOPLAZA_API_KEY` and forwards to the Platform, so the key
+stays server-side here as it does everywhere else. Mounting it is not optional:
+without it the components have no models and nothing to draw.
+
+Two things this example needs that the others do not. The package is compiled
+with the app, through `transpilePackages` in [`next.config.ts`](next.config.ts).
+And there has to be one MapLibre: the package depends on MapLibre 5 while this
+app is on 6, and a MapLibre 5 navigation control added to a MapLibre 6 map
+reads a property that is no longer there, which takes the page down with it.
+The `overrides` block in [`package.json`](package.json) points the package at
+the app's MapLibre so there is a single copy of it.
+
+Note that the Weather Maps endpoint the catalog comes from is not on
+`api.infoplaza.com` yet. Until it is, that request answers 404, the map draws
+its basemap with nothing over it, and the page says as much where the layers
+would be.
+
+### Weather — Charts
+
+Reads the models at a point as two charts from the same
+[component library](https://github.com/infoplaza/platform-components), with the
+[Weather Timeseries API](https://platform.infoplaza.com/reference/v1-weather-timeseries-point)
+and the
+[Weather Ensemble API](https://platform.infoplaza.com/reference/v1-weather-ensemble-point).
+
+`TimeseriesForecast` is the hour by hour one: a toolbar to pick the model, the
+run and the group of elements, the table itself, and a footer under it. Every
+cell carries the colour the Platform gives that value, which is what makes the
+table read as a chart rather than as a grid of numbers. `EnsembleForecast` is
+the same composition over an ensemble, a model run many times over from
+slightly different starting conditions: it draws the range the members leave
+between them, so a plume that stays narrow is a forecast to trust and one that
+fans out is the model saying it does not know yet.
+
+The two sit behind tabs, and only the one on screen is mounted. Each of them
+asks for its own catalog and its own point forecast, so the tab that is closed
+has asked the Platform for nothing: opening the page, or moving the pin, pays
+for the chart being looked at rather than for both.
+
+Both take a `lat` and a `lon` and do the rest themselves, the catalog for that
+point first and then the forecast for whichever model is selected. The location comes
+from the same picker as the other examples,
+[a map with a pin](src/app/weather/charts/components/charts-map.tsx) to click
+or drag, rather than from the package: the map on the Maps page is the
+package's own and arrives with its layers and its control panel, which is more
+than picking a point needs. Which models reach a location differs, so a new
+pick remounts both charts rather than leaving a model selected that may not
+cover it.
+
+Both fetch through the same mounted handler as the Maps example, and the
+requests they make land in the API log the same way.
 
 ### Geo — Geo Nearby
 

@@ -56,6 +56,18 @@ export const exampleGroups: ExampleGroup[] = [
           "Pick a spot on the map to see the severe weather warned about there.",
         href: "/weather/warnings",
       },
+      {
+        title: "Maps",
+        description:
+          "Pan a map of the weather models, drawn by the platform component library.",
+        href: "/weather/maps",
+      },
+      {
+        title: "Charts",
+        description:
+          "Read the models at a point hour by hour and as an ensemble spread.",
+        href: "/weather/charts",
+      },
     ],
   },
   {
