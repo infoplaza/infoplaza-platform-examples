@@ -21,6 +21,11 @@ import {
  * Mounting it is not optional: without this route the components have no
  * models to draw and no rows to chart.
  *
+ * One endpoint is served here rather than by the package: Weather Maps Layers,
+ * which the components fetch straight from the maps host the Platform fronts.
+ * The Maps example points those requests at /api/platform/layers so they go
+ * out as the documented call, with the key attached like every other one.
+ *
  * Every call it forwards is also recorded for the API log on the page. The
  * package makes that call itself, deep inside its own code, so it is watched
  * rather than made here: `fetch` is wrapped for the duration of the request,
@@ -50,6 +55,67 @@ function platformHandler(): (request: Request) => Promise<Response> {
     apiKeyQueryParam: "api_key",
   });
   return handler;
+}
+
+/** The segment the Weather Maps Layers endpoint is served on. */
+const LAYERS_SEGMENT = "layers";
+
+/**
+ * What that endpoint is asked for.
+ *
+ * Every layer on the map is one call: which model, which run, which element,
+ * and the corner of the world that is in frame. `level`, `unit`, `grayscale`
+ * and `member` are what the element is read at, and are only sent when the
+ * layer asks for them. Nothing else is forwarded, so the key this route
+ * attaches cannot be talked over from the browser.
+ *
+ * https://platform.infoplaza.com/reference/v1-weather-maps-layers
+ */
+const LAYERS_PARAMS = [
+  "model",
+  "run",
+  "element",
+  "zoom",
+  "north",
+  "east",
+  "south",
+  "west",
+  "level",
+  "unit",
+  "grayscale",
+  // Not in the reference, and taken by the endpoint: it is which member of an
+  // ensemble model the layer is drawn for.
+  "member",
+];
+
+/**
+ * Asks the Platform for the layers of one element, in one frame.
+ *
+ * The answer is handed back as it arrived, envelope and all, because the
+ * caller is the example's own adapter rather than the package: what the
+ * components need out of it is put together there, next to the map.
+ */
+async function weatherMapsLayers(request: Request): Promise<Response> {
+  const asked = new URL(request.url).searchParams;
+
+  const url = new URL(`${WEATHER_MAPS_BASE_URL}/${LAYERS_SEGMENT}`);
+  for (const name of LAYERS_PARAMS) {
+    const value = asked.get(name);
+    if (value) url.searchParams.set(name, value);
+  }
+  url.searchParams.set("api_key", requireApiKey());
+
+  // Made with the watched `fetch` below, which is what puts the call in the
+  // log with the credits the answer priced it at.
+  const response = await fetch(url);
+
+  return new Response(await response.text(), {
+    status: response.status,
+    headers: {
+      "content-type":
+        response.headers.get("content-type") ?? "application/json",
+    },
+  });
 }
 
 /** One call the package made while it was handling a request. */
@@ -142,7 +208,11 @@ async function proxy(request: Request): Promise<Response> {
   const calls: UpstreamCall[] = [];
   let response: Response;
   try {
-    response = await watching.run(calls, () => platformHandler()(request));
+    response = await watching.run(calls, () =>
+      segment === LAYERS_SEGMENT
+        ? weatherMapsLayers(request)
+        : platformHandler()(request),
+    );
   } catch (error) {
     // A missing key lands here, as does anything the package throws on.
     return Response.json(

@@ -1,15 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import {
-  BaseMap,
-  MAP_STYLES,
-  MapControlHud,
-} from "@infoplaza/platform/components";
+import { useEffect, useState } from "react";
+import { BaseMap, MapControlHud } from "@infoplaza/platform/components";
 import MapEventsProvider from "@infoplaza/platform/events";
 import LayerComposer from "@infoplaza/platform/layers/composer";
 import Overlay from "@infoplaza/platform/layers/overlay";
 import { Providers, useModels } from "@infoplaza/platform/providers";
+import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 // The utilities the package's own components are styled with. This is the
 // embed build: prefixed classes only, no reset, so it cannot reach the rest
@@ -17,13 +14,64 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "@infoplaza/platform/styles.embed.css";
 // Sets the MapLibre worker URL, which every map on the page shares.
 import "@/lib/maplibre";
+// Answers the one thing Deck.gl asks MapLibre for that MapLibre 6 moved.
+import "../deck-maplibre";
+import { installLayersProxy } from "../layers";
 import {
-  DEFAULT_MAP_STYLE_KEY,
   DEFAULT_VIEW_STATE,
   DEFAULT_WEATHER_CONFIG,
   formatCoordinates,
+  MAP_FRAME_CLASS,
   type ViewState,
 } from "../utils";
+
+/**
+ * MapLibre ships without a basemap, so this is the smallest style that shows
+ * one: raster tiles straight from OpenStreetMap, as every other example here
+ * draws. Swap the source for your own tile server (or any style URL) in
+ * production: the OSM tiles are meant for light use only. The package ships
+ * basemaps of its own in `MAP_STYLES`, which is what an app that has a key for
+ * them would pass instead.
+ */
+const MAP_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    },
+  },
+  layers: [{ id: "osm", type: "raster", source: "osm" }],
+};
+
+/**
+ * That style, as `BaseMap` takes one: the source, and the layer the weather is
+ * inserted under. Here that is nothing, which is what the empty `beforeId`
+ * says: these tiles arrive with their labels drawn into the image, so there is
+ * no label layer to slide under and the weather goes on top of the lot.
+ */
+const BASE_MAP_STYLE = {
+  styles: { default: { source: MAP_STYLE, beforeId: "" } },
+};
+
+/**
+ * What the Deck.gl overlay may do with the map's WebGL context.
+ *
+ * Interleaved means Deck draws in the context MapLibre already owns, and it
+ * attaches a device of its own to that context to do so. Two of those
+ * attachments can be in flight at once: React Strict Mode mounts every effect
+ * twice in development and the map is reused between the two, so the second
+ * overlay finds the context taken and fails with "WebGL context already
+ * attached to device". The overlay that fails is the one that stays, which is
+ * why the map ends up with a basemap and nothing over it. Saying the device
+ * may be shared is what makes that second attachment take the device already
+ * on the context instead of giving up.
+ */
+const DECK_DEVICE_PROPS = { _reuseDevices: true };
 
 /**
  * The weather map, as the package composes one.
@@ -40,11 +88,12 @@ import {
  *
  * None of it is passed an API key. The components fetch from /api/platform,
  * which is where the package's own route handler is mounted, and the key is
- * attached there.
+ * attached there. `PlatformLayers` is what makes that true of the layers as
+ * well: they are the one call the package would otherwise make to the maps
+ * host itself, past this app and past the log.
  */
 export default function WeatherMap() {
   const [viewState, setViewState] = useState<ViewState>(DEFAULT_VIEW_STATE);
-  const [mapStyleKey, setMapStyleKey] = useState(DEFAULT_MAP_STYLE_KEY);
 
   return (
     <div className="space-y-3">
@@ -54,26 +103,28 @@ export default function WeatherMap() {
           model, the layer and the moment it is drawn for.
         </p>
 
-        <label className="flex items-center gap-2 text-xs text-gray-500">
-          Basemap
-          <select
-            value={mapStyleKey}
-            onChange={(event) => setMapStyleKey(event.target.value)}
-            className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-900"
+        {/* The package's map draws without an attribution control, so the one
+            the basemap asks for is given here. */}
+        <p className="text-xs text-gray-500">
+          Basemap ©{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:underline"
           >
-            {MAP_STYLES.map((option) => (
-              <option key={option.key} value={option.key}>
-                {option.title}
-              </option>
-            ))}
-          </select>
-        </label>
+            OpenStreetMap
+          </a>{" "}
+          contributors
+        </p>
       </div>
 
       {/* `ip-platform` is the wrapper the package asks its subtree to be in:
           the class names are prefixed and cannot collide either way, but the
           wrapper is what its dark mode, fullscreen and icon colours hang on. */}
-      <div className="ip-platform relative h-[560px] overflow-hidden rounded-lg border border-gray-200">
+      <div
+        className={`ip-platform relative ${MAP_FRAME_CLASS} overflow-hidden rounded-lg border border-gray-200`}
+      >
         <Providers
           weatherConfig={DEFAULT_WEATHER_CONFIG}
           // The catalog request these settle: production models, and the beta
@@ -81,6 +132,7 @@ export default function WeatherMap() {
           // default and where the handler is mounted.
           modelsConfig={{ apiEnv: "prod", betaModels: false }}
         >
+          <PlatformLayers />
           <ModelsNotice />
 
           <BaseMap
@@ -88,8 +140,7 @@ export default function WeatherMap() {
             onMove={(event) =>
               setViewState((event as { viewState: ViewState }).viewState)
             }
-            mapStyles={MAP_STYLES}
-            mapStyleKey={mapStyleKey}
+            mapStyle={BASE_MAP_STYLE}
           >
             {({ beforeId }: { beforeId: string }) => (
               <>
@@ -100,7 +151,11 @@ export default function WeatherMap() {
                       mapComponents={mapComponents}
                     >
                       {({ layers }: { layers: unknown[] }) => (
-                        <Overlay layers={[...layers]} interleaved controller />
+                        <Overlay
+                          layers={[...layers]}
+                          interleaved
+                          deviceProps={DECK_DEVICE_PROPS}
+                        />
                       )}
                     </LayerComposer>
                   )}
@@ -131,6 +186,29 @@ export default function WeatherMap() {
       </p>
     </div>
   );
+}
+
+/**
+ * Sends the layer requests to the Platform for as long as the map is open.
+ *
+ * It sits inside the providers because the catalog is what it needs: which
+ * region a model covers is not in the layers answer, and it is what decides
+ * how that model's images are scaled. The catalog is loaded once, so this is
+ * installed once with nothing in it and again with everything.
+ */
+function PlatformLayers() {
+  const { models } = useModels();
+
+  useEffect(
+    () =>
+      installLayersProxy(
+        (model) =>
+          models.find((candidate) => candidate.slug === model)?.regionCategory,
+      ),
+    [models],
+  );
+
+  return null;
 }
 
 /**

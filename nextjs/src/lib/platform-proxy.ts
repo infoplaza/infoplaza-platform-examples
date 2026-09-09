@@ -43,9 +43,10 @@ interface ProxiedEndpoint {
 
 /**
  * What the components can ask for, keyed by the first path segment after
- * /api/platform. It mirrors the endpoints registered in the package: a
- * request for anything else is answered with a 404 by the handler and never
- * reaches the Platform, so it is not listed here either.
+ * /api/platform. It mirrors the endpoints registered in the package, plus the
+ * layers endpoint the route serves itself: a request for anything else is
+ * answered with a 404 by the handler and never reaches the Platform, so it is
+ * not listed here either.
  *
  * Only the wording lives here. Which URL a request goes out as is not
  * reconstructed from the query but taken from the call itself, so the log
@@ -54,9 +55,18 @@ interface ProxiedEndpoint {
 const PROXIED_ENDPOINTS: Record<string, ProxiedEndpoint> = {
   models: {
     name: "Weather Maps Models",
-    // The maps endpoints are not in the reference yet, so this is the index
-    // rather than a page that would 404.
-    docsUrl: "https://platform.infoplaza.com/reference",
+    docsUrl:
+      "https://platform.infoplaza.com/reference/v1-weather-maps-models",
+  },
+  // The one endpoint here the package does not ask for by itself: it fetches
+  // its layers straight from the maps host the Platform fronts. The Maps
+  // example points those requests at this segment instead, which is what puts
+  // the documented endpoint behind the layers on the map and its calls in the
+  // log. See src/app/weather/maps/layers.ts.
+  layers: {
+    name: "Weather Maps Layers",
+    docsUrl:
+      "https://platform.infoplaza.com/reference/v1-weather-maps-layers",
   },
   "timeseries-models": {
     name: "Weather Timeseries Models",

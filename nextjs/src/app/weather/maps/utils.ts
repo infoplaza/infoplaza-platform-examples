@@ -39,8 +39,17 @@ export const DEFAULT_WEATHER_CONFIG = {
   level: "2m",
 };
 
-/** One of the basemaps the package ships: dark, land, sea or traffic. */
-export const DEFAULT_MAP_STYLE_KEY = "dark";
+/**
+ * How tall the map is drawn.
+ *
+ * The window, less the page around it, because this map carries its own
+ * furniture: a panel down one side, a legend and a timebar along the bottom,
+ * all of which eat into what is left to look at. The floor is what the map was
+ * before, so a short window gets a map that runs past the fold rather than a
+ * letterbox. Shared with the placeholder it is loaded behind, so the page does
+ * not jump when it arrives.
+ */
+export const MAP_FRAME_CLASS = "h-[calc(100vh-25rem)] min-h-[560px]";
 
 /** 52.36757 → "52.36757, 4.90411" */
 export function formatCoordinates(view: ViewState): string {

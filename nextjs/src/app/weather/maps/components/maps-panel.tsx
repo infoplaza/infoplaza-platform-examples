@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePlatformProxyLog } from "@/lib/platform-proxy-log";
+import { MAP_FRAME_CLASS } from "../utils";
 
 /**
  * The example around the map: the log of what the components ask for, and the
@@ -14,7 +15,9 @@ import { usePlatformProxyLog } from "@/lib/platform-proxy-log";
 const WeatherMap = dynamic(() => import("./weather-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[560px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div
+      className={`${MAP_FRAME_CLASS} w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50`}
+    />
   ),
 });
 
