@@ -13,25 +13,22 @@ export default function MapsPage() {
       title="Maps"
       intro={
         <>
-          Two Platform APIs draw this map. The{" "}
+          Every weather model on one map. The{" "}
           <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-maps-models">
             Weather Maps Models API
           </ApiLink>{" "}
-          is the catalog behind the panel on it: every model, what each one can
-          be asked for, and the runs it has. The{" "}
+          says which models there are and what each one can show, and that is
+          what fills the panel on the map. The{" "}
           <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-maps-layers">
             Weather Maps Layers API
           </ApiLink>{" "}
-          is then one call per element in frame, answering with an image of it
-          for every moment on the timebar, and those images are what is drawn
-          over the basemap. Both go through this app, so both are in the log
-          beside the map. The drawing is not written here:{" "}
+          sends the picture itself: the element you picked, for every moment on
+          the timebar. The map, the layers over it and the panel come
+          ready-made from{" "}
           <ApiLink href="https://github.com/infoplaza/platform-components">
             @infoplaza/platform
-          </ApiLink>{" "}
-          ships the map, the layers over it and the panel that changes them as
-          components, so what this example writes is the composition and the
-          route they fetch through.
+          </ApiLink>
+          , so this example is little more than the three put together.
         </>
       }
     >
