@@ -122,6 +122,7 @@ nextjs/
 │   │           ├── api.ts              #   Traffic Geo + Overview API clients
 │   │           ├── utils.ts            #   Types, merge and formatting helpers
 │   │           └── components/         #   Map and list
+│   ├── proxy.ts                        # Handing each page the token its fetches carry
 │   ├── components/                     # Shared components
 │   │   ├── sidebar.tsx                 #   Navigation down the left
 │   │   ├── example-page.tsx            #   The frame every example page uses
@@ -129,6 +130,8 @@ nextjs/
 │   └── lib/
 │       ├── examples.ts                 # Registry of all examples
 │       ├── platform.ts                 # Calling the Platform, server-side
+│       ├── route-guard.ts              # The gate in front of the route handlers
+│       ├── frontend-token.ts           # The token that gate asks for
 │       ├── api-call.ts                 # What one recorded call looks like
 │       ├── api-log.ts                  # The recorded calls, browser-side
 │       ├── platform-proxy.ts           # The component library's calls, server-side
@@ -148,6 +151,19 @@ Every example talks to the Platform the same way, through
 the envelope the endpoints answer in, and records the call. The route handlers
 wrap their work in `apiRoute` from the same module, which returns the payload
 with the calls that produced it and turns a failure into a status.
+
+`apiRoute` is also where the gate in front of the handler goes, which is what
+keeps its URL from working anywhere but here: the handler attaches the key, so
+`/geo/nearby/place?lat=52.02&lon=5.16&radius=10000` would otherwise be a
+working, key-free copy of a paid endpoint for anyone who has seen it.
+[`src/lib/route-guard.ts`](src/lib/route-guard.ts) refuses a request that did
+not come from this origin, one that carries no token this app minted
+([`src/proxy.ts`](src/proxy.ts) hands each page a fresh one in an HttpOnly
+cookie) and one from a caller that has asked too often. A new example is
+covered by writing it: the gate comes with `apiRoute`, and the three routes
+that cannot go through it — the mounted handler, the log collection and the
+Transit Planner stream — call the guard themselves. What each check is worth is
+under [Before you deploy this publicly](#before-you-deploy-this-publicly).
 
 Those recordings are what fills the **API requests** drawer on the right of
 every example page. The calls that matter are made on the server, so the
@@ -209,6 +225,10 @@ expects the project in the repository root needs to be told where to look. On
 3. Add `INFOPLAZA_API_KEY` under Settings → Environment Variables for
    Production, Preview and Development. No `NEXT_PUBLIC_` prefix: the key is
    only ever read server-side and should stay that way.
+4. Optionally add `FRONTEND_TOKEN_SECRET` — any long random string — which is
+   what the token in front of the route handlers is signed with. Without it
+   that signing key is derived from the API key, so the deployment works
+   either way; setting it means rotating one does not invalidate the other.
 
 Other hosts work the same way — point the build at the `nextjs/` directory. The
 project needs no custom server, so anything that runs a standard Next.js build
@@ -216,12 +236,34 @@ will do.
 
 ### Before you deploy this publicly
 
-Two properties are deliberate, and are what keeps the examples readable, but
-neither survives contact with a public URL:
+The route handlers attach your `INFOPLAZA_API_KEY` and forward the request, so
+their URLs are a working copy of a paid endpoint that needs no key of its own.
+Three checks stand in front of them, in
+[`src/lib/route-guard.ts`](src/lib/route-guard.ts), and they are worth
+different amounts:
 
-- **The API routes are unauthenticated.** Every `/api/…` route attaches your
-  `INFOPLAZA_API_KEY` and forwards the request. Anyone who can reach the
-  deployment can spend your credits.
+- **The request has to come from this origin.** A browser sets `Sec-Fetch-Site`
+  itself and refuses to let a page override it, so no site of someone else's
+  can have a visitor's browser call these routes and read the answer. This is
+  the check that holds completely, and it holds against the case worth holding
+  against: another party wiring these URLs into their own front end.
+- **The request has to carry a token this app minted.** Every page is served
+  one, signed and short-lived, in an HttpOnly cookie
+  ([`src/proxy.ts`](src/proxy.ts),
+  [`src/lib/frontend-token.ts`](src/lib/frontend-token.ts)). A copied URL
+  therefore stops working on its own: a caller has to load a page, keep the
+  cookie and come back before it runs out.
+- **A caller may only ask so often.** 120 requests a minute per address, far
+  more than clicking through the examples takes.
+
+None of that makes the routes callable only from this front end — anything a
+browser sends, a program can send too, and a script driving a real browser gets
+through all three. The rate limit is the weakest of them here, because it is
+counted in memory and a serverless host answers from as many instances as it
+likes, each with a count of its own: a limit that really holds belongs in front
+of the app, in the host's firewall (on Vercel, Firewall → Rate limiting). And
+one property is unchanged by any of this:
+
 - **The API log is shared between visitors.** The Platform calls behind the
   component-library examples are kept in one server-wide list
   ([`src/lib/platform-proxy.ts`](src/lib/platform-proxy.ts)) that is handed out
@@ -229,7 +271,8 @@ neither survives contact with a public URL:
   responses. The key itself is always redacted; the URLs, coordinates and
   payloads are not.
 
-Put a deployment behind authentication, or keep it private.
+So the gate is what keeps a public deployment from being an open API key. A
+deployment that has to be private still belongs behind authentication.
 
 ## Examples
 

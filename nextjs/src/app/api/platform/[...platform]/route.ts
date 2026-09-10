@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import PlatformAuth from "@infoplaza/platform/auth";
 import { buildApiCall, requireApiKey } from "@/lib/platform";
+import { guardRequest } from "@/lib/route-guard";
 import {
   PLATFORM_BASE_PATH,
   proxiedEndpoint,
@@ -198,6 +199,11 @@ function formatBody(body: string): {
 }
 
 async function proxy(request: Request): Promise<Response> {
+  // The same gate the other routes get from `apiRoute`, which this one does
+  // not go through: the package answers for itself and only wants the request.
+  const refused = await guardRequest(request);
+  if (refused) return refused;
+
   watchFetch();
 
   const segment = new URL(request.url)

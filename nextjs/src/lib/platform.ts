@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { redactApiKey, type ApiCall } from "./api-call";
+import { guardRequest } from "./route-guard";
 
 export type { ApiCall } from "./api-call";
 
@@ -223,15 +224,22 @@ export class HttpError extends Error {
  * Wraps a route handler so it only has to produce its payload.
  *
  * Every route in these examples proxies the Platform the same way, so the
- * parts that never differ live here: the recording of the calls made, the
- * `apiCalls` those are returned as, an HttpError turned into its own status,
- * and anything else turned into a 502 with its message.
+ * parts that never differ live here: the gate in front of the handler, the
+ * recording of the calls made, the `apiCalls` those are returned as, an
+ * HttpError turned into its own status, and anything else turned into a 502
+ * with its message.
  */
 export function apiRoute<T extends object>(
   fallbackMessage: string,
   handler: (request: Request) => Promise<T>,
 ): (request: Request) => Promise<Response> {
   return async (request) => {
+    // Before the key is attached to anything: a request that did not come
+    // from a page of this app is refused here rather than paid for. This is
+    // where a new example gets that for free — see @/lib/route-guard.
+    const refused = await guardRequest(request);
+    if (refused) return refused;
+
     const { result, apiCalls } = await collectApiCalls<{
       status: number;
       payload: object;

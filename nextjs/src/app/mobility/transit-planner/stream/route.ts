@@ -1,3 +1,4 @@
+import { guardRequest } from "@/lib/route-guard";
 import { openTransitPlanner } from "../api";
 import { COORDINATE_PAIR } from "../utils";
 
@@ -32,6 +33,11 @@ function event(name: string, data: unknown): string {
 }
 
 export async function GET(request: Request) {
+  // The same gate the other routes get from `apiRoute`, which a stream cannot
+  // go through: what it answers with is opened rather than returned.
+  const refused = await guardRequest(request);
+  if (refused) return refused;
+
   const params = new URL(request.url).searchParams;
   const fromPlace = params.get("fromPlace") ?? "";
   const toPlace = params.get("toPlace") ?? "";
