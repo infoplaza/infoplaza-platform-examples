@@ -42,10 +42,11 @@ ios/**/xcuserdata/
 *.ipa
 *.xcuserstate
 
-# IDEs and editors
+# IDEs, editors and local agent settings
 .idea/
 .vscode/
 *.swp
+.claude/
 
 # OS files
 .DS_Store

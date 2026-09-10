@@ -1,3 +1,7 @@
+// Schema of the Infoplaza Transit Planner API, vendored here so the example
+// can decode the messages the planner streams back.
+// https://platform.infoplaza.com/reference/v1-transit-plannermixer
+
 syntax = "proto3";
 
 package planner.model.enumerations;
@@ -5,12 +9,14 @@ package planner.model.enumerations;
 option java_multiple_files = true;
 
 enum Planner {
+  // The 9292 journey planner.
   NEGENTWEE = 0;
+  // OpenTripPlanner.
   OTP = 1;
 
   /*
-   DO NOT USE: For internal use only.
-   If you have no planner preference, just do not set the preferredPlanner field
+   The absence of a preference. Leave preferredPlanner unset rather than
+   sending this value.
   */
   NO_PREFERENCE = 99;
 }

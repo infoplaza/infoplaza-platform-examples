@@ -22,9 +22,9 @@ import {
  * models to draw and no rows to chart.
  *
  * One endpoint is served here rather than by the package: Weather Maps Layers,
- * which the components fetch straight from the maps host the Platform fronts.
- * The Maps example points those requests at /api/platform/layers so they go
- * out as the documented call, with the key attached like every other one.
+ * which the components otherwise fetch from their own tile host. The Maps
+ * example points those requests at /api/platform/layers so they go out as the
+ * documented call, with the key attached like every other one.
  *
  * Every call it forwards is also recorded for the API log on the page. The
  * package makes that call itself, deep inside its own code, so it is watched

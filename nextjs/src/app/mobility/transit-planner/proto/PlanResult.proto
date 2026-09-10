@@ -1,3 +1,7 @@
+// Schema of the Infoplaza Transit Planner API, vendored here so the example
+// can decode the messages the planner streams back.
+// https://platform.infoplaza.com/reference/v1-transit-plannermixer
+
 syntax = "proto3";
 
 import "Planner.proto";
@@ -16,9 +20,9 @@ message RoutingError {
 message PlanResult {
   repeated TripPattern trips = 1;
   string timestamp = 2;
-  /* Only used by OTP, not currently used/nor accepted by the API */
+  /* Not currently used or accepted by the API. */
   optional string previousPageCursor = 3;
-  /* Only used by OTP, not currently used/nor accepted by the API */
+  /* Not currently used or accepted by the API. */
   optional string nextPageCursor = 4;
   repeated RoutingError errors = 5;
   model.enumerations.Planner planner = 6;
@@ -89,7 +93,7 @@ message NonTransitLeg {        // Base leg details
   Place toPlace = 2;          // Destination place
   enumerations.NonTransitMode mode = 12;       // Mode of transport
   repeated Step steps = 3;     // List of steps for non-transit leg
-  optional string tripWeatherJson = 4; // A JSON string with weather information for the trip from the InfoPlaza weather-in-the-planner API
+  optional string tripWeatherJson = 4; // Weather information for the trip, as a JSON string
   repeated string rentalNetworks = 5; // List of bike rental networks that are available for this leg, if it's a shared mobility leg
 }
 
@@ -149,7 +153,7 @@ message Place {
   optional RentalVehicle rentalVehicle = 6; // @optional - Only for rental vehicles on non-transit legs
 }
 
-// Represents a situation (e.g., disruption or alert). - TODO: maybe add more fields?
+// Represents a situation (e.g., disruption or alert).
 message Situation {
   string id = 1;               // Unique identifier for the situation
   string description = 2;      // Detailed description

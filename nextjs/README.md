@@ -2,8 +2,6 @@
 
 Example implementation of the [Infoplaza Platform API](https://platform.infoplaza.com/) using [Next.js](https://nextjs.org/) (App Router, TypeScript) and [Tailwind CSS](https://tailwindcss.com/).
 
-> 🚧 **In progress** — this example is actively being built.
-
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) 22 or later — the Transit Planner example uses the global `WebSocket`, which is only available without a flag from Node 22 on
@@ -140,6 +138,11 @@ nextjs/
 └── package.json
 ```
 
+The Transit Planner decodes protobuf messages from
+[`proto/proto.json`](src/app/mobility/transit-planner/proto/proto.json), which is
+compiled from the `.proto` files next to it. After changing one of those, run
+`npm run proto` to regenerate it.
+
 Every example talks to the Platform the same way, through
 [`src/lib/platform.ts`](src/lib/platform.ts). It attaches the API key, unwraps
 the envelope the endpoints answer in, and records the call. The route handlers
@@ -210,6 +213,23 @@ expects the project in the repository root needs to be told where to look. On
 Other hosts work the same way — point the build at the `nextjs/` directory. The
 project needs no custom server, so anything that runs a standard Next.js build
 will do.
+
+### Before you deploy this publicly
+
+Two properties are deliberate, and are what keeps the examples readable, but
+neither survives contact with a public URL:
+
+- **The API routes are unauthenticated.** Every `/api/…` route attaches your
+  `INFOPLAZA_API_KEY` and forwards the request. Anyone who can reach the
+  deployment can spend your credits.
+- **The API log is shared between visitors.** The Platform calls behind the
+  component-library examples are kept in one server-wide list
+  ([`src/lib/platform-proxy.ts`](src/lib/platform-proxy.ts)) that is handed out
+  and cleared on collection, so one visitor can be shown another's requests and
+  responses. The key itself is always redacted; the URLs, coordinates and
+  payloads are not.
+
+Put a deployment behind authentication, or keep it private.
 
 ## Examples
 
@@ -363,11 +383,6 @@ app is on 6, and a MapLibre 5 navigation control added to a MapLibre 6 map
 reads a property that is no longer there, which takes the page down with it.
 The `overrides` block in [`package.json`](package.json) points the package at
 the app's MapLibre so there is a single copy of it.
-
-Note that the Weather Maps endpoint the catalog comes from is not on
-`api.infoplaza.com` yet. Until it is, that request answers 404, the map draws
-its basemap with nothing over it, and the page says as much where the layers
-would be.
 
 ### Weather — Charts
 

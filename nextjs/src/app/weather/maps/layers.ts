@@ -9,11 +9,11 @@
  *
  *   https://platform.infoplaza.com/reference/v1-weather-maps-models
  *
- * The layers themselves are the second call, one per element in frame, and the
- * package makes it straight from the browser to the maps host that the
- * Platform endpoint fronts. That call carries no key, is answered in an older
- * shape, and never passes this app at all, so it cannot be logged either. This
- * module is what puts it back on the documented endpoint:
+ * The layers themselves are the second call, one per element in frame. The
+ * package fetches those from its own tile host, straight from the browser and
+ * in a response shape of its own. That call carries no key and never passes
+ * this app at all, so it cannot be logged either. This module is what puts it
+ * on the documented endpoint instead:
  *
  *   https://platform.infoplaza.com/reference/v1-weather-maps-layers
  *
@@ -23,14 +23,14 @@
  * the page fetches is passed through untouched.
  *
  * The images themselves are not rewritten. The layers answer names them by
- * URL, on the maps host, and that is where the browser loads them from: the
+ * URL, on the tile host, and that is where the browser loads them from: the
  * Platform hands out those same URLs.
  */
 
 /** Where the components ask for their layers when nothing intervenes. */
 const PACKAGE_LAYERS_URL = "https://api.imweather.com/v0/gridmapdata/layers/";
 
-/** The maps host, which is what the components prefix a layer URL with. */
+/** The tile host, which is what the components prefix a layer URL with. */
 const MAPS_HOST_URL = new URL(PACKAGE_LAYERS_URL).origin;
 
 /** Where this route is served: the layers segment of the mounted handler. */
@@ -121,7 +121,7 @@ function platformRequest(requested: string): { url: string; model: string } | nu
   return { url: url.toString(), model: url.searchParams.get("model") ?? "" };
 }
 
-/** A URL on the maps host as a path, which is how the components carry one:
+/** A URL on the tile host as a path, which is how the components carry one:
  * they prefix it with the host themselves. */
 function mapsHostPath(url: string, format?: string): string {
   const address = new URL(url, MAPS_HOST_URL);

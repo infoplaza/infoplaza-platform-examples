@@ -1,3 +1,7 @@
+// Schema of the Infoplaza Transit Planner API, vendored here so the example
+// can decode the messages the planner streams back.
+// https://platform.infoplaza.com/reference/v1-transit-plannermixer
+
 syntax = "proto3";
 
 package planner.model.enumerations;

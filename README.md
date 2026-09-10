@@ -18,9 +18,11 @@ This repository contains example implementations for various platforms and frame
 
 | Platform | Folder | Status |
 | --- | --- | --- |
-| Next.js | [nextjs](./nextjs) | 🚧 In progress |
+| Next.js | [nextjs](./nextjs) | ✅ Available |
 | Android | [android](./android) | 📅 Planned |
 | iOS | [ios](./ios) | 📅 Planned |
+
+The runnable code lives in [nextjs](./nextjs); it needs [Node.js](https://nodejs.org/) 22 or later.
 
 ## Getting started
 
@@ -32,8 +34,12 @@ This repository contains example implementations for various platforms and frame
 
 ## Contributing
 
-Contributions are welcome! If you'd like to improve an example or add an implementation for a new platform, feel free to open an issue or pull request.
+Contributions are welcome! If you'd like to improve an example or add an implementation for a new platform, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+To report a security issue, see [SECURITY.md](./SECURITY.md).
 
 ## License
 
-These examples are provided as-is for demonstration purposes. See the Infoplaza Platform [terms of service](https://platform.infoplaza.com/) for API usage conditions.
+The example code in this repository is released under the MIT License — see [LICENSE](./LICENSE).
+
+The licence covers this example code only, not the API it calls: see the Infoplaza Platform [terms of service](https://platform.infoplaza.com/) for API usage conditions.

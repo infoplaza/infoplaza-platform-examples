@@ -59,10 +59,10 @@ const PROXIED_ENDPOINTS: Record<string, ProxiedEndpoint> = {
       "https://platform.infoplaza.com/reference/v1-weather-maps-models",
   },
   // The one endpoint here the package does not ask for by itself: it fetches
-  // its layers straight from the maps host the Platform fronts. The Maps
-  // example points those requests at this segment instead, which is what puts
-  // the documented endpoint behind the layers on the map and its calls in the
-  // log. See src/app/weather/maps/layers.ts.
+  // its layers from its own tile host instead. The Maps example points those
+  // requests at this segment, which is what puts the documented endpoint
+  // behind the layers on the map and its calls in the log.
+  // See src/app/weather/maps/layers.ts.
   layers: {
     name: "Weather Maps Layers",
     docsUrl:

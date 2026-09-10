@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  nextjs:
+    name: Next.js example
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: nextjs
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # The Transit Planner example uses the global WebSocket, which needs Node 22.
+          node-version: 22
+          cache: npm
+          cache-dependency-path: nextjs/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      # No API key is needed to build: every Platform call is made at request
+      # time, and the routes that need the key fail the request rather than the
+      # build when it is missing.
+      - run: npm run build

@@ -1,3 +1,7 @@
+// Schema of the Infoplaza Transit Planner API, vendored here so the example
+// can decode the messages the planner streams back.
+// https://platform.infoplaza.com/reference/v1-transit-plannermixer
+
 syntax = "proto3";
 
 package planner.model.enumerations;
@@ -32,10 +36,10 @@ enum NonTransitMode {
   RENTED_SCOOTER = 5;
   PUBLIC_STOP_TAXI = 6;
 
-  //Only used within OTP internally. Will still return transit legs.
+  // Flexible, on-demand transit. Still returns transit legs.
   FLEX = 7; // e.g. dial-a-ride, demand responsive transport
   //Leave room for future modes
 
-  // DO NOT USE THIS VALUE, IT IS RESERVED FOR FUTURE USE
+  // Reserved for future use.
   OTHER_NON_TRANSIT_MODE = 99;
 }

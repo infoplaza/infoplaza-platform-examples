@@ -1,3 +1,7 @@
+// Schema of the Infoplaza Transit Planner API, vendored here so the example
+// can decode the messages the planner streams back.
+// https://platform.infoplaza.com/reference/v1-transit-plannermixer
+
 syntax = "proto3";
 
 package planner;
@@ -26,7 +30,7 @@ message PlanRequest {
     can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
     Mutually exclusive with toId, so either toPlace or toId must be set but not both.
 
-    @TODO - Implement this
+    Not currently supported.
    */
   optional string fromId = 3;
 
@@ -34,7 +38,7 @@ message PlanRequest {
     The stop or station to stop the trip at,
     can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
     Mutually exclusive with toId, so either toPlace or toId must be set but not both.
-    @TODO - Implement this
+    Not currently supported.
    */
   optional string toId = 4;
 
@@ -42,7 +46,7 @@ message PlanRequest {
     The place to stop/pass at on the way to the destination, coordinate pair in the format "latitude,longitude"
     Mutually exclusive with viaId, so either viaPlace or viaId must be set but not both.
 
-    @Note: This is not implemented for OpenTripPlanner yet, but is included for future use.
+    Not currently supported.
    */
   optional string viaPlace = 5;
 
@@ -51,8 +55,7 @@ message PlanRequest {
     can be a quayCode (NL:Q:...), stopplacecode (NL:P:...) or stopId (GTFS:...)
     Mutually exclusive with viaPlace, so either viaPlace or viaId must be set but not both.
 
-    @Note: This is not implemented for OpenTripPlanner yet, but is included for future use.
-    @TODO - Implement this
+    Not currently supported.
    */
   optional string viaId = 6;
 
@@ -74,7 +77,7 @@ message PlanRequest {
     also other (direct) modes of transport are considered (e.g., walking, biking, driving)
     and the trip may be planned using a combination of (shared mobility) modes.
     @default false
-    @TODO - Implement this
+    Not currently supported.
    */
   optional bool publicTransportOnly = 9;
 
@@ -102,7 +105,7 @@ message PlanRequest {
     Whether to include trips with surcharges
     If not set, trips with surcharges are included by default.
 
-    @note Only works with the default planner - OTP includes all for now
+    Only applies to the default planner.
    */
   optional bool includeWithSurcharges = 13;
 
@@ -110,7 +113,7 @@ message PlanRequest {
     Whether to include on-demand transit services (e.g water taxis, shuttles)
     If not set, on-demand transit services are included by default.
 
-    @note Only works with the default planner - OTP includes all for now
+    Only applies to the default planner.
    */
   optional bool includeOnDemandTransit = 14;
 
@@ -153,7 +156,7 @@ message PlanRequest {
   /**
   Whether to enable flex support for the trip. This will cause flex-transit services to be considered
   for the base result.
-  ONLY SUPPORTED IN OTP, WILL THROW AN ERROR IN THE DEFAULT PLANNER IF SET TO TRUE.
+  Only supported by the OpenTripPlanner planner; the default planner rejects a request that sets it.
    */
   optional bool useFlexibleRouting = 22;
   //Leave room for future options
@@ -180,7 +183,6 @@ message UserPreferences {
     Walking speed in kilometers per hour. Defaults to about 5 km/h if not set.
     Is used for calculating walking distances and transfer times.
 
-    TODO: Pre-cache certain walking speeds (fast, slow, average) in OpenTripPlanner.
     @default 5.0
   */
   optional UserSpeed walkingSpeed = 1;
@@ -189,7 +191,6 @@ message UserPreferences {
     Biking speed in kilometers per hour. Defaults to about 15 km/h if not set.
     Is used for calculating biking distances and transfer times.
 
-    TODO: Pre-cache certain biking speeds (fast, slow, average) in OpenTripPlanner.
    */
   optional UserSpeed bikingSpeed = 2;
 
