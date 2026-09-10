@@ -1,5 +1,5 @@
 export const GITHUB_REPO_URL =
-  "https://github.com/infoplaza/infoplaza-platform-example";
+  "https://github.com/infoplaza/infoplaza-platform-examples";
 
 export interface Example {
   title: string;
