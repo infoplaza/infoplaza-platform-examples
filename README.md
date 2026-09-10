@@ -1,4 +1,4 @@
-# Infoplaza Platform — Example Implementations
+# Infoplaza Platform — Examples
 
 Example implementations for the [Infoplaza Platform API](https://platform.infoplaza.com/) — your gateway to weather, geo and mobility data.
 
