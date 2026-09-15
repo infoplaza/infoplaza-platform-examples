@@ -12,7 +12,7 @@
     "proto": "npx -y -p protobufjs-cli pbjs -t json -o src/app/mobility/transit-planner/proto/proto.json src/app/mobility/transit-planner/proto/PlanRequest.proto src/app/mobility/transit-planner/proto/PlanResult.proto src/app/mobility/transit-planner/proto/PlanService.proto src/app/mobility/transit-planner/proto/Planner.proto src/app/mobility/transit-planner/proto/Modes.proto src/app/mobility/transit-planner/proto/DirectionType.proto"
   },
   "dependencies": {
-    "@infoplaza/platform": "^1.0.23",
+    "@infoplaza/platform": "^1.0.26",
     "@number-flow/react": "^0.6.2",
     "maplibre-gl": "^6.2.0",
     "next": "16.3.0",

@@ -55,7 +55,22 @@ const PATH_PARAMS = [
 ] as const;
 
 /** What the element is read at, sent along when the layer asks for it. */
-const QUERY_PARAMS = ["level", "unit", "grayscale", "member"] as const;
+const QUERY_PARAMS = ["level", "unit", "member"] as const;
+
+/**
+ * Whether this layer wants the grayscale image, which is asked for apart from
+ * the rest because the two ends do not read the parameter the same way.
+ *
+ * The package writes it as a boolean on every layer URL it builds — a colour
+ * layer carries `grayscale=false`, not nothing — and the tile host reads it as
+ * one. The Platform endpoint reads it as a flag: any value at all switches it
+ * on. Forwarded as it stands, `false` therefore answers with the grayscale
+ * image, and the components, which asked for a colour one, run it through the
+ * palette anyway. So it goes on only when the layer really did ask for it.
+ */
+function wantsGrayscale(asked: URL): boolean {
+  return asked.searchParams.get("grayscale") === "true";
+}
 
 /** A layer as it arrives from the Platform. */
 interface PlatformLayer {
@@ -117,6 +132,7 @@ function platformRequest(requested: string): { url: string; model: string } | nu
     const value = asked.searchParams.get(name);
     if (value) url.searchParams.set(name, value);
   }
+  if (wantsGrayscale(asked)) url.searchParams.set("grayscale", "true");
 
   return { url: url.toString(), model: url.searchParams.get("model") ?? "" };
 }
