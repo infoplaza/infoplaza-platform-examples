@@ -14,8 +14,8 @@ export default function TransitPlannerPage() {
       intro={
         <>
           Stream travel results between two locations in real time using the{" "}
-          <ApiLink href="https://platform.infoplaza.com/reference/v1-transit-plannermixer">
-            Transit Planner Mixer API
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-transit-implanner">
+            Transit I'm Planner API
           </ApiLink>
           . The From and To fields look up stations, stops and addresses with
           the{" "}

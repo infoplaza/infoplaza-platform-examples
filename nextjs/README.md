@@ -611,7 +611,7 @@ read as well. The hour the ship is there is marked and scrolled to.
 ### Mobility — Transit Planner
 
 Streams travel results between two locations in real time using the
-[Transit Planner Mixer API](https://platform.infoplaza.com/reference/v1-transit-plannermixer),
+[Transit I'm Planner API](https://platform.infoplaza.com/reference/v1-transit-implanner),
 a WebSocket endpoint that speaks Protocol Buffers.
 
 The browser never talks to the API directly: it opens an `EventSource` on a

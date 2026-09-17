@@ -31,10 +31,10 @@ import type { PlaceSuggestion } from "./utils";
  */
 
 const TRANSIT_PLANNER: Endpoint = {
-  name: "Transit Planner Mixer",
-  url: "wss://api.infoplaza.com/v1/transit/plannermixer",
+  name: "Transit I'm Planner",
+  url: "wss://api.infoplaza.com/v1/transit/implanner",
   docsUrl:
-    "https://platform.infoplaza.com/reference/v1-transit-plannermixer",
+    "https://platform.infoplaza.com/reference/v1-transit-implanner",
 };
 
 const PLANNER_SEARCH: Endpoint = {
