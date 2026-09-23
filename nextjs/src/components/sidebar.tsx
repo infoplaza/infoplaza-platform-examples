@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ExampleIcon, type IconName } from "@/components/example-icon";
 import { exampleGroups, GITHUB_REPO_URL } from "@/lib/examples";
 
 /**
@@ -106,6 +107,7 @@ export function Sidebar() {
           <NavLink
             href="/"
             active={pathname === "/"}
+            icon="overview"
             onClick={() => setOpen(false)}
           >
             Overview
@@ -125,6 +127,7 @@ export function Sidebar() {
                     <NavLink
                       href={example.href}
                       active={pathname === example.href}
+                      icon={example.icon}
                       onClick={() => setOpen(false)}
                     >
                       {example.title}
@@ -158,11 +161,13 @@ export function Sidebar() {
 function NavLink({
   href,
   active,
+  icon,
   onClick,
   children,
 }: {
   href: string;
   active: boolean;
+  icon: IconName;
   onClick: () => void;
   children: ReactNode;
 }) {
@@ -171,11 +176,12 @@ function NavLink({
       href={href}
       onClick={onClick}
       aria-current={active ? "page" : undefined}
-      className={`-mx-2 block truncate rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
+      className={`-mx-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
         active ? "bg-primary text-white" : "text-dark hover:bg-cloud-dark"
       }`}
     >
-      {children}
+      <ExampleIcon name={icon} />
+      <span className="truncate">{children}</span>
     </Link>
   );
 }

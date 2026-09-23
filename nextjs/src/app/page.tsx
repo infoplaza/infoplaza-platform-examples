@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ExampleIcon } from "@/components/example-icon";
 import { exampleGroups } from "@/lib/examples";
 
 export default function HomePage() {
@@ -31,6 +32,9 @@ export default function HomePage() {
                   href={example.href}
                   className="flex h-full flex-col rounded-lg border border-cloud-dark bg-white p-5 transition-shadow hover:ring-2 hover:ring-primary"
                 >
+                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <ExampleIcon name={example.icon} className="size-5" />
+                  </span>
                   <span className="font-medium">{example.title}</span>
                   <span className="mt-1 block text-sm text-dark/80">
                     {example.description}
