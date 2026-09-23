@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -100,34 +100,37 @@ export function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 pt-2 pb-8 embedded:lg:pt-8">
+        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto *:shrink-0 px-6 pt-2 pb-8 embedded:lg:pt-8">
+          {/* The way back to the list of every example. The logo links there
+              too, but it is hidden when the page is framed. */}
+          <NavLink
+            href="/"
+            active={pathname === "/"}
+            onClick={() => setOpen(false)}
+          >
+            Overview
+          </NavLink>
+
           {exampleGroups.map((group) => (
             <div key={group.title}>
               <h2 className="mb-2 text-xs font-medium text-dark/50">
                 {group.title}
               </h2>
               <ul className="flex flex-col gap-px">
-                {group.examples.map((example) => {
-                  const isActive = pathname === example.href;
-                  return (
-                    <li key={example.href}>
-                      <Link
-                        href={example.href}
-                        // Following a link is the end of the drawer's job, so
-                        // opening an example closes it. On the wide layout
-                        // there was nothing open to close.
-                        onClick={() => setOpen(false)}
-                        className={`-mx-2 block truncate rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
-                          isActive
-                            ? "bg-primary text-white"
-                            : "text-dark hover:bg-cloud-dark"
-                        }`}
-                      >
-                        {example.title}
-                      </Link>
-                    </li>
-                  );
-                })}
+                {group.examples.map((example) => (
+                  <li key={example.href}>
+                    {/* Following a link is the end of the drawer's job, so
+                        opening an example closes it. On the wide layout
+                        there was nothing open to close. */}
+                    <NavLink
+                      href={example.href}
+                      active={pathname === example.href}
+                      onClick={() => setOpen(false)}
+                    >
+                      {example.title}
+                    </NavLink>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
@@ -148,6 +151,32 @@ export function Sidebar() {
         </div>
       </aside>
     </>
+  );
+}
+
+/** One entry in the menu, filled in green while it is the page shown. */
+function NavLink({
+  href,
+  active,
+  onClick,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={`-mx-2 block truncate rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
+        active ? "bg-primary text-white" : "text-dark hover:bg-cloud-dark"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }
 
