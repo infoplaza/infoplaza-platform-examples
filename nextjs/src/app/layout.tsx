@@ -25,7 +25,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${poppins.variable} ${geistMono.variable} h-full antialiased`}
+      // The script below adds `data-embedded` before React hydrates.
+      suppressHydrationWarning
     >
+      <head>
+        {/* Marks the page as embedded when it runs inside an iframe, before
+            the first paint, so what the `embedded:` variant hides never
+            flashes. Reading `window.top` across origins can throw, and a
+            page that cannot read it is framed. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(window.self!==window.top)document.documentElement.dataset.embedded=""}catch(e){document.documentElement.dataset.embedded=""}`,
+          }}
+        />
+      </head>
       <body className="flex min-h-screen bg-cloud text-dark">
         <Sidebar />
         {/* The top padding is room for the fixed bar the sidebar puts there

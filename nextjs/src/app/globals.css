@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Set on <html> by the script in the root layout when the page is framed. */
+@custom-variant embedded (&:where([data-embedded], [data-embedded] *));
+
 @theme {
   --color-primary: #00bf78;
   --color-secondary: #fdb01c;

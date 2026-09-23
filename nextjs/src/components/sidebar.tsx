@@ -52,7 +52,7 @@ export function Sidebar() {
           </svg>
         </button>
 
-        <Link href="/" className="ml-1">
+        <Link href="/" className="ml-1 embedded:hidden">
           <Logo />
         </Link>
       </header>
@@ -73,8 +73,12 @@ export function Sidebar() {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-start justify-between px-6 py-6">
-          <Link href="/" onClick={() => setOpen(false)} className="block">
+        <div className="flex items-start justify-between px-6 py-6 embedded:lg:hidden">
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className="block embedded:hidden"
+          >
             <Logo />
           </Link>
 
@@ -96,7 +100,7 @@ export function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 pt-2 pb-8">
+        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 pt-2 pb-8 embedded:lg:pt-8">
           {exampleGroups.map((group) => (
             <div key={group.title}>
               <h2 className="mb-2 text-xs font-medium text-dark/50">
@@ -157,7 +161,6 @@ function Logo() {
         width={103}
         height={25}
         unoptimized
-        priority
       />
       <span className="-translate-y-0.5 ml-1 text-xs font-medium text-dark">
         examples
