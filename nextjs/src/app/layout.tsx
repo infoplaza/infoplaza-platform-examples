@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Poppins } from "next/font/google";
+import { EmbedNavigation } from "@/components/embed-navigation";
 import { Sidebar } from "@/components/sidebar";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="flex min-h-screen bg-cloud text-dark">
+        <EmbedNavigation />
         <Sidebar />
         {/* The top padding is room for the fixed bar the sidebar puts there
             on a narrow screen; on a wide one there is no bar and no padding.
