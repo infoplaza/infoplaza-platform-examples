@@ -5,13 +5,13 @@ export default function HomePage() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="text-2xl font-semibold">Infoplaza Platform Examples</h1>
-      <p className="mt-2 text-gray-600">
+      <p className="mt-2 text-dark/80">
         Example implementations for the{" "}
         <a
           href="https://platform.infoplaza.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+          className="text-primary hover:underline"
         >
           Infoplaza Platform API
         </a>
@@ -21,7 +21,7 @@ export default function HomePage() {
 
       {exampleGroups.map((group) => (
         <section key={group.title} className="mt-10">
-          <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          <h2 className="text-xs font-medium uppercase tracking-wide text-dark/50">
             {group.title}
           </h2>
           <ul className="mt-3 grid auto-rows-fr gap-4 sm:grid-cols-2">
@@ -29,10 +29,10 @@ export default function HomePage() {
               <li key={example.href} className="h-full">
                 <Link
                   href={example.href}
-                  className="flex h-full flex-col rounded-lg border border-gray-200 p-5 transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  className="flex h-full flex-col rounded-lg border border-cloud-dark bg-white p-5 transition-shadow hover:ring-2 hover:ring-primary"
                 >
                   <span className="font-medium">{example.title}</span>
-                  <span className="mt-1 block text-sm text-gray-600">
+                  <span className="mt-1 block text-sm text-dark/80">
                     {example.description}
                   </span>
                 </Link>

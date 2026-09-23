@@ -28,12 +28,12 @@ import {
 const ChartsMap = dynamic(() => import("./charts-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
 const chartSkeleton = () => (
-  <div className="h-[560px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+  <div className="h-[560px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
 );
 
 const HourlyForecast = dynamic(() => import("./hourly-forecast"), {
@@ -59,7 +59,7 @@ export function ChartsPanel() {
     <div className="space-y-6">
       <ChartsMap picked={picked} onPick={setPicked} />
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Click the map or drag the pin to chart somewhere else. Picked location:{" "}
         <span className="tabular-nums">{formatCoordinates(picked)}</span>. Which
         models cover a point differs, so a chart loads its own catalog for the
@@ -67,7 +67,7 @@ export function ChartsPanel() {
       </p>
 
       <div>
-        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-gray-200">
+        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-cloud-dark">
           <div role="tablist" aria-label="Chart" className="flex flex-wrap gap-1">
             {CHARTS.map((option) => {
               const isActive = option.value === chart;
@@ -80,8 +80,8 @@ export function ChartsPanel() {
                   onClick={() => setChart(option.value)}
                   className={`-mb-px border-b-2 px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? "border-gray-900 font-medium text-gray-900"
-                      : "border-transparent text-gray-500 hover:text-gray-900"
+                      ? "border-primary font-medium text-dark"
+                      : "border-transparent text-dark/70 hover:text-dark"
                   }`}
                 >
                   {option.label}
@@ -91,13 +91,13 @@ export function ChartsPanel() {
           </div>
         </div>
 
-        <p className="mt-3 text-xs text-gray-500">
+        <p className="mt-3 text-xs text-dark/70">
           {chartByName(chart).detail}
         </p>
 
         {/* Only the chart on screen is mounted, so the tab that is not open
             has asked the Platform for nothing. */}
-        <div className="mt-3 overflow-hidden rounded-lg border border-gray-200">
+        <div className="mt-3 overflow-hidden rounded-lg border border-cloud-dark bg-white">
           {chart === "hourly" ? (
             <HourlyForecast location={picked} />
           ) : (

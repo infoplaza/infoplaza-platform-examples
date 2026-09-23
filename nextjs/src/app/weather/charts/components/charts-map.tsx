@@ -49,7 +49,7 @@ const MAP_STYLE: StyleSpecification = {
 
 const INITIAL_ZOOM = 9;
 
-const MARKER_COLOR = "#111827";
+const MARKER_COLOR = "#2e2e2b";
 
 interface ChartsMapProps {
   /** The location both charts are read for, marked with a pin. */
@@ -131,7 +131,7 @@ export default function ChartsMap({ picked, onPick }: ChartsMapProps) {
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

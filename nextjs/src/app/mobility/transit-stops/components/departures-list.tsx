@@ -24,7 +24,7 @@ export function DeparturesList({ departures }: DeparturesListProps) {
 
   return (
     <>
-      <ul className="divide-y divide-gray-100">
+      <ul className="divide-y divide-cloud">
         {shown.map((departure, index) => {
           const delay = delayMinutes(departure);
           return (
@@ -44,13 +44,13 @@ export function DeparturesList({ departures }: DeparturesListProps) {
                 <span
                   className={`block truncate text-sm ${
                     departure.cancelled
-                      ? "text-gray-400 line-through"
-                      : "text-gray-900"
+                      ? "text-dark/50 line-through"
+                      : "text-dark"
                   }`}
                 >
                   {departure.destination ?? "Unknown destination"}
                 </span>
-                <span className="block truncate text-xs text-gray-500">
+                <span className="block truncate text-xs text-dark/70">
                   {[
                     modeLabel(departure.line?.mode),
                     departure.quay?.publicCode
@@ -64,7 +64,7 @@ export function DeparturesList({ departures }: DeparturesListProps) {
               </span>
 
               <span className="shrink-0 text-right">
-                <span className="block text-sm tabular-nums text-gray-900">
+                <span className="block text-sm tabular-nums text-dark">
                   {formatTime(
                     departure.expectedDepartureTime ??
                       departure.aimedDepartureTime,
@@ -79,7 +79,7 @@ export function DeparturesList({ departures }: DeparturesListProps) {
                 ) : departure.realtime ? (
                   <span className="block text-xs text-green-600">Live</span>
                 ) : (
-                  <span className="block text-xs text-gray-400">Scheduled</span>
+                  <span className="block text-xs text-dark/50">Scheduled</span>
                 )}
               </span>
             </li>
@@ -88,7 +88,7 @@ export function DeparturesList({ departures }: DeparturesListProps) {
       </ul>
 
       {departures.length > shown.length && (
-        <p className="pt-3 text-xs text-gray-400">
+        <p className="pt-3 text-xs text-dark/50">
           Showing {shown.length} of {departures.length} departures in the next
           hour.
         </p>

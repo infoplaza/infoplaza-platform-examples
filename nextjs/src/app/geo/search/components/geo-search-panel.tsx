@@ -29,7 +29,7 @@ import { PlaceList } from "./place-list";
 const PlacesMap = dynamic(() => import("./places-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -116,7 +116,7 @@ export function GeoSearchPanel({
     <div className="space-y-6">
       <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
         <div className="flex min-w-64 flex-1 flex-col gap-1 text-sm">
-          <label htmlFor={inputId} className="text-gray-600">
+          <label htmlFor={inputId} className="text-dark/80">
             Search
           </label>
           <input
@@ -125,12 +125,12 @@ export function GeoSearchPanel({
             onChange={(event) => setQuery(event.target.value)}
             placeholder="City, town or village"
             autoComplete="off"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+            className="w-full rounded-md border border-cloud-dark bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
           />
         </div>
 
         <div className="flex flex-col gap-1 text-sm">
-          <label htmlFor={languageId} className="text-gray-600">
+          <label htmlFor={languageId} className="text-dark/80">
             Language
           </label>
           <select
@@ -139,7 +139,7 @@ export function GeoSearchPanel({
             onChange={(event) =>
               changeLanguage(event.target.value as LanguageCode)
             }
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+            className="rounded-md border border-cloud-dark bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             {LANGUAGES.map((option) => (
               <option key={option.code} value={option.code}>
@@ -152,33 +152,33 @@ export function GeoSearchPanel({
         <button
           type="submit"
           disabled={tooShort}
-          className="rounded-md bg-gray-900 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-700 disabled:bg-gray-300"
+          className="rounded-md bg-dark px-4 py-2 text-sm text-white transition-colors hover:bg-dark/85 disabled:bg-cloud-darker"
         >
           Search
         </button>
       </form>
 
       {tooShort && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Type at least {MIN_QUERY_LENGTH} characters to search.
         </p>
       )}
 
       <div className="grid gap-8 md:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
+        <section className="rounded-lg border border-cloud-dark bg-white p-5">
+          <h2 className="text-sm font-medium text-dark">
             Results
             {places.length > 0 && (
-              <span className="ml-2 font-normal text-gray-400">
+              <span className="ml-2 font-normal text-dark/50">
                 {places.length}
               </span>
             )}
           </h2>
 
-          {loading && <p className="mt-3 text-sm text-gray-500">Searching…</p>}
+          {loading && <p className="mt-3 text-sm text-dark/70">Searching…</p>}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           {!loading && !error && places.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-dark/70">
               No places match this term.
             </p>
           )}
@@ -200,7 +200,7 @@ export function GeoSearchPanel({
             selectedKey={selectedKey}
             onSelect={selectPlace}
           />
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-dark/70">
             Every match is a numbered marker. Pick one here or in the list to
             highlight it in both views.
           </p>

@@ -33,7 +33,7 @@ import { ClimateTable } from "./climate-table";
 const ClimateMap = dynamic(() => import("./climate-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -102,14 +102,14 @@ export function ClimatePanel({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Click the map or drag the marker to move the location. Picked
           location:{" "}
           <span className="tabular-nums">{formatCoordinates(picked)}</span>
         </p>
 
         <div
-          className="flex rounded-md border border-gray-200 p-0.5"
+          className="flex rounded-md border border-cloud-dark bg-white p-0.5"
           role="group"
           aria-label="Granularity"
         >
@@ -121,8 +121,8 @@ export function ClimatePanel({
               aria-pressed={option.value === granularity}
               className={`rounded px-3 py-1 text-xs transition-colors ${
                 option.value === granularity
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:bg-gray-50"
+                  ? "bg-dark text-white"
+                  : "text-dark/80 hover:bg-cloud"
               }`}
             >
               {option.label}
@@ -132,7 +132,7 @@ export function ClimatePanel({
       </div>
 
       {uncovered && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-dark/70">
           The API has no climate data for this location. Coverage has gaps: the
           open ocean and parts of the tropics and the Sahara come back empty,
           so try a spot nearby or somewhere else on land.
@@ -145,7 +145,7 @@ export function ClimatePanel({
           className={`space-y-8 transition-opacity ${loading ? "opacity-50" : ""}`}
           aria-busy={loading}
         >
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-gray-200 bg-gray-200 lg:grid-cols-5">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-cloud-dark bg-cloud-dark lg:grid-cols-5">
             <Tile
               label="Average temperature"
               value={formatTemperature(summary.temperature)}
@@ -173,7 +173,7 @@ export function ClimatePanel({
             />
           </dl>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2">
             <ClimateChart
               periods={climate.periods}
               granularity={granularity}
@@ -196,10 +196,10 @@ export function ClimatePanel({
             />
           </div>
 
-          <section>
-            <h2 className="text-sm font-medium text-gray-900">
+          <section className="rounded-lg border border-cloud-dark bg-white p-5">
+            <h2 className="text-sm font-medium text-dark">
               All periods
-              <span className="ml-2 font-normal text-gray-400">
+              <span className="ml-2 font-normal text-dark/50">
                 {climate.periods.length}
               </span>
             </h2>
@@ -214,7 +214,7 @@ export function ClimatePanel({
       )}
 
       {!climate && loading && (
-        <p className="text-sm text-gray-500">Loading the climate year…</p>
+        <p className="text-sm text-dark/70">Loading the climate year…</p>
       )}
     </div>
   );
@@ -232,11 +232,11 @@ function Tile({
 }) {
   return (
     <div className="bg-white p-4">
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="mt-1 truncate text-lg text-gray-900" title={value}>
+      <dt className="text-xs text-dark/70">{label}</dt>
+      <dd className="mt-1 truncate text-lg text-dark" title={value}>
         {value}
       </dd>
-      <dd className="text-xs text-gray-400">{detail}</dd>
+      <dd className="text-xs text-dark/50">{detail}</dd>
     </div>
   );
 }

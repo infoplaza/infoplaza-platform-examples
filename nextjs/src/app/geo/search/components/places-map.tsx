@@ -53,8 +53,8 @@ const PLACE_ZOOM = 9;
 /** Keeps a tight cluster of results from filling the frame at street level. */
 const MAX_FIT_ZOOM = 9;
 
-const MARKER_COLOR = "#111827";
-const SELECTED_MARKER_COLOR = "#2563eb";
+const MARKER_COLOR = "#2e2e2b";
+const SELECTED_MARKER_COLOR = "#0070de";
 
 interface PlacesMapProps {
   places: Place[];
@@ -177,7 +177,7 @@ export default function PlacesMap({
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

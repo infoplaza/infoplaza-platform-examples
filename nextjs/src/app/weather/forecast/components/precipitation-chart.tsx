@@ -51,8 +51,8 @@ const LABEL_EVERY = 3;
 const MIN_INTENSITY_TOP = 1;
 
 const PRECIPITATION_COLOR = "#3b82f6";
-const GRID_COLOR = "#f3f4f6";
-const AXIS_COLOR = "#d1d5db";
+const GRID_COLOR = "#f2f2ed";
+const AXIS_COLOR = "#d0d0c7";
 
 interface PrecipitationChartProps {
   minutes: Minute[];
@@ -66,7 +66,7 @@ export function PrecipitationChart({
 }: PrecipitationChartProps) {
   if (minutes.length === 0) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-dark/70">
         No minutely precipitation forecast for this location. Asking for fewer
         than five minutes does the same thing, since that is shorter than one
         step.
@@ -119,7 +119,7 @@ export function PrecipitationChart({
 
   return (
     <figure className="min-w-0">
-      <figcaption className="text-sm text-gray-900">
+      <figcaption className="text-sm text-dark">
         {precipitationSummary(minutes, timezone)}
       </figcaption>
 
@@ -132,7 +132,7 @@ export function PrecipitationChart({
         <text
           x={PADDING.left}
           y={PADDING.top - 7}
-          className="fill-gray-400 text-[11px]"
+          className="fill-dark/50 text-[11px]"
         >
           Intensity, mm/h
         </text>
@@ -152,7 +152,7 @@ export function PrecipitationChart({
               y={intensityY(tick)}
               dy="0.32em"
               textAnchor="end"
-              className="fill-gray-400 text-[10px] tabular-nums"
+              className="fill-dark/50 text-[10px] tabular-nums"
             >
               {formatTick(tick)}
             </text>
@@ -180,7 +180,7 @@ export function PrecipitationChart({
         <text
           x={PADDING.left}
           y={chanceTop - 7}
-          className="fill-gray-400 text-[11px]"
+          className="fill-dark/50 text-[11px]"
         >
           Chance of precipitation, %
         </text>
@@ -201,7 +201,7 @@ export function PrecipitationChart({
               y={chanceY(tick)}
               dy="0.32em"
               textAnchor="end"
-              className="fill-gray-400 text-[10px] tabular-nums"
+              className="fill-dark/50 text-[10px] tabular-nums"
             >
               {tick * 100}
             </text>
@@ -226,7 +226,7 @@ export function PrecipitationChart({
             y={PADDING.top}
             width={slot}
             height={chanceBase - PADDING.top}
-            className="fill-transparent hover:fill-gray-900/5"
+            className="fill-transparent hover:fill-dark/5"
           >
             <title>{tooltip(minute, timezone)}</title>
           </rect>
@@ -240,7 +240,7 @@ export function PrecipitationChart({
               x={slotCenter(index)}
               y={HEIGHT - 6}
               textAnchor="middle"
-              className="fill-gray-500 text-[10px] tabular-nums"
+              className="fill-dark/70 text-[10px] tabular-nums"
             >
               {formatTime(minute.time, timezone)}
             </text>

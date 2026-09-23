@@ -47,14 +47,14 @@ export function WaypointForecast({
       : null;
 
   return (
-    <section className="rounded-lg border border-blue-200 bg-blue-50/30 p-6">
+    <section className="rounded-lg border border-marine/20 bg-marine/3 p-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">Waypoint {number}</h2>
-          <p className="mt-0.5 text-sm text-gray-600 tabular-nums">
+          <p className="mt-0.5 text-sm text-dark/80 tabular-nums">
             {formatCoordinates(lat, lon)}
             {arrivalTime !== null && (
-              <span className="text-gray-400">
+              <span className="text-dark/50">
                 {" · "}
                 {number === 1 ? "leaves" : "arrives"} {formatMoment(arrivalTime)}
               </span>
@@ -64,14 +64,14 @@ export function WaypointForecast({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50"
+          className="rounded-md border border-cloud-dark bg-white px-2.5 py-1 text-xs font-medium text-dark/80 transition-colors hover:bg-cloud"
         >
           Close
         </button>
       </header>
 
       <div className="mt-5">
-        {loading && <p className="text-sm text-gray-500">Loading forecast…</p>}
+        {loading && <p className="text-sm text-dark/70">Loading forecast…</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
         {forecast && !loading && !error && (
           <PointTable forecast={forecast} arrivalIndex={arrivalIndex} />

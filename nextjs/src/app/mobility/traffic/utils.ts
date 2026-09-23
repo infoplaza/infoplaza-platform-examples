@@ -143,9 +143,9 @@ export function mergeEvents(
 /** Colour per cause type, shared by the map shapes and the list. */
 export const CAUSE_COLORS: Record<string, string> = {
   congestion: "#dc2626",
-  carriagewayClosed: "#111827",
+  carriagewayClosed: "#2e2e2b",
   laneClosed: "#f59e0b",
-  diversion: "#2563eb",
+  diversion: "#0070de",
 };
 
 const FALLBACK_COLOR = "#6b7280";

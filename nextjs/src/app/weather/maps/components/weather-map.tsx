@@ -87,14 +87,14 @@ export default function WeatherMap() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Drag to pan and scroll to zoom. The panel on the map changes the
           model, the layer and the moment it is drawn for.
         </p>
 
         {/* The package's map draws without an attribution control, so the one
             the basemap asks for is given here. */}
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Basemap ©{" "}
           <a
             href="https://www.openstreetmap.org/copyright"
@@ -112,7 +112,7 @@ export default function WeatherMap() {
           the class names are prefixed and cannot collide either way, but the
           wrapper is what its dark mode, fullscreen and icon colours hang on. */}
       <div
-        className={`ip-platform relative ${MAP_FRAME_CLASS} overflow-hidden rounded-lg border border-gray-200`}
+        className={`ip-platform relative ${MAP_FRAME_CLASS} overflow-hidden rounded-lg border border-cloud-dark bg-white`}
       >
         <PlatformMap
           viewState={viewState}
@@ -132,7 +132,7 @@ export default function WeatherMap() {
         </PlatformMap>
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Looking at{" "}
         <span className="tabular-nums">{formatCoordinates(viewState)}</span> at
         zoom <span className="tabular-nums">{viewState.zoom.toFixed(1)}</span>

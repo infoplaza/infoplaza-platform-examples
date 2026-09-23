@@ -1,10 +1,14 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-body {
-  font-family: var(--font-sans), system-ui, sans-serif;
+@theme {
+  --color-primary: #00bf78;
+  --color-secondary: #fdb01c;
+  --color-marine: #0070de;
+  --color-dark: #2e2e2b;
+  --color-cloud: #f2f2ed;
+  --color-cloud-dark: #e7e7de;
+  --color-cloud-darker: #d0d0c7;
+  --font-sans: var(--font-poppins), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --radius-lg: .5rem;
 }

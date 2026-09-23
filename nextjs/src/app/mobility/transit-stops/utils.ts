@@ -77,8 +77,8 @@ export function lineBadgeStyle(line?: Departure["line"]): {
   color: string;
 } {
   return {
-    backgroundColor: line?.color ? `#${line.color}` : "#e5e7eb",
-    color: line?.textColor ? `#${line.textColor}` : "#111827",
+    backgroundColor: line?.color ? `#${line.color}` : "#e7e7de",
+    color: line?.textColor ? `#${line.textColor}` : "#2e2e2b",
   };
 }
 

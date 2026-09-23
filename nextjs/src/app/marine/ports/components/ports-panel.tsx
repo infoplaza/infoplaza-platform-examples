@@ -29,7 +29,7 @@ import { PortDetails } from "./port-details";
 const PortsMap = dynamic(() => import("./ports-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[480px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[480px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -177,57 +177,57 @@ export function PortsPanel() {
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Click a port to see what the index holds on it.
         </p>
 
         <fieldset className="flex flex-wrap items-center gap-3 text-sm">
           <legend className="sr-only">Port size</legend>
-          <span className="text-gray-600">Size</span>
+          <span className="text-dark/80">Size</span>
           {SIZES.map((option) => (
             <label
               key={option.code}
-              className="flex items-center gap-1.5 text-gray-700"
+              className="flex items-center gap-1.5 text-dark/85"
             >
               <input
                 type="checkbox"
                 checked={sizes.includes(option.code)}
                 onChange={() => toggleSize(option.code)}
-                className="h-3.5 w-3.5 accent-blue-600"
+                className="h-3.5 w-3.5 accent-marine"
               />
               {option.label}
-              <span className="text-xs text-gray-400">{option.count}</span>
+              <span className="text-xs text-dark/50">{option.count}</span>
             </label>
           ))}
         </fieldset>
       </div>
 
       <section>
-        <h2 className="text-sm font-medium text-gray-900">
+        <h2 className="text-sm font-medium text-dark">
           Ports
           {!portsLoading && !portsError && (
-            <span className="ml-2 font-normal text-gray-400">
+            <span className="ml-2 font-normal text-dark/50">
               {ports.length}
             </span>
           )}
         </h2>
         {portsLoading && (
-          <p className="mt-1 text-sm text-gray-500">Loading ports…</p>
+          <p className="mt-1 text-sm text-dark/70">Loading ports…</p>
         )}
         {portsError && <p className="mt-1 text-sm text-red-600">{portsError}</p>}
         {!portsLoading && !portsError && ports.length === 0 && (
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-dark/70">
             No ports in this filter. Tick a size to put some on the map.
           </p>
         )}
       </section>
 
       {activeLoading && (
-        <p className="text-sm text-gray-500">Loading port…</p>
+        <p className="text-sm text-dark/70">Loading port…</p>
       )}
       {activeError && <p className="text-sm text-red-600">{activeError}</p>}
       {!activeLoading && !activeError && !active && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-dark/70">
           Click a port on the map to see its depths, its facilities and what it
           can supply.
         </p>

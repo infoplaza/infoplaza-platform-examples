@@ -50,7 +50,7 @@ import { WaypointForecast } from "./waypoint-forecast";
 const ShippingMap = dynamic(() => import("./shipping-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[480px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[480px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -264,7 +264,7 @@ export function ShippingPanel() {
       />
 
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Click the sea to add a waypoint, drag one to move it, click one for
           the forecast at it. Times are UTC.
         </p>
@@ -275,7 +275,7 @@ export function ShippingPanel() {
               type="datetime-local"
               value={startInput}
               onChange={(event) => setTypedStart(event.target.value)}
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm tabular-nums"
+              className="rounded-md border border-cloud-dark bg-white px-2 py-1 text-sm tabular-nums"
             />
           </Field>
 
@@ -288,9 +288,9 @@ export function ShippingPanel() {
                 step={0.5}
                 value={speedInput}
                 onChange={(event) => setSpeedInput(event.target.value)}
-                className="w-20 rounded-md border border-gray-300 px-2 py-1 text-sm tabular-nums"
+                className="w-20 rounded-md border border-cloud-dark bg-white px-2 py-1 text-sm tabular-nums"
               />
-              <span className="text-sm text-gray-500">kn</span>
+              <span className="text-sm text-dark/70">kn</span>
             </div>
           </Field>
 
@@ -298,7 +298,7 @@ export function ShippingPanel() {
             <select
               value={routing}
               onChange={(event) => setRouting(event.target.value as Routing)}
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+              className="rounded-md border border-cloud-dark bg-white px-2 py-1 text-sm"
             >
               {ROUTINGS.map((option) => (
                 <option
@@ -337,26 +337,26 @@ export function ShippingPanel() {
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-sm font-medium text-gray-900">Along the route</h2>
+          <h2 className="text-sm font-medium text-dark">Along the route</h2>
           {route && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-dark/70">
               Click a row for everything the models answered there.
             </p>
           )}
         </div>
 
         {waypoints.length < 2 && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-dark/70">
             A voyage needs two waypoints. Click the sea to add
             {waypoints.length === 0 ? " them" : " another one"}.
           </p>
         )}
         {waypoints.length >= 2 && !speedIsValid && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-dark/70">
             Fill in a speed in knots to work the voyage out.
           </p>
         )}
-        {routeLoading && <p className="text-sm text-gray-500">Loading the route…</p>}
+        {routeLoading && <p className="text-sm text-dark/70">Loading the route…</p>}
         {routeError && <p className="text-sm text-red-600">{routeError}</p>}
 
         {route && (
@@ -403,8 +403,8 @@ function WaypointStrip({
             key={waypoint.id}
             className={`flex items-center gap-2 rounded-md border px-2 py-1 text-xs ${
               selected
-                ? "border-blue-300 bg-blue-50 text-blue-800"
-                : "border-gray-200 bg-white text-gray-600"
+                ? "border-marine/30 bg-marine/5 text-marine"
+                : "border-cloud-dark bg-white text-dark/80"
             }`}
           >
             <button
@@ -414,7 +414,7 @@ function WaypointStrip({
             >
               <span
                 className={`flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-semibold text-white ${
-                  selected ? "bg-blue-600" : "bg-gray-900"
+                  selected ? "bg-marine" : "bg-dark"
                 }`}
               >
                 {index + 1}
@@ -427,7 +427,7 @@ function WaypointStrip({
               type="button"
               onClick={() => onRemove(waypoint.id)}
               title={`Remove waypoint ${index + 1}`}
-              className="text-gray-400 transition-colors hover:text-gray-900"
+              className="text-dark/50 transition-colors hover:text-dark"
             >
               ×
             </button>
@@ -438,7 +438,7 @@ function WaypointStrip({
       <button
         type="button"
         onClick={onClear}
-        className="text-xs text-gray-500 underline-offset-2 transition-colors hover:text-gray-900 hover:underline"
+        className="text-xs text-dark/70 underline-offset-2 transition-colors hover:text-dark hover:underline"
       >
         Clear
       </button>
@@ -459,7 +459,7 @@ function RouteSummary({ route }: { route: RouteForecast }) {
   const sailed = sailedDistances(route.points);
 
   return (
-    <dl className="flex flex-wrap gap-x-10 gap-y-3 rounded-lg border border-gray-200 p-4 text-sm">
+    <dl className="flex flex-wrap gap-x-10 gap-y-3 rounded-lg border border-cloud-dark bg-white p-4 text-sm">
       <Stat label="Distance">{formatDistance(sailed[sailed.length - 1])}</Stat>
       <Stat label="Passage">{formatDuration(last.time - route.start)}</Stat>
       <Stat label="Speed">{formatSpeed(route.speeds[0])}</Stat>
@@ -476,7 +476,7 @@ function RouteSummary({ route }: { route: RouteForecast }) {
 /** Which model runs the numbers above came out of. */
 function Models({ route }: { route: RouteForecast }) {
   return (
-    <p className="text-xs text-gray-400">
+    <p className="text-xs text-dark/50">
       {route.models
         .map((model) => `${model.key} (run ${formatMoment(model.runtime)})`)
         .join(" · ")}
@@ -496,9 +496,9 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-xs font-medium text-gray-500">
+      <span className="text-xs font-medium text-dark/70">
         {label}
-        {hint && <span className="ml-1 font-normal text-gray-400">{hint}</span>}
+        {hint && <span className="ml-1 font-normal text-dark/50">{hint}</span>}
       </span>
       {children}
     </label>
@@ -514,8 +514,8 @@ function Stat({
 }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-gray-500">{label}</dt>
-      <dd className="mt-0.5 text-gray-900 tabular-nums">{children}</dd>
+      <dt className="text-xs font-medium text-dark/70">{label}</dt>
+      <dd className="mt-0.5 text-dark tabular-nums">{children}</dd>
     </div>
   );
 }

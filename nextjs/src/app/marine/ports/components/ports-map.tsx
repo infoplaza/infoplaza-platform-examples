@@ -86,8 +86,8 @@ const PORTS_SOURCE = "ports";
 const PORTS_LAYER = "ports-circles";
 const ACTIVE_LAYER = "ports-active";
 
-const PORT_COLOR = "#111827";
-const ACTIVE_COLOR = "#2563eb";
+const PORT_COLOR = "#2e2e2b";
+const ACTIVE_COLOR = "#0070de";
 
 /** Dot size per grade, so the big ports read as the big ones. */
 const RADIUS_BY_SIZE: Record<PortSize, number> = {
@@ -235,7 +235,7 @@ export default function PortsMap({ ports, activeId, onSelect }: PortsMapProps) {
   return (
     <div
       ref={containerRef}
-      className="h-[480px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[480px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

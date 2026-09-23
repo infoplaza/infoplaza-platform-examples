@@ -53,7 +53,7 @@ export function PlaceList({ places, selectedKey, onSelect }: PlaceListProps) {
   );
 
   return (
-    <ul className="divide-y divide-gray-100">
+    <ul className="divide-y divide-cloud">
       {places.map((place, index) => {
         const key = placeKey(place);
         const isSelected = key === selectedKey;
@@ -65,12 +65,12 @@ export function PlaceList({ places, selectedKey, onSelect }: PlaceListProps) {
               type="button"
               onClick={() => onSelect(place)}
               className={`flex w-full items-start gap-3 py-3 text-left transition-colors ${
-                isSelected ? "text-blue-700" : "text-gray-900 hover:text-gray-500"
+                isSelected ? "text-marine" : "text-dark hover:text-dark/70"
               }`}
             >
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white ${
-                  isSelected ? "bg-blue-600" : "bg-gray-900"
+                  isSelected ? "bg-marine" : "bg-dark"
                 }`}
               >
                 {index + 1}
@@ -81,19 +81,19 @@ export function PlaceList({ places, selectedKey, onSelect }: PlaceListProps) {
                   {place.name}{" "}
                   <span aria-hidden>{countryFlag(place.country.code)}</span>
                 </span>
-                <span className="block truncate text-xs text-gray-500">
+                <span className="block truncate text-xs text-dark/70">
                   {placeRegion(place)}
                 </span>
-                <span className="block truncate font-mono text-xs text-gray-400">
+                <span className="block truncate font-mono text-xs text-dark/50">
                   {formatCoordinates(place)}
                 </span>
               </span>
 
               <span className="shrink-0 text-right">
-                <span className="block text-xs tabular-nums text-gray-500">
+                <span className="block text-xs tabular-nums text-dark/70">
                   {time ?? ""}
                 </span>
-                <span className="block text-xs text-gray-400">
+                <span className="block text-xs text-dark/50">
                   {place.timezone}
                 </span>
               </span>

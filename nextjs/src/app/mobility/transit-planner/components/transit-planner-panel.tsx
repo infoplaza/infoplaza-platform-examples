@@ -140,7 +140,7 @@ export function TransitPlannerPanel() {
         <PlaceInput label="To" value={to} onChange={setTo} />
         <button
           type="submit"
-          className="mt-6 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+          className="mt-6 rounded-md bg-dark px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-dark/85"
         >
           Plan trip
         </button>
@@ -148,12 +148,12 @@ export function TransitPlannerPanel() {
 
       <div className="mt-6">
         {status === "streaming" && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-dark/70">
             Streaming results{results.length > 0 && ` (${results.length} so far)`}…
           </p>
         )}
         {status === "done" && (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-dark/70">
             Done — received {results.length} result
             {results.length === 1 ? "" : "s"}.
           </p>
@@ -164,7 +164,7 @@ export function TransitPlannerPanel() {
       <div className="mt-4 space-y-6">
         {results.map((result, resultIndex) => (
           <section key={resultIndex}>
-            <h2 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-dark/50">
               Result {resultIndex + 1} · {plannerLabel(result.planner)}
               {result.modifiers?.length ? ` · ${result.modifiers.join(", ")}` : ""}
             </h2>
@@ -207,12 +207,12 @@ function TripCard({
   onToggle: () => void;
 }) {
   return (
-    <li className="rounded-lg border border-gray-200">
+    <li className="rounded-lg border border-cloud-dark bg-white">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className="w-full p-4 text-left transition-colors hover:bg-gray-50"
+        className="w-full p-4 text-left transition-colors hover:bg-cloud"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span className="font-medium">
@@ -220,7 +220,7 @@ function TripCard({
             {" → "}
             {formatTime(trip.expectedEndTime ?? trip.aimedEndTime)}
           </span>
-          <span className="flex items-center gap-2 text-sm text-gray-500">
+          <span className="flex items-center gap-2 text-sm text-dark/70">
             {formatDuration(trip.duration)} · {trip.transfers ?? 0} transfer
             {(trip.transfers ?? 0) === 1 ? "" : "s"}
             <svg
@@ -238,8 +238,8 @@ function TripCard({
               key={leg.id ?? legIndex}
               className={`rounded px-2 py-0.5 text-xs ${
                 leg.transitLeg || leg.flexibleLeg
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600"
+                  ? "bg-dark text-white"
+                  : "bg-cloud-dark text-dark/80"
               }`}
             >
               {legLabel(leg)}
@@ -249,28 +249,28 @@ function TripCard({
       </button>
 
       {expanded && (
-        <ol className="border-t border-gray-200 px-4 py-3">
+        <ol className="border-t border-cloud-dark px-4 py-3">
           {trip.legs?.map((leg, legIndex) => (
             <li
               key={leg.id ?? legIndex}
-              className="flex gap-3 py-2 text-sm not-last:border-b not-last:border-gray-100"
+              className="flex gap-3 py-2 text-sm not-last:border-b not-last:border-cloud"
             >
-              <span className="w-12 shrink-0 font-mono text-gray-500">
+              <span className="w-12 shrink-0 font-mono text-dark/70">
                 {formatTime(legStartTime(leg))}
               </span>
               <div className="min-w-0 flex-1">
                 <span className="font-medium">{legLabel(leg)}</span>
                 {leg.transitLeg?.line?.name && (
-                  <span className="text-gray-500">
+                  <span className="text-dark/70">
                     {" "}
                     · {leg.transitLeg.line.name}
                   </span>
                 )}
                 {legEndpoints(leg) && (
-                  <p className="truncate text-gray-500">{legEndpoints(leg)}</p>
+                  <p className="truncate text-dark/70">{legEndpoints(leg)}</p>
                 )}
               </div>
-              <span className="shrink-0 text-right text-gray-500">
+              <span className="shrink-0 text-right text-dark/70">
                 {formatDuration(leg.duration)}
                 {formatDistance(leg.distance) && (
                   <span className="block text-xs">

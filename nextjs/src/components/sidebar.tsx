@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { exampleGroups, GITHUB_REPO_URL } from "@/lib/examples";
@@ -32,13 +33,13 @@ export function Sidebar() {
     <>
       {/* The narrow-screen bar. Fixed, so the example scrolls under it and the
           way back to the list is always a tap away. */}
-      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-gray-200 bg-white/90 px-3 backdrop-blur lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2 border-b border-cloud-dark bg-cloud/90 px-3 backdrop-blur lg:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
           aria-expanded={open}
-          className="-m-1 rounded-md p-1 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+          className="-m-1 rounded-md p-1 text-dark/80 transition-colors hover:bg-cloud-dark hover:text-dark"
         >
           <svg viewBox="0 0 16 16" aria-hidden="true" className="h-5 w-5">
             <path
@@ -51,8 +52,8 @@ export function Sidebar() {
           </svg>
         </button>
 
-        <Link href="/" className="text-sm font-semibold text-gray-900">
-          Infoplaza Platform
+        <Link href="/" className="ml-1">
+          <Logo />
         </Link>
       </header>
 
@@ -60,7 +61,7 @@ export function Sidebar() {
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-gray-900/30 lg:hidden"
+          className="fixed inset-0 z-40 bg-dark/30 lg:hidden"
           aria-hidden="true"
         />
       )}
@@ -68,23 +69,20 @@ export function Sidebar() {
       <aside
         // Narrow: a drawer over the page, slid out of sight until it is opened.
         // Wide: the column it has always been, back in the flow of the body.
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-gray-200 bg-white transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:self-start lg:transition-none ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-60 shrink-0 flex-col bg-cloud transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:self-start lg:transition-none ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-start justify-between px-6 py-6">
           <Link href="/" onClick={() => setOpen(false)} className="block">
-            <span className="text-sm font-semibold text-gray-900">
-              Infoplaza Platform
-            </span>
-            <span className="block text-xs text-gray-500">Examples</span>
+            <Logo />
           </Link>
 
           <button
             type="button"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
-            className="text-gray-400 transition-colors hover:text-gray-900 lg:hidden"
+            className="mt-1 text-dark/50 transition-colors hover:text-dark lg:hidden"
           >
             <svg viewBox="0 0 14 14" aria-hidden="true" className="h-4 w-4">
               <path
@@ -98,13 +96,13 @@ export function Sidebar() {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3">
+        <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-6 pt-2 pb-8">
           {exampleGroups.map((group) => (
-            <div key={group.title} className="mb-6">
-              <h2 className="px-3 pb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+            <div key={group.title}>
+              <h2 className="mb-2 text-xs font-medium text-dark/50">
                 {group.title}
               </h2>
-              <ul>
+              <ul className="flex flex-col gap-px">
                 {group.examples.map((example) => {
                   const isActive = pathname === example.href;
                   return (
@@ -115,10 +113,10 @@ export function Sidebar() {
                         // opening an example closes it. On the wide layout
                         // there was nothing open to close.
                         onClick={() => setOpen(false)}
-                        className={`block rounded-md px-3 py-2 text-sm transition-colors ${
+                        className={`-mx-2 block truncate rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-gray-100 font-medium text-gray-900"
-                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                            ? "bg-primary text-white"
+                            : "text-dark hover:bg-cloud-dark"
                         }`}
                       >
                         {example.title}
@@ -131,12 +129,12 @@ export function Sidebar() {
           ))}
         </nav>
 
-        <div className="border-t border-gray-200 px-6 py-4">
+        <div className="px-6 py-4">
           <a
             href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+            className="flex items-center gap-2 text-sm text-dark/80 transition-colors hover:text-dark"
           >
             <svg viewBox="0 0 16 16" className="h-4 w-4 fill-current" aria-hidden>
               <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
@@ -146,5 +144,24 @@ export function Sidebar() {
         </div>
       </aside>
     </>
+  );
+}
+
+/** The Infoplaza wordmark with the line under it that says where you are. */
+function Logo() {
+  return (
+    <span className="flex items-end gap-1">
+      <Image
+        src="/infoplaza-logo.svg"
+        alt="Infoplaza"
+        width={103}
+        height={25}
+        unoptimized
+        priority
+      />
+      <span className="-translate-y-0.5 ml-1 text-xs font-medium text-dark">
+        examples
+      </span>
+    </span>
   );
 }

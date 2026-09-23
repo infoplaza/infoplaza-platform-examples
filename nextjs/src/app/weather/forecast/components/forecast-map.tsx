@@ -49,8 +49,8 @@ const MAP_STYLE: StyleSpecification = {
 
 const INITIAL_ZOOM = 9;
 
-const PIN_COLOR = "#111827";
-const RESOLVED_COLOR = "#2563eb";
+const PIN_COLOR = "#2e2e2b";
+const RESOLVED_COLOR = "#0070de";
 
 /** Below this the two markers overlap, so only the pin is worth drawing. */
 const SAME_SPOT_DEGREES = 0.02;
@@ -177,7 +177,7 @@ export default function ForecastMap({
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

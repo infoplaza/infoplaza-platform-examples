@@ -33,11 +33,11 @@ export function ExamplePage({
     // should ever be, which is what made it scroll sideways by a hair.
     <div className="mx-auto max-w-7xl">
       <div className="max-w-3xl">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        <p className="text-xs font-medium uppercase tracking-wide text-dark/50">
           {group}
         </p>
         <h1 className="mt-1 text-2xl font-semibold">{title}</h1>
-        <p className="mt-2 text-gray-600">{intro}</p>
+        <p className="mt-2 text-dark/80">{intro}</p>
       </div>
 
       <div className="mt-8">{children}</div>
@@ -62,7 +62,7 @@ export function ApiLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-600 hover:underline"
+      className="text-primary hover:underline"
     >
       {children}
     </a>

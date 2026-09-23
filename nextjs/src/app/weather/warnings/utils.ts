@@ -74,7 +74,7 @@ export interface LevelMeta {
  */
 export const LEVELS: Record<number, LevelMeta> = {
   1: { label: "Green", color: "#16a34a", textColor: "#ffffff" },
-  2: { label: "Yellow", color: "#eab308", textColor: "#111827" },
+  2: { label: "Yellow", color: "#eab308", textColor: "#2e2e2b" },
   3: { label: "Orange", color: "#f97316", textColor: "#ffffff" },
   4: { label: "Red", color: "#dc2626", textColor: "#ffffff" },
 };

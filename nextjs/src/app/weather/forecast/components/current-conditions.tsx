@@ -33,18 +33,18 @@ export function CurrentConditions({ forecast }: CurrentConditionsProps) {
   const description = conditionDescription(hour?.iconExtended);
 
   return (
-    <section className="rounded-lg border border-gray-200 p-5">
+    <section className="rounded-lg border border-cloud-dark bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
         <div className="flex items-center gap-4">
           <WeatherIcon code={hour?.iconExtended} size={64} />
           <div>
-            <p className="text-4xl font-semibold leading-none text-gray-900">
+            <p className="text-4xl font-semibold leading-none text-dark">
               {formatTemperature(currently.temperature)}
             </p>
             {description && (
-              <p className="mt-1.5 text-sm text-gray-900">{description}</p>
+              <p className="mt-1.5 text-sm text-dark">{description}</p>
             )}
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-dark/70">
               Feels like {formatTemperature(currently.apparentTemperature)} · at{" "}
               {formatTime(currently.time, timezone)} local time
             </p>
@@ -55,7 +55,7 @@ export function CurrentConditions({ forecast }: CurrentConditionsProps) {
           <Stat label="Wind">
             {formatWind(currently.windSpeed)}
             {currently.windBearing !== undefined && (
-              <span className="text-gray-500">
+              <span className="text-dark/70">
                 {" "}
                 from {compassPoint(currently.windBearing)}
               </span>
@@ -80,7 +80,7 @@ export function CurrentConditions({ forecast }: CurrentConditionsProps) {
           <Stat label="Precipitation">
             {formatIntensity(currently.precipIntensity)}
             {currently.precipProbability !== undefined && (
-              <span className="text-gray-500">
+              <span className="text-dark/70">
                 {" "}
                 at {formatFraction(currently.precipProbability)}
               </span>
@@ -89,14 +89,14 @@ export function CurrentConditions({ forecast }: CurrentConditionsProps) {
           <Stat label="UV index">
             {formatUvIndex(hour?.uvIndex)}
             {hour?.uvIndex !== undefined && (
-              <span className="text-gray-500"> {uvBand(hour.uvIndex)}</span>
+              <span className="text-dark/70"> {uvBand(hour.uvIndex)}</span>
             )}
           </Stat>
         </dl>
       </div>
 
       {currently.nearestStormDistance !== undefined && (
-        <p className="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
+        <p className="mt-4 border-t border-cloud pt-3 text-xs text-dark/70">
           Nearest storm {Math.round(currently.nearestStormDistance)} km away
           {currently.nearestStormBearing !== undefined &&
             `, to the ${compassPoint(currently.nearestStormBearing)}`}
@@ -117,8 +117,8 @@ function Stat({
 }) {
   return (
     <div>
-      <dt className="text-xs text-gray-500">{label}</dt>
-      <dd className="text-gray-900 tabular-nums">{children}</dd>
+      <dt className="text-xs text-dark/70">{label}</dt>
+      <dd className="text-dark tabular-nums">{children}</dd>
     </div>
   );
 }

@@ -26,7 +26,7 @@ import {
 const TrafficMap = dynamic(() => import("./traffic-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[460px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[460px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -75,8 +75,8 @@ export function TrafficPanel() {
   if (!traffic) {
     return (
       <div className="space-y-6">
-        <div className="h-10 w-64 animate-pulse rounded bg-gray-100" />
-        <div className="h-[460px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+        <div className="h-10 w-64 animate-pulse rounded bg-cloud-dark" />
+        <div className="h-[460px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
       </div>
     );
   }
@@ -85,7 +85,7 @@ export function TrafficPanel() {
 
   return (
     <div className="space-y-6">
-      <dl className="flex flex-wrap gap-x-10 gap-y-3">
+      <dl className="flex flex-wrap gap-x-10 gap-y-3 rounded-lg border border-cloud-dark bg-white p-5">
         <Stat label="Jams" value={summary.jams} />
         <Stat label="Total length" value={`${summary.length} km`} />
         <Stat label="Events" value={summary.events} />
@@ -98,26 +98,26 @@ export function TrafficPanel() {
         onSelect={setSelectedId}
       />
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Hover a road or a dot on the map for the details, click it to select
         the event, or pick one from the list.
       </p>
 
-      <section>
-        <h2 className="text-sm font-medium text-gray-900">
+      <section className="rounded-lg border border-cloud-dark bg-white p-5">
+        <h2 className="text-sm font-medium text-dark">
           All events
-          <span className="ml-2 font-normal text-gray-400">
+          <span className="ml-2 font-normal text-dark/50">
             {events.length}
           </span>
         </h2>
 
         {events.length === 0 && (
-          <p className="mt-3 text-sm text-gray-500">
+          <p className="mt-3 text-sm text-dark/70">
             Nothing on the roads right now.
           </p>
         )}
 
-        <ul className="mt-2 divide-y divide-gray-100">
+        <ul className="mt-2 divide-y divide-cloud">
           {events.map((event) => {
             const isSelected = event.id === selectedId;
             return (
@@ -126,7 +126,7 @@ export function TrafficPanel() {
                   type="button"
                   onClick={() => setSelectedId(event.id)}
                   className={`flex w-full items-start gap-3 py-2.5 text-left transition-colors ${
-                    isSelected ? "text-blue-700" : "hover:text-gray-500"
+                    isSelected ? "text-marine" : "hover:text-dark/70"
                   }`}
                 >
                   <span
@@ -141,10 +141,10 @@ export function TrafficPanel() {
                     <span className="block truncate text-sm">
                       {locationLabel(event)}
                     </span>
-                    <span className="block truncate text-xs text-gray-500">
+                    <span className="block truncate text-xs text-dark/70">
                       {event.description}
                     </span>
-                    <span className="block truncate text-xs text-gray-400">
+                    <span className="block truncate text-xs text-dark/50">
                       {[
                         causeLabel(event.causeType),
                         event.cause,
@@ -161,10 +161,10 @@ export function TrafficPanel() {
                         +{event.delayMinutes} min
                       </span>
                     ) : (
-                      <span className="block text-sm text-gray-400">–</span>
+                      <span className="block text-sm text-dark/50">–</span>
                     )}
                     {event.queueKm > 0 && (
-                      <span className="block text-xs tabular-nums text-gray-500">
+                      <span className="block text-xs tabular-nums text-dark/70">
                         {event.queueKm} km
                       </span>
                     )}
@@ -182,8 +182,8 @@ export function TrafficPanel() {
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-gray-400">{label}</dt>
-      <dd className="text-lg font-semibold tabular-nums text-gray-900">
+      <dt className="text-xs uppercase tracking-wide text-dark/50">{label}</dt>
+      <dd className="text-lg font-semibold tabular-nums text-dark">
         {value}
       </dd>
     </div>

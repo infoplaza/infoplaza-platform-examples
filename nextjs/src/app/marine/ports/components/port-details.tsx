@@ -33,24 +33,24 @@ export function PortDetails({ port }: PortDetailsProps) {
   const depths = DEPTH_FIELDS.filter((field) => port.depths[field.key] !== null);
 
   return (
-    <article className="rounded-lg border border-gray-200 p-6">
+    <article className="rounded-lg border border-cloud-dark bg-white p-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold">{port.name}</h2>
-          <p className="mt-0.5 text-sm text-gray-600">
+          <p className="mt-0.5 text-sm text-dark/80">
             {port.country}
             {port.alternate_name && (
-              <span className="text-gray-400"> · {port.alternate_name}</span>
+              <span className="text-dark/50"> · {port.alternate_name}</span>
             )}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {port.unlocode && (
-            <span className="rounded-md bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700">
+            <span className="rounded-md bg-cloud-dark px-2 py-1 font-mono text-xs text-dark/85">
               {port.unlocode}
             </span>
           )}
-          <span className="rounded-md bg-gray-900 px-2 py-1 text-xs font-medium text-white">
+          <span className="rounded-md bg-dark px-2 py-1 text-xs font-medium text-white">
             {sizeLabel(port.size)}
           </span>
         </div>
@@ -58,7 +58,7 @@ export function PortDetails({ port }: PortDetailsProps) {
 
       <div className="mt-6 grid gap-x-10 gap-y-6 sm:grid-cols-2">
         <Section title="Where it is">
-          <dl className="divide-y divide-gray-100 text-sm">
+          <dl className="divide-y divide-cloud text-sm">
             <Detail label="Coordinates">
               <span className="tabular-nums">{formatCoordinates(port)}</span>
             </Detail>
@@ -69,7 +69,7 @@ export function PortDetails({ port }: PortDetailsProps) {
         </Section>
 
         <Section title="The harbour">
-          <dl className="divide-y divide-gray-100 text-sm">
+          <dl className="divide-y divide-cloud text-sm">
             <Detail label="Type">{orUnknown(port.harbor_type)}</Detail>
             <Detail label="Use">{orUnknown(port.harbor_use)}</Detail>
             <Detail label="Shelter">{orUnknown(port.shelter)}</Detail>
@@ -83,11 +83,11 @@ export function PortDetails({ port }: PortDetailsProps) {
 
         <Section title="Depths">
           {depths.length === 0 ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-dark/70">
               No depths are recorded for this port.
             </p>
           ) : (
-            <dl className="divide-y divide-gray-100 text-sm">
+            <dl className="divide-y divide-cloud text-sm">
               {depths.map((field) => (
                 <Detail key={field.key} label={field.label}>
                   <span className="tabular-nums">
@@ -101,11 +101,11 @@ export function PortDetails({ port }: PortDetailsProps) {
 
         <Section title="Largest vessel handled">
           {!hasVesselLimits(port.max_vessel) ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-dark/70">
               No vessel dimensions are recorded for this port.
             </p>
           ) : (
-            <dl className="divide-y divide-gray-100 text-sm">
+            <dl className="divide-y divide-cloud text-sm">
               {VESSEL_FIELDS.map((field) => (
                 <Detail key={field.key} label={field.label}>
                   <span className="tabular-nums">
@@ -122,7 +122,7 @@ export function PortDetails({ port }: PortDetailsProps) {
 
       <div className="mt-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-dark/50">
             What the port offers
           </h3>
           <Legend />
@@ -151,7 +151,7 @@ function Section({
 }) {
   return (
     <section>
-      <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+      <h3 className="text-xs font-medium uppercase tracking-wide text-dark/50">
         {title}
       </h3>
       <div className="mt-2">{children}</div>
@@ -169,8 +169,8 @@ function Detail({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="shrink-0 text-gray-500">{label}</dt>
-      <dd className="min-w-0 text-right text-gray-900">{children}</dd>
+      <dt className="shrink-0 text-dark/70">{label}</dt>
+      <dd className="min-w-0 text-right text-dark">{children}</dd>
     </div>
   );
 }
@@ -191,10 +191,10 @@ function CapabilityCard({
   ).length;
 
   return (
-    <div className="rounded-lg border border-gray-200 p-4">
-      <h4 className="flex items-baseline justify-between gap-2 text-sm font-medium text-gray-900">
+    <div className="rounded-lg border border-cloud-dark bg-white p-4">
+      <h4 className="flex items-baseline justify-between gap-2 text-sm font-medium text-dark">
         {title}
-        <span className="text-xs font-normal text-gray-400">
+        <span className="text-xs font-normal text-dark/50">
           {offered}/{entries.length}
         </span>
       </h4>
@@ -216,8 +216,8 @@ function rank(state: Availability): number {
 
 const CHIP_STYLES: Record<Availability, string> = {
   yes: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  no: "border-transparent bg-gray-100 text-gray-400 line-through decoration-gray-300",
-  unknown: "border-dashed border-gray-300 text-gray-400",
+  no: "border-transparent bg-cloud-dark text-dark/50 line-through decoration-cloud-darker",
+  unknown: "border-dashed border-cloud-darker text-dark/50",
 };
 
 const CHIP_TITLES: Record<Availability, string> = {
@@ -245,7 +245,7 @@ function Chip({
 
 function Legend() {
   return (
-    <ul className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+    <ul className="flex flex-wrap items-center gap-3 text-xs text-dark/70">
       {(["yes", "no", "unknown"] as const).map((state) => (
         <li key={state} className="flex items-center gap-1.5">
           <span

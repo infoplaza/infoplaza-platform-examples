@@ -101,7 +101,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
         // On a narrow screen it sits in the bar the sidebar puts across the
         // top, level with the menu button; on a wide one there is no bar and
         // it keeps its own corner.
-        className="fixed right-3 top-2.5 z-40 flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3.5 py-2 text-sm text-gray-700 shadow-sm backdrop-blur transition-colors hover:border-gray-300 hover:text-gray-900 lg:right-6 lg:top-6"
+        className="fixed right-3 top-2.5 z-40 flex items-center gap-2 rounded-full border border-cloud-dark bg-white/90 px-3.5 py-2 text-sm text-dark/85 shadow-sm backdrop-blur transition-colors hover:text-dark lg:right-6 lg:top-6"
       >
         {/* The wording is what gives way on a narrow screen, where the
             button shares the top bar with the sidebar's menu and the title:
@@ -118,10 +118,10 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
     // so the map stays where it was when the drawer is opened.
     <aside
       aria-label="API requests"
-      className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l border-gray-200 bg-white shadow-xl sm:w-[28rem]"
+      className="fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l border-cloud-dark bg-white shadow-xl sm:w-[28rem]"
     >
-      <header className="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3">
-        <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-gray-900">
+      <header className="flex items-center justify-between gap-3 border-b border-cloud-dark px-4 py-3">
+        <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium text-dark">
           API requests
           <Count value={calls.length} />
           <Credits value={totalCredits(calls)} />
@@ -132,7 +132,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
             <button
               type="button"
               onClick={() => clearApiCalls()}
-              className="text-xs text-gray-500 hover:text-gray-900"
+              className="text-xs text-dark/70 hover:text-dark"
             >
               Clear
             </button>
@@ -141,7 +141,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
             type="button"
             onClick={() => writeOpen(false)}
             aria-label="Close API requests"
-            className="text-gray-400 hover:text-gray-900"
+            className="text-dark/50 hover:text-dark"
           >
             <svg viewBox="0 0 14 14" aria-hidden="true" className="h-4 w-4">
               <path
@@ -156,7 +156,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
         </div>
       </header>
 
-      <p className="border-b border-gray-200 px-4 py-2.5 text-xs leading-relaxed text-gray-500">
+      <p className="border-b border-cloud-dark px-4 py-2.5 text-xs leading-relaxed text-dark/70">
         Everything this page asked the Platform API, newest lookup first, and
         what it spent: every answer says what the call cost, shown per request
         and totalled above, where{" "}
@@ -169,7 +169,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
 
       <div className="flex-1 overflow-y-auto p-3">
         {calls.length === 0 ? (
-          <p className="px-1 py-2 text-sm text-gray-500">
+          <p className="px-1 py-2 text-sm text-dark/70">
             No requests yet. Use the example and they will appear here.
           </p>
         ) : (
@@ -195,7 +195,7 @@ export function ApiLog({ initialCalls = [] }: { initialCalls?: ApiCall[] }) {
  */
 function Count({ value }: { value: number }) {
   return (
-    <span className="inline-flex h-5 items-center rounded-full bg-gray-100 px-2 text-xs tabular-nums text-gray-600">
+    <span className="inline-flex h-5 items-center rounded-full bg-cloud-dark px-2 text-xs tabular-nums text-dark/80">
       <NumberFlow value={value} />
     </span>
   );
@@ -229,7 +229,7 @@ function CreditAmount({ value }: { value: number | null }) {
     <span
       title={label}
       className={`inline-flex items-center gap-1 tabular-nums ${
-        value === null ? "text-gray-500" : "text-amber-700"
+        value === null ? "text-dark/70" : "text-amber-700"
       }`}
     >
       <CreditToken />
@@ -254,7 +254,7 @@ function Credits({ value }: { value: number | null }) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-normal ${
-        value === null ? "bg-gray-100" : "bg-amber-50"
+        value === null ? "bg-cloud-dark" : "bg-amber-50"
       }`}
     >
       <CreditAmount value={value} />
@@ -269,21 +269,21 @@ function ApiCallRow({ call }: { call: ApiCall }) {
   const failed = call.status >= 400;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200">
+    <div className="overflow-hidden rounded-lg border border-cloud-dark bg-white">
       <button
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
-        className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-gray-50"
+        className="flex w-full items-start gap-2 px-3 py-2.5 text-left hover:bg-cloud"
       >
         <span className="mt-1">
           <Chevron open={open} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm text-gray-900">
+          <span className="block truncate text-sm text-dark">
             {call.name}
           </span>
-          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-gray-500">
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-dark/70">
             <span>{call.method}</span>
             <span className={failed ? "text-red-600" : "text-green-700"}>
               {call.status}
@@ -298,7 +298,7 @@ function ApiCallRow({ call }: { call: ApiCall }) {
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-gray-200 px-3 py-3">
+        <div className="space-y-4 border-t border-cloud-dark px-3 py-3">
           <Block
             title="Request"
             action={
@@ -311,8 +311,8 @@ function ApiCallRow({ call }: { call: ApiCall }) {
               <dl className="mt-3 grid grid-cols-[minmax(0,7rem)_1fr] gap-x-3 gap-y-1 text-xs">
                 {params.map(([name, value]) => (
                   <div key={name} className="contents">
-                    <dt className="truncate font-mono text-gray-500">{name}</dt>
-                    <dd className="break-all font-mono text-gray-900">
+                    <dt className="truncate font-mono text-dark/70">{name}</dt>
+                    <dd className="break-all font-mono text-dark">
                       {value}
                     </dd>
                   </div>
@@ -322,7 +322,7 @@ function ApiCallRow({ call }: { call: ApiCall }) {
 
             {call.requestBody && (
               <div className="mt-3">
-                <p className="mb-1 text-xs text-gray-500">Body</p>
+                <p className="mb-1 text-xs text-dark/70">Body</p>
                 <Code>{call.requestBody}</Code>
               </div>
             )}
@@ -334,7 +334,7 @@ function ApiCallRow({ call }: { call: ApiCall }) {
           >
             <Code>{call.response}</Code>
             {call.truncated && (
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-dark/70">
                 Only the first part is shown: the whole answer is{" "}
                 {formatBytes(call.responseBytes)}.
               </p>
@@ -345,7 +345,7 @@ function ApiCallRow({ call }: { call: ApiCall }) {
             href={call.docsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-xs text-blue-600 hover:underline"
+            className="inline-block text-xs text-primary hover:underline"
           >
             {call.name} in the API reference →
           </a>
@@ -367,7 +367,7 @@ function Block({
   return (
     <section>
       <div className="mb-1.5 flex items-baseline justify-between gap-3">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+        <h3 className="text-xs font-medium uppercase tracking-wide text-dark/50">
           {title}
         </h3>
         {action}
@@ -379,7 +379,7 @@ function Block({
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="max-h-72 overflow-auto rounded-md bg-gray-50 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all text-gray-800">
+    <pre className="max-h-72 overflow-auto rounded-md bg-cloud p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all text-dark">
       {children}
     </pre>
   );
@@ -401,7 +401,7 @@ function CopyButton({ label, value }: { label: string; value: string }) {
       onClick={() => {
         void navigator.clipboard.writeText(value).then(() => setCopied(true));
       }}
-      className="shrink-0 text-xs text-gray-500 hover:text-gray-900"
+      className="shrink-0 text-xs text-dark/70 hover:text-dark"
     >
       {copied ? "Copied" : label}
     </button>
@@ -413,7 +413,7 @@ function Chevron({ open }: { open: boolean }) {
     <svg
       viewBox="0 0 12 12"
       aria-hidden="true"
-      className={`h-3 w-3 shrink-0 text-gray-400 transition-transform ${
+      className={`h-3 w-3 shrink-0 text-dark/50 transition-transform ${
         open ? "rotate-90" : ""
       }`}
     >

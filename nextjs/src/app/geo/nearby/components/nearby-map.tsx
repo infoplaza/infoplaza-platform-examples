@@ -49,8 +49,8 @@ const INITIAL_ZOOM = 10;
 const FIT_OPTIONS = { padding: 60, maxZoom: 14, duration: 600 };
 
 const AREA_SOURCE = "search-area";
-const PIN_COLOR = "#111827";
-const PLACE_COLOR = "#2563eb";
+const PIN_COLOR = "#2e2e2b";
+const PLACE_COLOR = "#0070de";
 
 /** How many points the circle is drawn with. Smooth enough at any radius. */
 const RING_POINTS = 96;
@@ -253,7 +253,7 @@ export default function NearbyMap({
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

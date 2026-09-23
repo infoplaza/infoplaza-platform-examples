@@ -29,7 +29,7 @@ import { DeparturesList } from "./departures-list";
 const StopsMap = dynamic(() => import("./stops-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -132,7 +132,7 @@ export function TransitStopsPanel({
         onSelectStop={selectStop}
       />
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Click the map or drag the pin to move the search. Picked location:{" "}
         <span className="tabular-nums">
           {picked.latitude.toFixed(5)}, {picked.longitude.toFixed(5)}
@@ -140,30 +140,30 @@ export function TransitStopsPanel({
       </p>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
+        <section className="self-start rounded-lg border border-cloud-dark bg-white p-5">
+          <h2 className="text-sm font-medium text-dark">
             Nearby stops
             {stops.length > 0 && (
-              <span className="ml-2 font-normal text-gray-400">
+              <span className="ml-2 font-normal text-dark/50">
                 {stops.length}
               </span>
             )}
           </h2>
 
           {loadingStops && (
-            <p className="mt-3 text-sm text-gray-500">Loading stops…</p>
+            <p className="mt-3 text-sm text-dark/70">Loading stops…</p>
           )}
           {stopsError && (
             <p className="mt-3 text-sm text-red-600">{stopsError}</p>
           )}
           {!loadingStops && !stopsError && stops.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-dark/70">
               No stops here. Try a spot closer to a town.
             </p>
           )}
 
           {!loadingStops && (
-            <ul className="mt-2 divide-y divide-gray-100">
+            <ul className="mt-2 divide-y divide-cloud">
               {stops.map((stop) => {
                 const isSelected = stop.id === selectedStop?.id;
                 return (
@@ -173,19 +173,19 @@ export function TransitStopsPanel({
                       onClick={() => selectStop(stop)}
                       className={`flex w-full items-center gap-3 py-2.5 text-left transition-colors ${
                         isSelected
-                          ? "text-blue-700"
-                          : "text-gray-900 hover:text-gray-500"
+                          ? "text-marine"
+                          : "text-dark hover:text-dark/70"
                       }`}
                     >
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm">
                           {stopLabel(stop)}
                         </span>
-                        <span className="block truncate text-xs text-gray-400">
+                        <span className="block truncate text-xs text-dark/50">
                           {stop.id}
                         </span>
                       </span>
-                      <span className="shrink-0 text-xs tabular-nums text-gray-500">
+                      <span className="shrink-0 text-xs tabular-nums text-dark/70">
                         {formatDistance(distanceMeters(picked, stop))}
                       </span>
                     </button>
@@ -196,18 +196,18 @@ export function TransitStopsPanel({
           )}
         </section>
 
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
+        <section className="self-start rounded-lg border border-cloud-dark bg-white p-5">
+          <h2 className="text-sm font-medium text-dark">
             {selectedStop ? stopLabel(selectedStop) : "Departures"}
           </h2>
 
           {!selectedStop && (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-dark/70">
               Pick a stop from the list or the map to see its departures.
             </p>
           )}
           {loadingDepartures && (
-            <p className="mt-3 text-sm text-gray-500">Loading departures…</p>
+            <p className="mt-3 text-sm text-dark/70">Loading departures…</p>
           )}
           {departuresError && (
             <p className="mt-3 text-sm text-red-600">{departuresError}</p>
@@ -216,7 +216,7 @@ export function TransitStopsPanel({
             !loadingDepartures &&
             !departuresError &&
             departures.length === 0 && (
-              <p className="mt-3 text-sm text-gray-500">
+              <p className="mt-3 text-sm text-dark/70">
                 Nothing departs from this stop in the next hour.
               </p>
             )}

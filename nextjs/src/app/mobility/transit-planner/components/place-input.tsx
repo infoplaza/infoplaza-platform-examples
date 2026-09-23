@@ -116,7 +116,7 @@ export function PlaceInput({
 
   return (
     <div className="flex min-w-52 flex-1 flex-col gap-1 text-sm">
-      <label htmlFor={inputId} className="text-gray-600">
+      <label htmlFor={inputId} className="text-dark/80">
         {label}
       </label>
 
@@ -140,7 +140,7 @@ export function PlaceInput({
           aria-activedescendant={
             suggestions.length > 0 ? `${listId}-${activeIndex}` : undefined
           }
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+          className="w-full rounded-md border border-cloud-dark bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
         />
 
         {showList && (
@@ -150,10 +150,10 @@ export function PlaceInput({
             id={listId}
             role="listbox"
             onMouseDown={(event) => event.preventDefault()}
-            className="absolute top-full z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
+            className="absolute top-full z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-md border border-cloud-dark bg-white shadow-lg"
           >
             {suggestions.length === 0 ? (
-              <li className="px-3 py-2 text-gray-400">Searching…</li>
+              <li className="px-3 py-2 text-dark/50">Searching…</li>
             ) : (
               suggestions.map((suggestion, index) => (
                 <li
@@ -170,12 +170,12 @@ export function PlaceInput({
                   onMouseEnter={() => setHighlighted(index)}
                   onClick={() => select(suggestion)}
                   className={`cursor-pointer px-3 py-2 ${
-                    index === activeIndex ? "bg-gray-100" : ""
+                    index === activeIndex ? "bg-cloud-dark" : ""
                   }`}
                 >
                   {placeLabel(suggestion)}
                   {suggestion.type && (
-                    <span className="block text-xs text-gray-500">
+                    <span className="block text-xs text-dark/70">
                       {placeTypeLabel(suggestion.type)}
                     </span>
                   )}
@@ -186,7 +186,7 @@ export function PlaceInput({
         )}
       </div>
 
-      <span className="h-4 font-mono text-xs text-gray-400">
+      <span className="h-4 font-mono text-xs text-dark/50">
         {coordinates ?? ""}
       </span>
     </div>

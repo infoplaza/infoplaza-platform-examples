@@ -36,7 +36,7 @@ import { PrecipitationChart } from "./precipitation-chart";
 const ForecastMap = dynamic(() => import("./forecast-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -117,7 +117,7 @@ export function ForecastPanel({
         onPick={(location) => load(location, sizes)}
       />
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Click the map or drag the pin to forecast somewhere else. Picked
         location:{" "}
         <span className="tabular-nums">{formatCoordinates(picked)}</span>
@@ -125,7 +125,7 @@ export function ForecastPanel({
           <>
             {" "}
             · forecast for{" "}
-            <span className="text-gray-900">
+            <span className="text-dark">
               {forecast.location || "an unnamed spot"}
               {forecast.country && `, ${forecast.country}`}
             </span>{" "}
@@ -148,7 +148,7 @@ export function ForecastPanel({
           <CurrentConditions forecast={forecast} />
 
           <div>
-            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-gray-200">
+            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-cloud-dark">
               <div
                 role="tablist"
                 aria-label="Forecast block"
@@ -165,8 +165,8 @@ export function ForecastPanel({
                       onClick={() => setBlock(option.value)}
                       className={`-mb-px border-b-2 px-3 py-2 text-sm transition-colors ${
                         isActive
-                          ? "border-gray-900 font-medium text-gray-900"
-                          : "border-transparent text-gray-500 hover:text-gray-900"
+                          ? "border-primary font-medium text-dark"
+                          : "border-transparent text-dark/70 hover:text-dark"
                       }`}
                     >
                       {option.label}
@@ -179,7 +179,7 @@ export function ForecastPanel({
                   its own size, and the one being changed is the one whose tab
                   is open, so the picker follows the tabs. */}
               <div className="flex items-center gap-2 pb-2 text-sm">
-                <label htmlFor={sizeId} className="text-gray-600">
+                <label htmlFor={sizeId} className="text-dark/80">
                   Ask for
                 </label>
                 <select
@@ -191,7 +191,7 @@ export function ForecastPanel({
                       [block]: Number(event.target.value),
                     })
                   }
-                  className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-gray-500 focus:outline-none"
+                  className="rounded-md border border-cloud-dark bg-white px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
                 >
                   {blockByName(block).sizes.map((size) => (
                     <option key={size} value={size}>
@@ -203,7 +203,7 @@ export function ForecastPanel({
               </div>
             </div>
 
-            <p className="mt-3 text-xs text-gray-500">
+            <p className="mt-3 text-xs text-dark/70">
               All four sizes ride on the same call, so picking a different one
               fetches every tab again.{" "}
               {isDefaultSizes(sizes)
@@ -245,7 +245,7 @@ export function ForecastPanel({
       )}
 
       {!forecast && loading && (
-        <p className="text-sm text-gray-500">Loading the forecast…</p>
+        <p className="text-sm text-dark/70">Loading the forecast…</p>
       )}
     </div>
   );

@@ -165,7 +165,7 @@ export default function WarningsMap({
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

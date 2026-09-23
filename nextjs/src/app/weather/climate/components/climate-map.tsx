@@ -45,7 +45,7 @@ const MAP_STYLE: StyleSpecification = {
 /** A climate year describes a region, so the map opens zoomed out a fair way. */
 const INITIAL_ZOOM = 6;
 
-const MARKER_COLOR = "#111827";
+const MARKER_COLOR = "#2e2e2b";
 
 interface ClimateMapProps {
   /** The location the climate is shown for, marked with a pin. */
@@ -127,7 +127,7 @@ export default function ClimateMap({ picked, onPick }: ClimateMapProps) {
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

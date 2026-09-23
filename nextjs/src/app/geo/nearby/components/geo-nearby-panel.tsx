@@ -30,7 +30,7 @@ import {
 const NearbyMap = dynamic(() => import("./nearby-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -104,14 +104,14 @@ export function GeoNearbyPanel({
       />
 
       <div className="flex flex-col gap-1 text-sm">
-        <label htmlFor={radiusId} className="text-gray-600">
+        <label htmlFor={radiusId} className="text-dark/80">
           Radius
         </label>
         <select
           id={radiusId}
           value={radius}
           onChange={(event) => pickRadius(Number(event.target.value))}
-          className="w-40 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-gray-500 focus:outline-none"
+          className="w-40 rounded-md border border-cloud-dark bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none"
         >
           {RADIUS_OPTIONS.map((option) => (
             <option key={option} value={option}>
@@ -121,29 +121,29 @@ export function GeoNearbyPanel({
         </select>
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-dark/70">
         Click the map or drag the pin to move the search. Picked location:{" "}
         <span className="tabular-nums">{formatCoordinates(picked)}</span>
       </p>
 
-      <section className="max-w-md">
-        <h2 className="text-sm font-medium text-gray-900">
+      <section className="max-w-md rounded-lg border border-cloud-dark bg-white p-5">
+        <h2 className="text-sm font-medium text-dark">
           {place ? place.name : "Place"}
         </h2>
 
         {loading && (
-          <p className="mt-3 text-sm text-gray-500">Looking around…</p>
+          <p className="mt-3 text-sm text-dark/70">Looking around…</p>
         )}
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
         {!loading && !error && !place && (
-          <p className="mt-3 text-sm text-gray-500">
+          <p className="mt-3 text-sm text-dark/70">
             No place within {formatRadius(radius)} of here. Widen the radius or
             try a spot closer to land.
           </p>
         )}
 
         {place && !loading && (
-          <dl className="mt-2 divide-y divide-gray-100 text-sm">
+          <dl className="mt-2 divide-y divide-cloud text-sm">
             <Detail label="Country">
               <span aria-hidden className="mr-1.5">
                 {countryFlag(place.country.code)}
@@ -180,8 +180,8 @@ function Detail({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="shrink-0 text-gray-500">{label}</dt>
-      <dd className="min-w-0 text-right text-gray-900">{children}</dd>
+      <dt className="shrink-0 text-dark/70">{label}</dt>
+      <dd className="min-w-0 text-right text-dark">{children}</dd>
     </div>
   );
 }

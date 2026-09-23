@@ -16,7 +16,7 @@ const WeatherMap = dynamic(() => import("./weather-map"), {
   ssr: false,
   loading: () => (
     <div
-      className={`${MAP_FRAME_CLASS} w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50`}
+      className={`${MAP_FRAME_CLASS} w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark`}
     />
   ),
 });

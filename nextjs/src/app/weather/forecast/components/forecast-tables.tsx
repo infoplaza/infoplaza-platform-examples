@@ -63,7 +63,7 @@ export function HourlyTable({ hours, timezone, now }: HourlyTableProps) {
       }
     >
       {days.map((day) => (
-        <tbody key={day.key} className="border-b border-gray-100 last:border-0">
+        <tbody key={day.key} className="border-b border-cloud last:border-0">
           <DayRow label={formatDay(day.time, timezone, now)} />
           {day.periods.map((hour) => (
             <Row
@@ -82,7 +82,7 @@ export function HourlyTable({ hours, timezone, now }: HourlyTableProps) {
               <Td muted>{formatFraction(hour.precipProbability)}</Td>
               <Td>
                 {formatWind(hour.windSpeed)}{" "}
-                <span className="text-gray-400">
+                <span className="text-dark/50">
                   {compassPoint(hour.windBearing)}
                 </span>
               </Td>
@@ -135,7 +135,7 @@ export function DaypartTable({
       }
     >
       {days.map((day) => (
-        <tbody key={day.key} className="border-b border-gray-100 last:border-0">
+        <tbody key={day.key} className="border-b border-cloud last:border-0">
           <DayRow label={formatDay(day.time, timezone, now)} />
           {day.periods.map((daypart) => (
             <Row
@@ -150,7 +150,7 @@ export function DaypartTable({
               <Td muted>{formatFraction(daypart.precipProbability)}</Td>
               <Td>
                 {formatWind(daypart.windSpeed)}{" "}
-                <span className="text-gray-400">
+                <span className="text-dark/50">
                   {compassPoint(daypart.windBearing)}
                 </span>
               </Td>
@@ -221,7 +221,7 @@ export function DailyTable({ days, timezone, now }: DailyTableProps) {
             <Td muted>{formatFraction(day.precipProbability)}</Td>
             <Td>
               {formatWind(day.windSpeed)}{" "}
-              <span className="text-gray-400">
+              <span className="text-dark/50">
                 {compassPoint(day.windBearing)}
               </span>
             </Td>
@@ -249,7 +249,7 @@ function TemperatureRange({
   span: { min: number; max: number } | null;
 }) {
   if (low === undefined || high === undefined || !span) {
-    return <span className="text-sm text-gray-400">{MISSING}</span>;
+    return <span className="text-sm text-dark/50">{MISSING}</span>;
   }
 
   const width = Math.max(span.max - span.min, 1);
@@ -258,10 +258,10 @@ function TemperatureRange({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-9 shrink-0 text-right text-sm text-gray-500 tabular-nums">
+      <span className="w-9 shrink-0 text-right text-sm text-dark/70 tabular-nums">
         {formatTemperature(low)}
       </span>
-      <span className="relative h-1.5 flex-1 rounded-full bg-gray-100">
+      <span className="relative h-1.5 flex-1 rounded-full bg-cloud-dark">
         <span
           className="absolute inset-y-0 rounded-full"
           style={{
@@ -272,7 +272,7 @@ function TemperatureRange({
           }}
         />
       </span>
-      <span className="w-9 shrink-0 text-sm text-gray-900 tabular-nums">
+      <span className="w-9 shrink-0 text-sm text-dark tabular-nums">
         {formatTemperature(high)}
       </span>
     </div>
@@ -292,7 +292,7 @@ function Table({
   children: React.ReactNode;
 }) {
   return (
-    <div className="max-h-[520px] overflow-auto rounded-lg border border-gray-200">
+    <div className="max-h-[520px] overflow-auto rounded-lg border border-cloud-dark bg-white">
       <table className="w-full min-w-[46rem] border-collapse text-sm">
         {head}
         {children}
@@ -310,7 +310,7 @@ function HeadRow({
 }) {
   return (
     <thead className="sticky top-0 z-10 bg-white">
-      <tr className="border-b border-gray-200 text-xs text-gray-500">
+      <tr className="border-b border-cloud-dark text-xs text-dark/70">
         <th scope="col" className="py-2 pl-4 pr-3 text-left font-medium">
           {first}
         </th>
@@ -354,11 +354,11 @@ const COLUMNS = 11;
 
 function DayRow({ label }: { label: string }) {
   return (
-    <tr className="bg-gray-50">
+    <tr className="bg-cloud">
       <th
         scope="colgroup"
         colSpan={COLUMNS}
-        className="py-1.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500"
+        className="py-1.5 pl-4 pr-3 text-left text-xs font-medium text-dark/70"
       >
         {label}
       </th>
@@ -379,11 +379,11 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <tr className={current ? "bg-blue-50/60" : undefined}>
+    <tr className={current ? "bg-marine/5" : undefined}>
       <th
         scope="row"
         className={`whitespace-nowrap py-2.5 pl-4 pr-3 text-left font-normal tabular-nums ${
-          current ? "text-blue-700" : "text-gray-900"
+          current ? "text-marine" : "text-dark"
         }`}
       >
         {label}
@@ -391,7 +391,7 @@ function Row({
       <td className="py-1">
         <WeatherIcon code={icon} size={28} />
       </td>
-      <td className="whitespace-nowrap py-2.5 pr-4 text-gray-600">
+      <td className="whitespace-nowrap py-2.5 pr-4 text-dark/80">
         {conditionLabel(icon)}
       </td>
       {children}
@@ -409,7 +409,7 @@ function Td({
   return (
     <td
       className={`whitespace-nowrap py-2.5 pr-4 text-right tabular-nums ${
-        muted ? "text-gray-500" : "text-gray-900"
+        muted ? "text-dark/70" : "text-dark"
       }`}
     >
       {children}

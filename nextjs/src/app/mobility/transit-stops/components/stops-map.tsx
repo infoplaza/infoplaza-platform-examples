@@ -43,9 +43,9 @@ const MAP_STYLE: StyleSpecification = {
 
 const INITIAL_ZOOM = 13;
 
-const PICKED_COLOR = "#111827";
-const STOP_COLOR = "#111827";
-const SELECTED_STOP_COLOR = "#2563eb";
+const PICKED_COLOR = "#2e2e2b";
+const STOP_COLOR = "#2e2e2b";
+const SELECTED_STOP_COLOR = "#0070de";
 
 interface StopsMapProps {
   /** Where the search is centred, shown as a pin. */
@@ -178,7 +178,7 @@ export default function StopsMap({
   return (
     <div
       ref={containerRef}
-      className="h-[420px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[420px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }

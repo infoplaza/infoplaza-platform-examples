@@ -37,7 +37,7 @@ import { WarningList } from "./warning-list";
 const WarningsMap = dynamic(() => import("./warnings-map"), {
   ssr: false,
   loading: () => (
-    <div className="h-[420px] w-full animate-pulse rounded-lg border border-gray-200 bg-gray-50" />
+    <div className="h-[420px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
   ),
 });
 
@@ -118,14 +118,14 @@ export function WarningsPanel({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-dark/70">
           Click the map or drag the pin to look somewhere else. Picked
           location:{" "}
           <span className="tabular-nums">{formatCoordinates(picked)}</span>
         </p>
 
         <div className="flex items-center gap-2 text-sm">
-          <label htmlFor={languageId} className="text-gray-600">
+          <label htmlFor={languageId} className="text-dark/80">
             Language
           </label>
           <select
@@ -134,7 +134,7 @@ export function WarningsPanel({
             onChange={(event) =>
               changeLanguage(event.target.value as LanguageCode)
             }
-            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-gray-500 focus:outline-none"
+            className="rounded-md border border-cloud-dark bg-white px-3 py-1.5 text-sm focus:border-primary focus:outline-none"
           >
             {LANGUAGES.map((option) => (
               <option key={option.code} value={option.code}>
@@ -146,22 +146,22 @@ export function WarningsPanel({
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
+        <section className="self-start rounded-lg border border-cloud-dark bg-white p-5">
+          <h2 className="text-sm font-medium text-dark">
             Warnings
             {warnings.length > 0 && (
-              <span className="ml-2 font-normal text-gray-400">
+              <span className="ml-2 font-normal text-dark/50">
                 {warnings.length}
               </span>
             )}
           </h2>
 
           {loading && (
-            <p className="mt-3 text-sm text-gray-500">Looking up warnings…</p>
+            <p className="mt-3 text-sm text-dark/70">Looking up warnings…</p>
           )}
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
           {!loading && !error && warnings.length === 0 && (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-dark/70">
               Nothing to warn about here. That is the usual answer: a warning
               only exists while a service expects severe weather, so try a
               region that has some in the forecast.
@@ -179,19 +179,19 @@ export function WarningsPanel({
           )}
         </section>
 
-        <section>
-          <h2 className="text-sm font-medium text-gray-900">
+        <section className="self-start rounded-lg border border-cloud-dark bg-white p-5">
+          <h2 className="text-sm font-medium text-dark">
             {selected ? warningTitle(selected) : "Warning"}
           </h2>
 
           {!selected ? (
-            <p className="mt-3 text-sm text-gray-500">
+            <p className="mt-3 text-sm text-dark/70">
               Pick a warning from the list to read what the issuing service
               wrote about it.
             </p>
           ) : (
             <>
-              <dl className="mt-2 divide-y divide-gray-100 text-sm">
+              <dl className="mt-2 divide-y divide-cloud text-sm">
                 <Detail label="Level">
                   <LevelPill level={selected.level} />
                 </Detail>
@@ -211,7 +211,7 @@ export function WarningsPanel({
                 </Detail>
               </dl>
 
-              <p className="mt-4 whitespace-pre-line text-sm text-gray-600">
+              <p className="mt-4 whitespace-pre-line text-sm text-dark/80">
                 {selected.text}
               </p>
             </>
@@ -232,8 +232,8 @@ function Detail({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
-      <dt className="shrink-0 text-gray-500">{label}</dt>
-      <dd className="min-w-0 text-right text-gray-900">{children}</dd>
+      <dt className="shrink-0 text-dark/70">{label}</dt>
+      <dd className="min-w-0 text-right text-dark">{children}</dd>
     </div>
   );
 }

@@ -91,7 +91,7 @@ const ROUTE_SOURCE = "route";
 const ROUTE_LINE_LAYER = "route-line";
 const ROUTE_STEPS_LAYER = "route-steps";
 
-const ROUTE_COLOR = "#2563eb";
+const ROUTE_COLOR = "#0070de";
 
 /**
  * Mercator is the flat map every chart is drawn on; globe is the sphere it is
@@ -261,10 +261,10 @@ export default function ShippingMap({
   }, [waypoints, selectedId]);
 
   return (
-    <div className="relative h-[480px] w-full overflow-hidden rounded-lg border border-gray-200">
+    <div className="relative h-[480px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white">
       <div ref={containerRef} className="h-full w-full" />
 
-      <div className="absolute left-2 top-2 flex overflow-hidden rounded-md border border-gray-300 bg-white shadow-sm">
+      <div className="absolute left-2 top-2 flex overflow-hidden rounded-md border border-cloud-dark bg-white shadow-sm">
         {(["mercator", "globe"] as const).map((option) => (
           <button
             key={option}
@@ -273,8 +273,8 @@ export default function ShippingMap({
             aria-pressed={projection === option}
             className={`px-2.5 py-1 text-xs font-medium transition-colors ${
               projection === option
-                ? "bg-gray-900 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-50"
+                ? "bg-dark text-white"
+                : "bg-white text-dark/80 hover:bg-cloud"
             }`}
           >
             {option === "mercator" ? "2D" : "3D"}
@@ -292,8 +292,8 @@ function waypointElement(number: number, selected: boolean): HTMLElement {
   element.textContent = String(number);
   element.title = `Waypoint ${number} — click for its forecast, drag to move it`;
   element.className = selected
-    ? "flex h-7 w-7 cursor-grab items-center justify-center rounded-full border-2 border-white bg-blue-600 text-xs font-semibold text-white shadow-md active:cursor-grabbing"
-    : "flex h-6 w-6 cursor-grab items-center justify-center rounded-full border-2 border-white bg-gray-900 text-xs font-semibold text-white shadow-md hover:bg-gray-700 active:cursor-grabbing";
+    ? "flex h-7 w-7 cursor-grab items-center justify-center rounded-full border-2 border-white bg-marine text-xs font-semibold text-white shadow-md active:cursor-grabbing"
+    : "flex h-6 w-6 cursor-grab items-center justify-center rounded-full border-2 border-white bg-dark text-xs font-semibold text-white shadow-md hover:bg-dark/85 active:cursor-grabbing";
   return element;
 }
 

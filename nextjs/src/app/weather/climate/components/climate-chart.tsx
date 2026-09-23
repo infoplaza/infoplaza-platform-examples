@@ -88,10 +88,10 @@ export function ClimateChart({
   const slotCenter = (index: number) => PADDING.left + slot * (index + 0.5);
 
   return (
-    <figure className="min-w-0">
+    <figure className="min-w-0 rounded-lg border border-cloud-dark bg-white p-5">
       <figcaption className="flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-medium text-gray-900">{config.title}</h3>
-        <span className="text-xs text-gray-400">{config.unit}</span>
+        <h3 className="text-sm font-medium text-dark">{config.title}</h3>
+        <span className="text-xs text-dark/50">{config.unit}</span>
       </figcaption>
 
       <svg
@@ -108,14 +108,14 @@ export function ClimateChart({
               x2={VIEW_WIDTH - PADDING.right}
               y1={y(tick)}
               y2={y(tick)}
-              stroke={tick === 0 ? "#d1d5db" : "#f3f4f6"}
+              stroke={tick === 0 ? "#d0d0c7" : "#f2f2ed"}
             />
             <text
               x={PADDING.left - 6}
               y={y(tick)}
               dy="0.32em"
               textAnchor="end"
-              className="fill-gray-400 text-[9px] tabular-nums"
+              className="fill-dark/50 text-[9px] tabular-nums"
             >
               {formatTick(tick)}
             </text>
@@ -137,7 +137,7 @@ export function ClimateChart({
                 y={PADDING.top}
                 width={slot}
                 height={plotHeight}
-                className="fill-transparent hover:fill-gray-900/5"
+                className="fill-transparent hover:fill-dark/5"
               >
                 <title>
                   {`${periodLabel(period, granularity)} · ${config.tooltip(period)}`}
@@ -177,7 +177,7 @@ export function ClimateChart({
             x={(slotCenter(from) + slotCenter(to)) / 2}
             y={VIEW_HEIGHT - 6}
             textAnchor="middle"
-            className="fill-gray-500 text-[9px]"
+            className="fill-dark/70 text-[9px]"
           >
             {monthAbbreviation(month)}
           </text>

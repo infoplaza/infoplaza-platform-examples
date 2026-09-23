@@ -221,7 +221,7 @@ export default function TrafficMap({
   return (
     <div
       ref={containerRef}
-      className="h-[460px] w-full overflow-hidden rounded-lg border border-gray-200"
+      className="h-[460px] w-full overflow-hidden rounded-lg border border-cloud-dark bg-white"
     />
   );
 }
@@ -260,20 +260,20 @@ function tooltipContent(event: TrafficEvent): HTMLElement {
   road.textContent = event.roadNumber === "?" ? "–" : event.roadNumber;
 
   const kind = document.createElement("span");
-  kind.className = "text-xs text-gray-500";
+  kind.className = "text-xs text-dark/70";
   kind.textContent = causeLabel(event.causeType);
   header.append(road, kind);
 
   const where = document.createElement("p");
-  where.className = "text-sm font-medium text-gray-900";
+  where.className = "text-sm font-medium text-dark";
   where.textContent = locationLabel(event);
 
   const what = document.createElement("p");
-  what.className = "text-xs text-gray-600";
+  what.className = "text-xs text-dark/80";
   what.textContent = event.description;
 
   const facts = document.createElement("p");
-  facts.className = "text-xs text-gray-500";
+  facts.className = "text-xs text-dark/70";
   facts.textContent = [
     event.delayMinutes > 0 ? `+${event.delayMinutes} min delay` : null,
     event.queueKm > 0 ? `${event.queueKm} km queue` : null,

@@ -80,7 +80,7 @@ export function RouteTable({
   return (
     <Table first="Time" extra={["Position", "Sailed"]}>
       {days.map((day) => (
-        <tbody key={day.key} className="border-b border-gray-100 last:border-0">
+        <tbody key={day.key} className="border-b border-cloud last:border-0">
           <DayRow label={formatDay(day.time)} span={span} />
           {day.rows.map(({ point, index }) => {
             const number = numbers.get(index);
@@ -149,8 +149,8 @@ function WaypointBadge({
       title={`Point forecast at waypoint ${number}`}
       className={`ml-2 rounded px-1.5 py-0.5 text-xs font-medium transition-colors ${
         selected
-          ? "bg-blue-600 text-white"
-          : "bg-gray-900 text-white hover:bg-gray-700"
+          ? "bg-marine text-white"
+          : "bg-dark text-white hover:bg-dark/85"
       }`}
     >
       {number}
@@ -215,7 +215,7 @@ export function PointTable({ forecast, arrivalIndex }: PointTableProps) {
   return (
     <Table first="Hour" containerRef={containerRef}>
       {days.map((day) => (
-        <tbody key={day.key} className="border-b border-gray-100 last:border-0">
+        <tbody key={day.key} className="border-b border-cloud last:border-0">
           <DayRow label={formatDay(day.time)} span={span} />
           {day.rows.map(({ time, index }) => {
             const open = index === openIndex;
@@ -284,21 +284,21 @@ function RowGroup({
         data-highlighted={highlighted ? "true" : undefined}
         className={`cursor-pointer ${
           highlighted
-            ? "bg-blue-50/60"
+            ? "bg-marine/5"
             : open
-              ? "bg-gray-50"
-              : "hover:bg-gray-50"
+              ? "bg-cloud"
+              : "hover:bg-cloud"
         }`}
       >
         <th
           scope="row"
           className={`whitespace-nowrap py-2 pl-4 pr-3 text-left font-normal tabular-nums ${
-            highlighted ? "text-blue-700" : "text-gray-900"
+            highlighted ? "text-marine" : "text-dark"
           }`}
         >
           <span
             aria-hidden
-            className={`mr-1.5 inline-block text-gray-400 transition-transform ${
+            className={`mr-1.5 inline-block text-dark/50 transition-transform ${
               open ? "rotate-90" : ""
             }`}
           >
@@ -311,7 +311,7 @@ function RowGroup({
 
       {open && (
         <tr>
-          <td colSpan={span} className="border-t border-gray-100 bg-gray-50 p-4">
+          <td colSpan={span} className="border-t border-cloud bg-cloud p-4">
             <ElementDetails elements={elements} index={index} />
           </td>
         </tr>
@@ -340,22 +340,22 @@ function ElementDetails({
     <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
       {models.map((group) => (
         <div key={group.model}>
-          <h4 className="text-xs font-medium uppercase tracking-wide text-gray-400">
+          <h4 className="text-xs font-medium uppercase tracking-wide text-dark/50">
             {group.model}
           </h4>
-          <dl className="mt-1.5 divide-y divide-gray-200/70 text-sm">
+          <dl className="mt-1.5 divide-y divide-cloud-dark/70 text-sm">
             {group.elements.map((element) => (
               <div
                 key={element.key}
                 className="flex items-baseline justify-between gap-4 py-1"
               >
-                <dt className="text-gray-600">{element.label}</dt>
+                <dt className="text-dark/80">{element.label}</dt>
                 <dd
-                  className="shrink-0 text-right tabular-nums text-gray-900"
+                  className="shrink-0 text-right tabular-nums text-dark"
                   title={element.error ?? undefined}
                 >
                   {element.error ? (
-                    <span className="text-xs text-gray-400">not answered</span>
+                    <span className="text-xs text-dark/50">not answered</span>
                   ) : (
                     formatElement(element, element.data[index]?.value ?? null)
                   )}
@@ -408,7 +408,7 @@ function ValueCell({
       {formatValue(column, element, value)}
       {value !== null && direction !== null && (
         <span
-          className="text-gray-400"
+          className="text-dark/50"
           title={`From ${Math.round(direction)}°`}
         >
           {" "}
@@ -436,7 +436,7 @@ function Table({
   return (
     <div
       ref={containerRef}
-      className="max-h-[520px] overflow-auto rounded-lg border border-gray-200"
+      className="max-h-[520px] overflow-auto rounded-lg border border-cloud-dark bg-white"
     >
       {/* Wide enough for its own columns and no wider: a fixed minimum was
           a few dozen pixels past the card the point forecast sits in, which
@@ -444,7 +444,7 @@ function Table({
           columns and the box scrolls. */}
       <table className="w-full min-w-max border-collapse text-sm">
         <thead className="sticky top-0 z-10 bg-white">
-          <tr className="border-b border-gray-200 text-xs text-gray-500">
+          <tr className="border-b border-cloud-dark text-xs text-dark/70">
             <th scope="col" className="py-2 pl-4 pr-3 text-left font-medium">
               {first}
             </th>
@@ -477,11 +477,11 @@ function Table({
 /** The band that names the day the rows under it belong to. */
 function DayRow({ label, span }: { label: string; span: number }) {
   return (
-    <tr className="bg-gray-50">
+    <tr className="bg-cloud">
       <th
         scope="colgroup"
         colSpan={span}
-        className="py-1.5 pl-4 pr-3 text-left text-xs font-medium text-gray-500"
+        className="py-1.5 pl-4 pr-3 text-left text-xs font-medium text-dark/70"
       >
         {label}
       </th>
@@ -499,7 +499,7 @@ function Td({
   return (
     <td
       className={`whitespace-nowrap py-2 pr-4 text-right tabular-nums ${
-        muted ? "text-gray-400" : "text-gray-900"
+        muted ? "text-dark/50" : "text-dark"
       }`}
     >
       {children}
