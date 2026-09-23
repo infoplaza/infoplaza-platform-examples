@@ -30,13 +30,21 @@ import {
 /**
  * Whether this is the browser asking for a page.
  *
- * `Sec-Fetch-Dest` is the browser's own word for what it is fetching, and
- * `document` is a page. What it accepts is the fallback for the browsers that
- * do not send the header, the same ones @/lib/route-guard makes room for.
+ * `Sec-Fetch-Dest` is the browser's own word for what it is fetching: a page
+ * is `document` when it is the whole tab and `iframe` (or `frame`) when the
+ * platform site shows it embedded, which is how most visitors now arrive.
+ * What it accepts is the fallback for the browsers that do not send the
+ * header, the same ones @/lib/route-guard makes room for.
  */
 function isPageRequest(request: NextRequest): boolean {
   const destination = request.headers.get("sec-fetch-dest");
-  if (destination) return destination === "document";
+  if (destination) {
+    return (
+      destination === "document" ||
+      destination === "iframe" ||
+      destination === "frame"
+    );
+  }
 
   return request.headers.get("accept")?.includes("text/html") ?? false;
 }
@@ -70,16 +78,29 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const token = await mintFrontendToken();
   if (!token) return response;
 
+  const secure = overHttps(request);
+
   response.cookies.set(FRONTEND_TOKEN_COOKIE, token, {
     // The token is only ever read on the server, so no script needs to see it
     // and none should be able to: that is what keeps a cross-site script from
     // walking off with a working one.
     httpOnly: true,
-    // The cookie is for this app's own fetches, so it has no business riding
-    // along on a request another site started.
-    sameSite: "strict",
+    // The pages are shown in an iframe on the platform site, and inside a
+    // frame whose parent is another site a `Strict` or `Lax` cookie is
+    // neither stored nor sent, which left every embedded fetch without a
+    // token. `None` lets it through, and `Partitioned` keeps it to this one
+    // embedder, which is what browsers that block third-party cookies still
+    // allow. That does not open the routes to other sites: the
+    // `Sec-Fetch-Site` check in @/lib/route-guard refuses any request a page
+    // of this app did not make, cookie or not.
+    //
+    // `None` is only accepted on a `Secure` cookie, so over plain HTTP —
+    // localhost, where the embedder is on the same site anyway — it stays
+    // `Lax`.
+    sameSite: secure ? "none" : "lax",
+    partitioned: secure,
     // Not over plain HTTP, where localhost has no certificate to be sent over.
-    secure: overHttps(request),
+    secure,
     path: "/",
     maxAge: Math.floor(FRONTEND_TOKEN_LIFETIME_MS / 1000),
   });
