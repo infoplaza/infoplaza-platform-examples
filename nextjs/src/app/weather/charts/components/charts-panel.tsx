@@ -16,10 +16,10 @@ import {
  * Ties the example together: the location picked on the map decides what the
  * chart below it is read for, and the chart loads what it needs itself.
  *
- * One chart is on screen at a time, and it is the only one mounted. Each of
+ * One view is on screen at a time, and it is the only one mounted. Each of
  * them asks for its own catalog and its own forecast, which is two calls and
- * a few credits, so opening the page or moving the pin pays for the chart
- * being looked at rather than for both.
+ * a few credits, so opening the page or moving the pin pays for the view
+ * being looked at rather than for all three.
  *
  * All of it is loaded on the client only. MapLibre needs a browser, and the
  * charts fetch as they mount and draw on a measured width, so there is
@@ -36,7 +36,12 @@ const chartSkeleton = () => (
   <div className="h-[560px] w-full animate-pulse rounded-lg border border-cloud-dark bg-cloud-dark" />
 );
 
-const HourlyForecast = dynamic(() => import("./hourly-forecast"), {
+const TimeseriesTable = dynamic(() => import("./timeseries-table"), {
+  ssr: false,
+  loading: chartSkeleton,
+});
+
+const TimeseriesCharts = dynamic(() => import("./timeseries-charts"), {
   ssr: false,
   loading: chartSkeleton,
 });
@@ -53,7 +58,7 @@ export function ChartsPanel() {
   usePlatformProxyLog();
 
   const [picked, setPicked] = useState<LatLon>(DEFAULT_LOCATION);
-  const [chart, setChart] = useState<ChartName>("hourly");
+  const [chart, setChart] = useState<ChartName>("table");
 
   return (
     <div className="space-y-6">
@@ -95,14 +100,12 @@ export function ChartsPanel() {
           {chartByName(chart).detail}
         </p>
 
-        {/* Only the chart on screen is mounted, so the tab that is not open
-            has asked the Platform for nothing. */}
+        {/* Only the view on screen is mounted, so the tabs that are not open
+            have asked the Platform for nothing. */}
         <div className="mt-3 overflow-hidden rounded-lg border border-cloud-dark bg-white">
-          {chart === "hourly" ? (
-            <HourlyForecast location={picked} />
-          ) : (
-            <EnsembleSpread location={picked} />
-          )}
+          {chart === "table" && <TimeseriesTable location={picked} />}
+          {chart === "charts" && <TimeseriesCharts location={picked} />}
+          {chart === "ensemble" && <EnsembleSpread location={picked} />}
         </div>
       </div>
     </div>

@@ -16,9 +16,9 @@ export const DEFAULT_LOCATION: LatLon = {
 };
 
 /** Which chart is on screen. Only that one is loaded. */
-export type ChartName = "hourly" | "ensemble";
+export type ChartName = "table" | "charts" | "ensemble";
 
-/** The two charts, in the order their tabs are shown. */
+/** The views, in the order their tabs are shown. */
 export const CHARTS: readonly {
   value: ChartName;
   label: string;
@@ -26,10 +26,16 @@ export const CHARTS: readonly {
   detail: string;
 }[] = [
   {
-    value: "hourly",
-    label: "Hour by hour",
+    value: "table",
+    label: "Table",
     detail:
-      "One model at a time, every element it has for this point, coloured by what the value means.",
+      "One model at a time, hour by hour, every element of the selected groups in one matrix.",
+  },
+  {
+    value: "charts",
+    label: "Charts",
+    detail:
+      "The same forecast drawn as one chart per group: lines for values, arrows for directions.",
   },
   {
     value: "ensemble",
