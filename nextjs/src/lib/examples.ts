@@ -75,7 +75,7 @@ export const exampleGroups: ExampleGroup[] = [
       {
         title: "Charts",
         description:
-          "Read the models at a point hour by hour and as an ensemble spread.",
+          "Read the models at a point as a table, as charts and as an ensemble spread.",
         href: "/weather/charts",
         icon: "chart",
       },
