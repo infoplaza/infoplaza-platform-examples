@@ -225,6 +225,8 @@ expects the project in the repository root needs to be told where to look. On
 3. Add `INFOPLAZA_API_KEY` under Settings → Environment Variables for
    Production, Preview and Development. No `NEXT_PUBLIC_` prefix: the key is
    only ever read server-side and should stay that way.
+   Optionally add `INFOPLAZA_API_URL` to call another Platform environment;
+   it defaults to `https://api.infoplaza.com/`.
 4. Optionally add `FRONTEND_TOKEN_SECRET` — any long random string — which is
    what the token in front of the route handlers is signed with. Without it
    that signing key is derived from the API key, so the deployment works

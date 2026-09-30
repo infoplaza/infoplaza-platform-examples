@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import type { GeoFeature, OverviewEvent, TrafficSummary } from "./utils";
 
 /**
@@ -15,13 +16,13 @@ import type { GeoFeature, OverviewEvent, TrafficSummary } from "./utils";
 
 const TRAFFIC_GEO: Endpoint = {
   name: "Traffic Geo",
-  url: "https://api.infoplaza.com/v1/traffic/geo",
+  url: platformUrl("v1/traffic/geo"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-traffic-geo",
 };
 
 const TRAFFIC_OVERVIEW: Endpoint = {
   name: "Traffic Overview",
-  url: "https://api.infoplaza.com/v1/traffic/overview",
+  url: platformUrl("v1/traffic/overview"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-traffic-overview",
 };
 

@@ -6,6 +6,7 @@ import {
   type ApiCall,
   type Endpoint,
 } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import protoJson from "./proto/proto.json";
 import type { PlaceSuggestion } from "./utils";
 
@@ -32,14 +33,14 @@ import type { PlaceSuggestion } from "./utils";
 
 const TRANSIT_PLANNER: Endpoint = {
   name: "Transit I'm Planner",
-  url: "wss://api.infoplaza.com/v1/transit/implanner",
+  url: platformUrl("v1/transit/implanner", { websocket: true }),
   docsUrl:
     "https://platform.infoplaza.com/reference/v1-transit-implanner",
 };
 
 const PLANNER_SEARCH: Endpoint = {
   name: "Transit Planner Search",
-  url: "https://api.infoplaza.com/v1/transit/planner/search",
+  url: platformUrl("v1/transit/planner/search"),
   docsUrl:
     "https://platform.infoplaza.com/reference/v1-transit-planner-search",
 };

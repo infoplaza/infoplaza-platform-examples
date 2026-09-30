@@ -1,4 +1,5 @@
 import type { ApiCall } from "./api-call";
+import { platformUrl } from "./platform-url";
 
 /**
  * The Platform behind the component library.
@@ -30,8 +31,7 @@ export const PLATFORM_BASE_PATH = "/api/platform";
  * swapping the `/weather/maps` segment, so all three follow it rather than
  * being configured separately.
  */
-export const WEATHER_MAPS_BASE_URL =
-  "https://api.infoplaza.com/v1/weather/maps";
+export const WEATHER_MAPS_BASE_URL = platformUrl("v1/weather/maps");
 
 /** A Platform endpoint in words, without the URL it is called at. */
 interface ProxiedEndpoint {

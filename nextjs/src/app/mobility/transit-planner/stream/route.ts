@@ -6,7 +6,7 @@ import { COORDINATE_PAIR } from "../utils";
  * Streaming proxy between the browser and the Transit Planner.
  *
  * The browser opens an EventSource on this route with the plan request in the
- * query string. The route opens the upstream WebSocket to api.infoplaza.com
+ * query string. The route opens the upstream WebSocket to the Platform
  * with the API key from INFOPLAZA_API_KEY and forwards each decoded PlanResult
  * as a server-sent event until the mixer is done. This keeps the API key out
  * of client-side code.

@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import {
   DEFAULT_LANGUAGE,
   dedupeWarnings,
@@ -20,7 +21,7 @@ import {
 
 const WEATHER_WARNINGS: Endpoint = {
   name: "Weather Warnings",
-  url: "https://api.infoplaza.com/v1/weather/warnings",
+  url: platformUrl("v1/weather/warnings"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-weather-warnings",
 };
 

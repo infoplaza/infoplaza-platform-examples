@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import type { PointForecast, RouteForecast, Routing } from "./utils";
 
 /**
@@ -15,14 +16,14 @@ import type { PointForecast, RouteForecast, Routing } from "./utils";
 
 const SHIPPING_POINT: Endpoint = {
   name: "Shipping Point",
-  url: "https://api.infoplaza.com/v1/marine/shipping/point",
+  url: platformUrl("v1/marine/shipping/point"),
   docsUrl:
     "https://platform.infoplaza.com/reference/v1-marine-shipping-point",
 };
 
 const SHIPPING_ROUTE: Endpoint = {
   name: "Shipping Route",
-  url: "https://api.infoplaza.com/v1/marine/shipping/route",
+  url: platformUrl("v1/marine/shipping/route"),
   docsUrl:
     "https://platform.infoplaza.com/reference/v1-marine-shipping-route",
 };

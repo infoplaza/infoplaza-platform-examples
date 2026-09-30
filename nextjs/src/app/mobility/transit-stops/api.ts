@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import type { Departure, StopPlace } from "./utils";
 
 /**
@@ -15,13 +16,13 @@ import type { Departure, StopPlace } from "./utils";
 
 const STOP_NEARBY: Endpoint = {
   name: "Transit Stop Nearby",
-  url: "https://api.infoplaza.com/v1/transit/stop/nearby",
+  url: platformUrl("v1/transit/stop/nearby"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-transit-stop-nearby",
 };
 
 const STOP_DEPARTURES: Endpoint = {
   name: "Transit Stop Departures",
-  url: "https://api.infoplaza.com/v1/transit/stop/departures",
+  url: platformUrl("v1/transit/stop/departures"),
   docsUrl:
     "https://platform.infoplaza.com/reference/v1-transit-stop-departures",
 };

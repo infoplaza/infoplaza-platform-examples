@@ -1,4 +1,5 @@
 import { platformRequest, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import { DEFAULT_LANGUAGE, type Place } from "./utils";
 
 /**
@@ -15,7 +16,7 @@ import { DEFAULT_LANGUAGE, type Place } from "./utils";
 
 const GEO_NEARBY: Endpoint = {
   name: "Geo Nearby",
-  url: "https://api.infoplaza.com/v1/geo/nearby",
+  url: platformUrl("v1/geo/nearby"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-geo-nearby",
 };
 

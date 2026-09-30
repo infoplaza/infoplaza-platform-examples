@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import { DEFAULT_LANGUAGE, type LanguageCode, type Place } from "./utils";
 
 /**
@@ -14,7 +15,7 @@ import { DEFAULT_LANGUAGE, type LanguageCode, type Place } from "./utils";
 
 const GEO_SEARCH: Endpoint = {
   name: "Geo Search",
-  url: "https://api.infoplaza.com/v1/geo/search",
+  url: platformUrl("v1/geo/search"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-geo-search",
 };
 

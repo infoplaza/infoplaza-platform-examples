@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import {
   DEFAULT_SIZES,
   sortSizes,
@@ -21,13 +22,13 @@ import {
 
 const PORT_LIST: Endpoint = {
   name: "Port List",
-  url: "https://api.infoplaza.com/v1/port/list",
+  url: platformUrl("v1/port/list"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-port-list",
 };
 
 const PORT_INFO: Endpoint = {
   name: "Port Info",
-  url: "https://api.infoplaza.com/v1/port/info",
+  url: platformUrl("v1/port/info"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-port-info",
 };
 

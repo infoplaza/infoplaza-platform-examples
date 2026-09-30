@@ -1,4 +1,5 @@
 import { platformRequest, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import type { Climate, Granularity } from "./utils";
 
 /**
@@ -16,7 +17,7 @@ import type { Climate, Granularity } from "./utils";
 
 const WEATHER_CLIMATE: Endpoint = {
   name: "Weather Climate",
-  url: "https://api.infoplaza.com/v1/weather/climate",
+  url: platformUrl("v1/weather/climate"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-weather-climate",
 };
 

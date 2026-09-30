@@ -1,4 +1,5 @@
 import { platformGet, type Endpoint } from "@/lib/platform";
+import { platformUrl } from "@/lib/platform-url";
 import { FORECAST_DEFAULTS, type Forecast, type ForecastSizes } from "./utils";
 
 /**
@@ -14,7 +15,7 @@ import { FORECAST_DEFAULTS, type Forecast, type ForecastSizes } from "./utils";
 
 const WEATHER_FORECAST: Endpoint = {
   name: "Weather Forecast",
-  url: "https://api.infoplaza.com/v1/weather/forecast",
+  url: platformUrl("v1/weather/forecast"),
   docsUrl: "https://platform.infoplaza.com/reference/v1-weather-forecast",
 };
 
