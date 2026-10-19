@@ -1,6 +1,21 @@
 import Link from "next/link";
 import { ExampleIcon } from "@/components/example-icon";
-import { exampleGroups } from "@/lib/examples";
+import { exampleGroups, type ExampleGroup } from "@/lib/examples";
+
+// Spelled out in full so Tailwind finds the classes in the source.
+const accentPanel: Record<ExampleGroup["accent"], string> = {
+  primary: "from-primary to-primary/70",
+  secondary: "from-secondary to-secondary/70",
+  marine: "from-marine to-marine/70",
+  dark: "from-dark to-dark/75",
+};
+
+const accentDot: Record<ExampleGroup["accent"], string> = {
+  primary: "bg-primary",
+  secondary: "bg-secondary",
+  marine: "bg-marine",
+  dark: "bg-dark",
+};
 
 export default function HomePage() {
   return (
@@ -22,7 +37,10 @@ export default function HomePage() {
 
       {exampleGroups.map((group) => (
         <section key={group.title} className="mt-6">
-          <h2 className="text-xs font-medium uppercase tracking-wide text-dark/50">
+          <h2 className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-dark/50">
+            <span
+              className={`size-2 rounded-full ${accentDot[group.accent]}`}
+            />
             {group.title}
           </h2>
           <ul className="mt-2 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -30,12 +48,23 @@ export default function HomePage() {
               <li key={example.href} className="h-full">
                 <Link
                   href={example.href}
-                  className="flex h-full gap-3 rounded-lg border border-cloud-dark bg-white p-3 transition-shadow hover:ring-2 hover:ring-primary"
+                  className="group flex h-full flex-col overflow-hidden rounded-lg border border-cloud-dark bg-white transition-shadow hover:ring-2 hover:ring-primary"
                 >
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <ExampleIcon name={example.icon} className="size-4" />
+                  {/* The icon twice: small and sharp in the corner, and large
+                      and faint off the edge, which is the whole decoration. */}
+                  <span
+                    className={`relative block h-20 overflow-hidden bg-linear-to-br ${accentPanel[group.accent]} text-white`}
+                  >
+                    <ExampleIcon
+                      name={example.icon}
+                      className="absolute top-3 left-3 size-6"
+                    />
+                    <ExampleIcon
+                      name={example.icon}
+                      className="absolute -right-5 -bottom-10 size-32 -rotate-12 opacity-25 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-0 motion-reduce:transition-none"
+                    />
                   </span>
-                  <span className="min-w-0">
+                  <span className="block p-3">
                     <span className="block text-sm font-medium">
                       {example.title}
                     </span>

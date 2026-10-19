@@ -13,6 +13,8 @@ export interface Example {
 
 export interface ExampleGroup {
   title: string;
+  /** The brand colour its cards wear on the overview. */
+  accent: "primary" | "secondary" | "marine" | "dark";
   examples: Example[];
 }
 
@@ -24,6 +26,7 @@ export interface ExampleGroup {
 export const exampleGroups: ExampleGroup[] = [
   {
     title: "Geo",
+    accent: "primary",
     examples: [
       {
         title: "Nearby",
@@ -43,6 +46,7 @@ export const exampleGroups: ExampleGroup[] = [
   },
   {
     title: "Weather",
+    accent: "secondary",
     examples: [
       {
         title: "Forecast",
@@ -90,6 +94,7 @@ export const exampleGroups: ExampleGroup[] = [
   },
   {
     title: "Marine",
+    accent: "marine",
     examples: [
       {
         title: "Ports",
@@ -109,6 +114,7 @@ export const exampleGroups: ExampleGroup[] = [
   },
   {
     title: "Mobility",
+    accent: "dark",
     examples: [
       {
         title: "Traffic",
