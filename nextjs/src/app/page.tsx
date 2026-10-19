@@ -21,23 +21,27 @@ export default function HomePage() {
       </p>
 
       {exampleGroups.map((group) => (
-        <section key={group.title} className="mt-10">
+        <section key={group.title} className="mt-6">
           <h2 className="text-xs font-medium uppercase tracking-wide text-dark/50">
             {group.title}
           </h2>
-          <ul className="mt-3 grid auto-rows-fr gap-4 sm:grid-cols-2">
+          <ul className="mt-2 grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {group.examples.map((example) => (
               <li key={example.href} className="h-full">
                 <Link
                   href={example.href}
-                  className="flex h-full flex-col rounded-lg border border-cloud-dark bg-white p-5 transition-shadow hover:ring-2 hover:ring-primary"
+                  className="flex h-full gap-3 rounded-lg border border-cloud-dark bg-white p-3 transition-shadow hover:ring-2 hover:ring-primary"
                 >
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <ExampleIcon name={example.icon} className="size-5" />
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <ExampleIcon name={example.icon} className="size-4" />
                   </span>
-                  <span className="font-medium">{example.title}</span>
-                  <span className="mt-1 block text-sm text-dark/80">
-                    {example.description}
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium">
+                      {example.title}
+                    </span>
+                    <span className="mt-0.5 block text-xs text-dark/80">
+                      {example.description}
+                    </span>
                   </span>
                 </Link>
               </li>

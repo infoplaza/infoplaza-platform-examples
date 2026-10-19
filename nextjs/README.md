@@ -67,6 +67,12 @@ nextjs/
 │   │   │   │   ├── page.tsx            #   Page
 │   │   │   │   ├── utils.ts            #   View state and layer defaults
 │   │   │   │   └── components/         #   Panel and the composed weather map
+│   │   │   ├── storms/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── api.ts              #   Tropical Storms API client
+│   │   │   │   ├── active/route.ts     #   Storms proxy the browser calls
+│   │   │   │   ├── utils.ts            #   Types, categories, units and track helpers
+│   │   │   │   └── components/         #   Panel, globe, list and track table
 │   │   │   └── warnings/
 │   │   │       ├── page.tsx            #   Page
 │   │   │       ├── api.ts              #   Weather Warnings API client
@@ -397,6 +403,48 @@ select changes the `language` parameter the API writes its titles and texts in
 and looks the current location up again, so the two cannot drift apart.
 
 Note that no warnings is the normal answer for most places most of the time.
+
+### Weather — Tropical Storms
+
+Shows every active hurricane, typhoon, cyclone and invest on a globe with the
+[Tropical Storms API](https://platform.infoplaza.com/reference/v1-storms).
+
+The endpoint takes no parameters beyond the API key and returns every active
+storm in the world at once, so the panel makes a single call on mount through
+a [route handler](src/app/weather/storms/active/route.ts) that adds
+`INFOPLAZA_API_KEY` server-side. [`activeStorms`](src/app/weather/storms/api.ts)
+sorts them by the wind of the latest advisory, and the page opens on the
+strongest one. A call costs 10 credits, which the API log shows beside it.
+
+Each storm comes with three things worth drawing. The `path` is its track, one
+position per advisory; the
+[globe](src/app/weather/storms/components/storms-map.tsx) draws it as one
+short line per leg, coloured by the category the storm had reached at the end
+of that leg, so it shows the storm strengthening and weakening. Points
+timestamped after the moment the storms were loaded are forecast and drawn
+dashed. The `cone` is the area the centre is forecast to pass through, as
+polygons of `[longitude, latitude]` pairs, and is often empty: an invest or a
+storm that has just formed has no forecast yet. And `current` is the latest
+advisory, which carries no position of its own, so the label on the globe sits
+on the newest point of the track that is not forecast.
+
+The categories follow the wind rather than the local name: the strongest
+systems are `TY` in every basin, which is why the full `name` can still say
+"Tropical Cyclone". The two letters in the middle of the `id` name the basin,
+which [`utils.ts`](src/app/weather/storms/utils.ts) spells out. Every speed
+arrives in knots, km/h, mph and m/s at once, so the unit toggle only changes
+which one is read, and it never needs another call. The chosen unit is kept in
+local storage, so the page opens in it again next time. Gusts are often `null`, as
+some warning centres do not report them.
+
+Storms are drawn on a globe because they happen on every ocean at once. A
+track that crosses the date line would otherwise be drawn the long way round
+the world, so [`unwrapLongitudes`](src/app/weather/storms/utils.ts) moves its
+longitudes past ±180 where needed, and the cone is brought onto the same copy
+of the world as the track it continues.
+
+Outside the season, no active storms is a normal answer. The season peaks from
+August to October north of the equator and from January to March south of it.
 
 ### Weather — Maps
 

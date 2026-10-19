@@ -66,6 +66,13 @@ export const exampleGroups: ExampleGroup[] = [
         icon: "warning",
       },
       {
+        title: "Tropical Storms",
+        description:
+          "Every active hurricane, typhoon and cyclone on a globe, with its track and forecast cone.",
+        href: "/weather/storms",
+        icon: "hurricane",
+      },
+      {
         title: "Maps",
         description:
           "Pan a map of the weather models, drawn by the platform component library.",
