@@ -67,6 +67,15 @@ nextjs/
 │   │   │   │   ├── page.tsx            #   Page
 │   │   │   │   ├── utils.ts            #   View state and layer defaults
 │   │   │   │   └── components/         #   Panel and the composed weather map
+│   │   │   ├── observations/
+│   │   │   │   ├── page.tsx            #   Page
+│   │   │   │   ├── api.ts              #   The five Observations API clients
+│   │   │   │   ├── stations/route.ts   #   Stations proxy the browser calls
+│   │   │   │   ├── station/route.ts    #   Station proxy, latest and history
+│   │   │   │   ├── point/route.ts      #   Nearest-station proxy
+│   │   │   │   ├── area/route.ts       #   Readings-in-view proxy
+│   │   │   │   ├── utils.ts            #   Types, labels, units and limits
+│   │   │   │   └── components/         #   Panel, map, readings and history chart
 │   │   │   ├── storms/
 │   │   │   │   ├── page.tsx            #   Page
 │   │   │   │   ├── api.ts              #   Tropical Storms API client
@@ -403,6 +412,76 @@ select changes the `language` parameter the API writes its titles and texts in
 and looks the current location up again, so the two cannot drift apart.
 
 Note that no warnings is the normal answer for most places most of the time.
+
+### Weather — Observations
+
+Shows what weather stations, buoys, aircraft and balloons measured, with the
+five Observations APIs:
+[Sources](https://platform.infoplaza.com/reference/v1-observations-sources),
+[Stations](https://platform.infoplaza.com/reference/v1-observations-stations),
+[Station](https://platform.infoplaza.com/reference/v1-observations-station),
+[Point](https://platform.infoplaza.com/reference/v1-observations-point) and
+[Area](https://platform.infoplaza.com/reference/v1-observations-area).
+
+Each endpoint has one job on the page. Sources lists the networks for the
+select, and says per network which of the other endpoints take it. Stations
+puts every station of the picked network on the
+[map](src/app/weather/observations/components/observations-map.tsx). Clicking
+a dot reads that station by id with Station; clicking anywhere else asks Point
+for the nearest station within the distance beside the map, which the
+endpoint caps at 100 km. Point answers a spot with no station in range with
+`station: null` rather than an error, which the panel shows as a hint. The
+button under the map asks Area for the latest reading of every station in
+view and writes the chosen value on the map beside each one. Clicking one of
+those labels costs nothing, because the observation came with the area. All
+four lookups go through route handlers next to the page that add
+`INFOPLAZA_API_KEY` server-side. The networks, the KNMI stations and the
+readings at De Bilt are fetched during server rendering, so the page arrives
+with content.
+
+What a call costs is the thing to design around. Sources and Stations cost one
+credit per call, and Stations takes up to 5,000 stations a page: the largest
+network, WMO SYNOP, is 14,600 stations for three credits. Area, Point and
+Station cost one credit per observation in the answer. A view of Europe holds
+thousands of stations, so the
+[route handler](src/app/weather/observations/area/route.ts) caps an Area call
+at 100 observations, and the button only goes out when it is pressed.
+
+The history under the details is the Station endpoint again, in `series`
+mode, and it is asked for as a number of readings rather than a stretch of
+time. A day of history costs 240 credits at Météo-France's six-minute
+stations and 1 at a daily one; 144 readings cost at most 144 at either. A
+series wants a period of at most 31 days, which is why a daily station
+answers 144 with 32 readings. To get the newest readings,
+[`observationsAtStation`](src/app/weather/observations/api.ts) asks for the 31
+days up to the latest reading and cuts the answer short with `per_page`. The
+answer comes newest first, so that keeps the newest readings. Ending at the
+latest reading rather than at now is what makes it work for KNMI's validated
+networks as well, which run a day or two behind.
+
+Every network measures something else — a KNMI station reports seventy-odd
+values every ten minutes, a wave buoy two — so an observation's `values` are an
+open set. The [readings](src/app/weather/observations/components/readings-list.tsx)
+are built from whatever keys come back. Two kinds of key are folded into the
+row they belong to rather than shown on their own:
+
+- `…Description` keys say what a code means: `precipitationType` 0 is shown
+  as "No precipitation".
+- `…Unit` keys say what a number is measured in, and networks name them two
+  ways. Some name the value they belong to (`cloudBaseUnit` for
+  `cloudBaseLayer1`), others a quantity (`temperatureUnit` for
+  `dewPointTemperature2m`). [`readings`](src/app/weather/observations/utils.ts)
+  gives each value the longest stem its key contains, so
+  `precipitationIntensity10min` takes mm/h rather than mm. A network that
+  names no unit gets none rather than a guess: KNMI's ten-minute readings name
+  none for temperature or wind.
+
+Three sources are different. AMDAR (aircraft), radiosondes and WMO ship
+reports move, so Sources marks them as Area only. The select lists them
+separately, and only the readings in view work for them. Separately, `gms`,
+`gms-camera` and `agroexact` are listed as supporting every endpoint, but the
+endpoints refuse them with "Source … is not available for this endpoint". The
+panel shows that message as it comes.
 
 ### Weather — Tropical Storms
 

@@ -70,6 +70,13 @@ export const exampleGroups: ExampleGroup[] = [
         icon: "warning",
       },
       {
+        title: "Observations",
+        description:
+          "Read what weather stations, buoys and aircraft measured, now and over the last readings.",
+        href: "/weather/observations",
+        icon: "gauge",
+      },
+      {
         title: "Tropical Storms",
         description:
           "Every active hurricane, typhoon and cyclone on a globe, with its track and forecast cone.",
