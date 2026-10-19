@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { ApiLink, ExamplePage } from "@/components/example-page";
 import { collectApiCalls } from "@/lib/platform";
-import {
-  observationSources,
-  observationStations,
-  observationsAtStation,
-} from "./api";
+import { observationSources, observationsAtStation } from "./api";
 import {
   ObservationsPanel,
   type Selection,
@@ -14,7 +10,6 @@ import {
   DEFAULT_SOURCE,
   DEFAULT_STATION_ID,
   type ObservationSource,
-  type Station,
 } from "./utils";
 
 export const metadata: Metadata = {
@@ -22,32 +17,31 @@ export const metadata: Metadata = {
 };
 
 /**
- * The networks, the stations of the one the page opens on and the latest
- * readings at De Bilt are loaded here, so the page arrives with content: one
- * credit each. Everything after that is a click away in the panel.
+ * The networks and the latest readings at De Bilt are loaded here, so the
+ * page arrives with content: one credit each. The stations of the network are
+ * not: a network's list runs to thousands of stations over several pages, so
+ * the panel asks for them once it is on screen. Everything after that is a
+ * click away in the panel.
  */
 async function initialState(): Promise<{
   sources: ObservationSource[];
-  stations: Station[];
   selection: Selection | null;
   error: string | null;
 }> {
-  // Settled rather than all-or-nothing: without the stations the select and
-  // the station's readings are still worth showing, and the other way round.
-  const [sources, stations, station] = await Promise.allSettled([
+  // Settled rather than all-or-nothing: without the station's readings the
+  // select and the map are still worth showing.
+  const [sources, station] = await Promise.allSettled([
     observationSources(),
-    observationStations(DEFAULT_SOURCE),
     observationsAtStation(DEFAULT_SOURCE, DEFAULT_STATION_ID),
   ]);
 
-  const failure = [sources, stations, station].find(
+  const failure = [sources, station].find(
     (outcome): outcome is PromiseRejectedResult =>
       outcome.status === "rejected",
   );
 
   return {
     sources: sources.status === "fulfilled" ? sources.value : [],
-    stations: stations.status === "fulfilled" ? stations.value : [],
     selection:
       station.status === "fulfilled" && station.value.station
         ? {
@@ -109,7 +103,6 @@ export default async function ObservationsPage() {
         <ObservationsPanel
           sources={result.sources}
           initialSourceId={DEFAULT_SOURCE}
-          initialStations={result.stations}
           initialSelection={result.selection}
           initialError={result.error}
         />

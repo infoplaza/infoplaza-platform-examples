@@ -435,9 +435,9 @@ button under the map asks Area for the latest reading of every station in
 view and writes the chosen value on the map beside each one. Clicking one of
 those labels costs nothing, because the observation came with the area. All
 four lookups go through route handlers next to the page that add
-`INFOPLAZA_API_KEY` server-side. The networks, the KNMI stations and the
-readings at De Bilt are fetched during server rendering, so the page arrives
-with content.
+`INFOPLAZA_API_KEY` server-side. The networks and the readings at De Bilt are
+fetched during server rendering, so the page arrives with content; the KNMI
+stations, thousands of them, follow from the browser once it is on screen.
 
 What a call costs is the thing to design around. Sources and Stations cost one
 credit per call, and Stations takes up to 5,000 stations a page: the largest

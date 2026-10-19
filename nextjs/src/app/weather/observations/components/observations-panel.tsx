@@ -46,8 +46,10 @@ import { ReadingsList } from "./readings-list";
  *   the Station endpoint again, as a series.
  *
  * Every lookup goes through the route handlers next to this component, so the
- * API key stays on the server. The opening state is fetched during server
- * rendering and handed in as props, so the page has content on first paint.
+ * API key stays on the server. The networks and the opening station are
+ * fetched during server rendering and handed in as props, so the page has
+ * content on first paint; the stations, the slow part, are asked for once the
+ * panel is on screen.
  */
 
 // MapLibre needs a browser, so the map is loaded on the client only.
@@ -69,7 +71,6 @@ export interface Selection {
 interface ObservationsPanelProps {
   sources: ObservationSource[];
   initialSourceId: string;
-  initialStations: Station[];
   initialSelection: Selection | null;
   /** Set when the opening state failed to load. */
   initialError: string | null;
@@ -78,18 +79,17 @@ interface ObservationsPanelProps {
 export function ObservationsPanel({
   sources,
   initialSourceId,
-  initialStations,
   initialSelection,
   initialError,
 }: ObservationsPanelProps) {
   const [sourceId, setSourceId] = useState(initialSourceId);
   const source = sources.find((option) => option.id === sourceId) ?? null;
 
-  const [stations, setStations] = useState<Station[]>(initialStations);
-  const [stationsLoading, setStationsLoading] = useState(false);
-  const [stationsError, setStationsError] = useState<string | null>(
-    initialError,
+  const [stations, setStations] = useState<Station[]>([]);
+  const [stationsLoading, setStationsLoading] = useState(
+    source?.supports.station ?? false,
   );
+  const [stationsError, setStationsError] = useState<string | null>(null);
 
   const [selection, setSelection] = useState<Selection | null>(
     initialSelection,
@@ -97,7 +97,9 @@ export function ObservationsPanel({
   const [picked, setPicked] = useState<LatLon | null>(null);
   const [maxDistance, setMaxDistance] = useState(DEFAULT_DISTANCE);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(
+    initialError,
+  );
   /** Said instead of the details when a lookup found no station. */
   const [detailNotice, setDetailNotice] = useState<string | null>(null);
 
@@ -146,6 +148,35 @@ export function ObservationsPanel({
     ref.current = controller;
     return controller;
   }
+
+  // The stations of the opening network are not part of the server render: a
+  // network runs to thousands of them, which held the whole page back. They
+  // are asked for here instead, once the page is on screen. A change of
+  // network before they arrive aborts this request, like any other.
+  useEffect(() => {
+    const opening = sources.find((option) => option.id === initialSourceId);
+    if (!opening?.supports.station) return;
+
+    const controller = new AbortController();
+    stationsRequestRef.current = controller;
+
+    fetchJson<{ stations: Station[] }>(
+      `/weather/observations/stations?source=${initialSourceId}`,
+      controller.signal,
+    ).then(
+      (body) => {
+        setStations(body.stations);
+        setStationsLoading(false);
+      },
+      (error: unknown) => {
+        if (controller.signal.aborted) return;
+        setStationsError(errorMessage(error, "Failed to load stations."));
+        setStationsLoading(false);
+      },
+    );
+
+    return () => controller.abort();
+  }, [sources, initialSourceId]);
 
   /**
    * The readings of a station over time. Asked for only once a length has
