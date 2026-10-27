@@ -8,6 +8,7 @@ import {
   recordProxiedCall,
   WEATHER_MAPS_BASE_URL,
 } from "@/lib/platform-proxy";
+import { platformBaseUrl } from "@/lib/platform-url";
 
 /**
  * The Platform, as the component library asks for it.
@@ -47,7 +48,9 @@ let handler: ((request: Request) => Promise<Response>) | null = null;
 function platformHandler(): (request: Request) => Promise<Response> {
   handler ??= PlatformAuth({
     apiKey: requireApiKey(),
-    baseUrl: WEATHER_MAPS_BASE_URL,
+    // The origin, not an API under it: the package appends the product path
+    // of every endpoint itself.
+    baseUrl: platformBaseUrl(),
     basePath: PLATFORM_BASE_PATH,
     // The Platform takes the key as `api_key` on every endpoint it documents,
     // which is what the rest of these examples send as well. The package

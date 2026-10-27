@@ -25,11 +25,10 @@ import { platformUrl } from "./platform-url";
 export const PLATFORM_BASE_PATH = "/api/platform";
 
 /**
- * The Weather Maps API the map components are pointed at.
+ * The Weather Maps API, which the layers this app serves itself are asked of.
  *
- * `PlatformAuth` derives the timeseries and ensemble bases from this one by
- * swapping the `/weather/maps` segment, so all three follow it rather than
- * being configured separately.
+ * `PlatformAuth` is not pointed here but at the Platform's origin: it appends
+ * each endpoint's own product path, `/v1/weather/maps/models` and the like.
  */
 export const WEATHER_MAPS_BASE_URL = platformUrl("v1/weather/maps");
 

@@ -25,7 +25,7 @@ export default function MapsPage() {
           sends the picture itself: the element you picked, for every moment on
           the timebar. The map, the layers over it and the panel come
           ready-made from{" "}
-          <ApiLink href="https://github.com/infoplaza/platform-components">
+          <ApiLink href="https://www.npmjs.com/package/@infoplaza/platform">
             @infoplaza/platform
           </ApiLink>
           , so this example is little more than the three put together.
