@@ -478,7 +478,11 @@ function Models({ route }: { route: RouteForecast }) {
   return (
     <p className="text-xs text-dark/50">
       {route.models
-        .map((model) => `${model.key} (run ${formatMoment(model.runtime)})`)
+        .map((model) =>
+          "error" in model
+            ? `${model.key} (unavailable)`
+            : `${model.key} (run ${formatMoment(model.runtime)})`,
+        )
         .join(" · ")}
     </p>
   );

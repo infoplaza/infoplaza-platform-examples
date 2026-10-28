@@ -26,12 +26,16 @@ export interface Waypoint {
   lon: number;
 }
 
-/** Which model answered, when it ran and how far it reaches. Unix seconds. */
-export interface ModelInfo {
-  key: string;
-  runtime: number;
-  range: { from: number; to: number };
-}
+/**
+ * Which model answered, when it ran and how far it reaches. Unix seconds.
+ *
+ * A model that could not be read at all comes back with its key and an
+ * `error` only, and no run or range — the elements it serves then carry the
+ * same error each.
+ */
+export type ModelInfo =
+  | { key: string; runtime: number; range: { from: number; to: number } }
+  | { key: string; error: string };
 
 /**
  * One value of one element.
