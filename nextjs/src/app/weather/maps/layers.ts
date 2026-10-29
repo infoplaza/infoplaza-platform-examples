@@ -146,6 +146,25 @@ function mapsHostPath(url: string, format?: string): string {
 }
 
 /**
+ * The image of one moment as a tile template, which is what the components
+ * draw a layer from: they cut the frame they are looking at into tiles and
+ * fill in `{z}/{x}/{y}` for each.
+ *
+ * The Platform names the image for the whole frame instead, under
+ * `/gridmapdata/layer/` and ending in the frame it was asked for. The tile
+ * host's template is that same path under `/gridmapdata/tile/` with the frame
+ * left open, and the components turn it back into the first form for every
+ * tile they load, so the request that goes out is one the Platform handed out.
+ */
+function tileUrl(image: URL): string | undefined {
+  const frame = /\/gridmapdata\/layer\/(.+)(\/\d+){5}$/.exec(image.pathname);
+  if (!frame) return undefined;
+
+  const path = image.pathname.slice(0, frame.index);
+  return `${path}/gridmapdata/tile/${frame[1]}/{z}/{x}/{y}${image.search}`;
+}
+
+/**
  * The Platform's answer, as the components read one.
  *
  * Everything is a rename: the palette the endpoint returns as one object is
@@ -175,6 +194,7 @@ function packageLayers(
         datetime,
         url: `${image.pathname}${image.search}`,
         url_webp: webp,
+        tileurl: tileUrl(image),
       };
     }),
     element: {

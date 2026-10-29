@@ -57,6 +57,16 @@ const PROXIED_ENDPOINTS: Record<string, ProxiedEndpoint> = {
     docsUrl:
       "https://platform.infoplaza.com/reference/v1-weather-maps-models",
   },
+  "nowcast-info": {
+    name: "Weather Maps Nowcast Info",
+    docsUrl:
+      "https://platform.infoplaza.com/reference/v1-weather-maps-nowcast-info",
+  },
+  "nowcast-layers": {
+    name: "Weather Maps Nowcast Layers",
+    docsUrl:
+      "https://platform.infoplaza.com/reference/v1-weather-maps-nowcast-layers",
+  },
   // The one endpoint here the package does not ask for by itself: it fetches
   // its layers from its own tile host instead. The Maps example points those
   // requests at this segment, which is what puts the documented endpoint
