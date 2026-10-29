@@ -22,6 +22,52 @@ export interface Warning {
   created: string;
 }
 
+/**
+ * One warning as the Weather Warnings Geo API returns it, flattened to the
+ * fields the map shows. Where the point endpoint answers with the warnings
+ * at a coordinate, this one answers with every warning in Europe and the
+ * region each covers, so it is the one the areas on the map are drawn from.
+ */
+export interface WarningArea {
+  /** The warning's own id, which the point endpoint does not carry. */
+  id: number;
+  /** The issuing service's own name for it, always in English. */
+  name: string;
+  /** The headline, in the language asked for. */
+  title: string;
+  text: string;
+  /** 1 green, 2 yellow, 3 orange, 4 red, as on the point endpoint. */
+  level: number;
+  countryCode: string;
+  /** False while the warning is still ahead of its start time. */
+  active: boolean;
+  activeStart: string;
+  activeEnd: string;
+  created: string;
+}
+
+/** The region a warning covers, as a GeoJSON feature the map can draw. */
+export interface WarningAreaFeature {
+  type: "Feature";
+  id: number;
+  geometry: { type: "MultiPolygon"; coordinates: number[][][][] };
+  properties: WarningArea;
+}
+
+/** How many areas are under warning at each level, severest first. */
+export function countByLevel(
+  areas: WarningAreaFeature[],
+): { level: number; count: number }[] {
+  const counts = new Map<number, number>();
+  for (const area of areas) {
+    const { level } = area.properties;
+    counts.set(level, (counts.get(level) ?? 0) + 1);
+  }
+  return [...counts]
+    .map(([level, count]) => ({ level, count }))
+    .sort((a, b) => b.level - a.level);
+}
+
 /** A point on the map. */
 export interface LatLon {
   latitude: number;
@@ -165,7 +211,9 @@ export function formatDateTime(iso: string): string {
 }
 
 /** "Thu 6 Aug, 12:00 – 20:00", or both dates when the window spans days. */
-export function formatWindow(warning: Warning): string {
+export function formatWindow(
+  warning: Pick<Warning, "activeStart" | "activeEnd">,
+): string {
   const start = new Date(warning.activeStart);
   const end = new Date(warning.activeEnd);
   const time = (date: Date) =>
@@ -185,12 +233,16 @@ export function formatCoordinates(point: LatLon): string {
 /**
  * "DE" → "🇩🇪". Flags are pairs of regional indicator symbols, which sit at a
  * fixed offset from the Latin letters of the country code.
+ *
+ * The UK's warnings come in as "UK", which is not the ISO code — that is
+ * "GB" — and has no flag of its own, so it is mapped across first.
  */
 export function countryFlag(code: string): string {
   if (!/^[A-Za-z]{2}$/.test(code)) return "";
+  const iso = code.toUpperCase() === "UK" ? "GB" : code.toUpperCase();
   const REGIONAL_INDICATOR_A = 0x1f1e6;
   return String.fromCodePoint(
-    ...[...code.toUpperCase()].map(
+    ...[...iso].map(
       (letter) => REGIONAL_INDICATOR_A + letter.charCodeAt(0) - 65,
     ),
   );

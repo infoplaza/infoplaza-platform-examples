@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { fetchJson } from "@/lib/api-log";
 import {
+  countByLevel,
   countryFlag,
   DEFAULT_LANGUAGE,
   DEFAULT_LOCATION,
@@ -18,19 +19,21 @@ import {
   type LanguageCode,
   type LatLon,
   type Warning,
+  type WarningAreaFeature,
 } from "../utils";
 import { LevelPill } from "./level-pill";
 import { WarningList } from "./warning-list";
 
 /**
- * Ties the example together: the picked location fills the list of warnings
+ * Ties the example together: the areas on the map show where in Europe
+ * anything is warned about, the picked location fills the list of warnings
  * and colours the pin, and picking a warning shows the full text the issuing
  * service wrote for it.
  *
- * The lookup goes through the route handler next to this component, so the
- * API key stays on the server. The warnings for the location the page opens
- * on are fetched during server rendering and handed in as props, so the page
- * has content on first paint.
+ * Both go through the route handlers next to this component, so the API key
+ * stays on the server. The warnings for the location the page opens on are
+ * fetched during server rendering and handed in as props, so the page has
+ * content on first paint; the areas follow once it is on screen.
  */
 
 // MapLibre needs a browser, so the map is loaded on the client only.
@@ -60,13 +63,58 @@ export function WarningsPanel({
   const [selected, setSelected] = useState<Warning | null>(
     initialWarnings[0] ?? null,
   );
+  const [areas, setAreas] = useState<WarningAreaFeature[]>([]);
+  const [areasLoading, setAreasLoading] = useState(true);
+  const [areasError, setAreasError] = useState<string | null>(null);
 
   const languageId = `${useId()}-language`;
 
   // Aborting the previous request means a quick second click cannot be
   // overtaken by the response to the first one.
   const requestRef = useRef<AbortController | null>(null);
-  useEffect(() => () => requestRef.current?.abort(), []);
+  const areasRequestRef = useRef<AbortController | null>(null);
+  useEffect(
+    () => () => {
+      requestRef.current?.abort();
+      areasRequestRef.current?.abort();
+    },
+    [],
+  );
+
+  // Every warning area in Europe, in the language on screen. Asked for once
+  // the page is on screen rather than while rendering it, because the answer
+  // runs to well over half a megabyte, and again only when the language
+  // changes, because each call costs 100 credits.
+  const loadAreas = useCallback((code: LanguageCode) => {
+    areasRequestRef.current?.abort();
+    const controller = new AbortController();
+    areasRequestRef.current = controller;
+
+    fetchJson<{ areas?: WarningAreaFeature[] }>(
+      `/weather/warnings/areas?language=${code}`,
+      controller.signal,
+    ).then(
+      (body) => {
+        setAreas(body.areas ?? []);
+        setAreasError(null);
+        setAreasLoading(false);
+      },
+      (error: unknown) => {
+        if (controller.signal.aborted) return;
+        setAreas([]);
+        setAreasError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load warning areas.",
+        );
+        setAreasLoading(false);
+      },
+    );
+  }, []);
+
+  useEffect(() => {
+    loadAreas(DEFAULT_LANGUAGE);
+  }, [loadAreas]);
 
   const lookup = useCallback(async (location: LatLon, code: LanguageCode) => {
     requestRef.current?.abort();
@@ -104,6 +152,8 @@ export function WarningsPanel({
   function changeLanguage(code: LanguageCode) {
     setLanguage(code);
     lookup(picked, code);
+    setAreasLoading(true);
+    loadAreas(code);
   }
 
   const selectedKey = selected ? warningKey(selected) : null;
@@ -111,6 +161,7 @@ export function WarningsPanel({
   return (
     <div className="space-y-6">
       <WarningsMap
+        areas={areas}
         picked={picked}
         level={highestLevel(warnings)}
         count={warnings.length}
@@ -118,11 +169,18 @@ export function WarningsPanel({
       />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-xs text-dark/70">
-          Click the map or drag the pin to look somewhere else. Picked
-          location:{" "}
-          <span className="tabular-nums">{formatCoordinates(picked)}</span>
-        </p>
+        <div className="space-y-1 text-xs text-dark/70">
+          <p>
+            Click the map or drag the pin to look somewhere else. Picked
+            location:{" "}
+            <span className="tabular-nums">{formatCoordinates(picked)}</span>
+          </p>
+          <AreasSummary
+            areas={areas}
+            loading={areasLoading}
+            error={areasError}
+          />
+        </div>
 
         <div className="flex items-center gap-2 text-sm">
           <label htmlFor={languageId} className="text-dark/80">
@@ -219,6 +277,41 @@ export function WarningsPanel({
         </section>
       </div>
     </div>
+  );
+}
+
+/**
+ * What the areas on the map add up to, by level: the overview the Geo
+ * endpoint gives that a lookup at one point cannot.
+ */
+function AreasSummary({
+  areas,
+  loading,
+  error,
+}: {
+  areas: WarningAreaFeature[];
+  loading: boolean;
+  error: string | null;
+}) {
+  if (loading) return <p>Loading the warning areas for Europe…</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
+  if (areas.length === 0) return <p>No warning areas in Europe right now.</p>;
+
+  const upcoming = areas.filter((area) => !area.properties.active).length;
+
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+      <span>
+        {areas.length} warning areas across Europe
+        {upcoming > 0 && `, ${upcoming} of them upcoming (dashed)`}:
+      </span>
+      {countByLevel(areas).map(({ level, count }) => (
+        <span key={level} className="inline-flex items-center gap-1">
+          <LevelPill level={level} />
+          <span className="tabular-nums">{count}</span>
+        </span>
+      ))}
+    </p>
   );
 }
 

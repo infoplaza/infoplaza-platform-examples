@@ -65,7 +65,7 @@ export const exampleGroups: ExampleGroup[] = [
       {
         title: "Warnings",
         description:
-          "Pick a spot on the map to see the severe weather warned about there.",
+          "See the warning areas across Europe, and pick a spot to read the warnings there.",
         href: "/weather/warnings",
         icon: "warning",
       },

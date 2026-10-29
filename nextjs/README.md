@@ -84,8 +84,9 @@ nextjs/
 │   │   │   │   └── components/         #   Panel, globe, list and track table
 │   │   │   └── warnings/
 │   │   │       ├── page.tsx            #   Page
-│   │   │       ├── api.ts              #   Weather Warnings API client
+│   │   │       ├── api.ts              #   Weather Warnings and Geo API clients
 │   │   │       ├── lookup/route.ts     #   Warnings proxy the browser calls
+│   │   │       ├── areas/route.ts      #   Warning areas proxy for the map
 │   │   │       ├── utils.ts            #   Types, levels and formatting helpers
 │   │   │       └── components/         #   Panel, map and list
 │   │   ├── geo/
@@ -383,17 +384,34 @@ day.
 
 ### Weather — Warnings
 
-Shows the severe weather warned about at a point on the map with the
+Shows where in Europe severe weather is warned about with the
+[Weather Warnings Geo API](https://platform.infoplaza.com/reference/v1-weather-warnings-geo),
+and the warnings at a point on the map with the
 [Weather Warnings API](https://platform.infoplaza.com/reference/v1-weather-warnings).
 
-Warnings have no geometry: the API answers for a coordinate, not for an area.
-The [map](src/app/weather/warnings/components/warnings-map.tsx) is therefore a
-picker with a single marker, and the marker carries the answer — it takes the
-colour of the severest warning in force and shows how many there are, grey when
-the location has none. Clicking the map or dragging the pin looks the new spot
-up through a [route handler](src/app/weather/warnings/lookup/route.ts) that adds
+The two answer different questions. The Geo endpoint returns every warning in
+Europe as a GeoJSON `FeatureCollection`, each feature a `MultiPolygon` of the
+region it covers, and the [map](src/app/weather/warnings/components/warnings-map.tsx)
+draws those areas in the colour of their level — solid where the warning is in
+force, faint and dashed where it has yet to start — with the severest on top
+where they overlap. Hovering an area names the warning. The point endpoint has
+no geometry: it answers for a coordinate, so the map carries its answer on a
+single marker that takes the colour of the severest warning in force and shows
+how many there are, grey when the location has none. Clicking the map or
+dragging the pin looks the new spot up through a
+[route handler](src/app/weather/warnings/lookup/route.ts) that adds
 `INFOPLAZA_API_KEY` server-side, and the warnings for the location the page
 opens on are fetched during server rendering, so the page arrives with content.
+
+The areas come in through [a route handler of their own](src/app/weather/warnings/areas/route.ts)
+once the page is on screen rather than during server rendering: one answer
+covers the continent, runs to well over half a megabyte, and costs 100
+credits. That is also why they are asked for again only when the language
+changes. [`weatherWarningAreas`](src/app/weather/warnings/api.ts) flattens the
+features into the point endpoint's vocabulary — ISO times where the Geo
+endpoint sends unix seconds, and the headline and text of the language asked
+for out of its per-language `texts` — so the map and the list share their
+formatting.
 
 A location is often covered by several services at once, and each of them
 reissues a warning as its forecast firms up, so the same warning comes back

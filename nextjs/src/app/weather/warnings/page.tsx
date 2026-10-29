@@ -46,15 +46,19 @@ export default async function WeatherWarningsPage() {
       apiCalls={apiCalls}
       intro={
         <>
-          Pick a spot on the map to see the severe weather warned about there
-          with the{" "}
+          See where in Europe severe weather is warned about with the{" "}
+          <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-warnings-geo">
+            Weather Warnings Geo API
+          </ApiLink>
+          , then pick a spot on the map to read the warnings there with the{" "}
           <ApiLink href="https://platform.infoplaza.com/reference/v1-weather-warnings">
             Weather Warnings API
           </ApiLink>
-          . One call answers for one point with the warnings the national
-          services have in force for it — heat, thunderstorms, wind, wildfire —
-          each with the colour code it was issued under and the text explaining
-          what to expect.
+          . The first answers for the whole continent with the region each
+          warning covers; the second for one point, with the warnings the
+          national services have in force for it — heat, thunderstorms, wind,
+          wildfire — each with the colour code it was issued under and the text
+          explaining what to expect.
         </>
       }
     >

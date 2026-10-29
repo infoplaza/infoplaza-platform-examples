@@ -5,19 +5,32 @@ import {
   Map as MapLibreMap,
   Marker,
   NavigationControl,
+  Popup,
+  type ExpressionSpecification,
+  type GeoJSONSource,
   type StyleSpecification,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 // Sets the MapLibre worker URL, which every map on the page shares.
 import "@/lib/maplibre";
-import { levelMeta, NEUTRAL_LEVEL, type LatLon } from "../utils";
+import {
+  countryFlag,
+  formatWindow,
+  LEVELS,
+  levelMeta,
+  NEUTRAL_LEVEL,
+  type LatLon,
+  type WarningAreaFeature,
+} from "../utils";
 
 /**
  * The map: click anywhere to move the pin, or drag the pin itself.
  *
- * Warnings have no geometry of their own — they answer for a point, not for
- * an area — so the map has one marker and the marker carries the answer: it
- * takes the colour of the severest warning in force and shows how many there
+ * It answers two questions at once. The areas show where in Europe anything
+ * is warned about, drawn from the Weather Warnings Geo API in the colour of
+ * their level, so it is plain where a click will find something. The pin
+ * answers for the point it stands on, from the Weather Warnings API: it takes
+ * the colour of the severest warning in force there and shows how many there
  * are, grey when the location has none.
  *
  * MapLibre is not React-aware, so the map and its marker are created
@@ -46,8 +59,31 @@ const MAP_STYLE: StyleSpecification = {
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
-/** Warnings cover regions, so the map opens on the whole area around a city. */
-const INITIAL_ZOOM = 6;
+/**
+ * Far enough out to see most of Europe, which is what the areas cover, while
+ * the pin is still on the city the page opens on.
+ */
+const INITIAL_ZOOM = 4;
+
+const AREAS_SOURCE = "warning-areas";
+const AREAS_FILL_LAYER = "warning-areas-fill";
+const AREAS_ACTIVE_LINE_LAYER = "warning-areas-active-line";
+const AREAS_UPCOMING_LINE_LAYER = "warning-areas-upcoming-line";
+
+/** Each area in the colour of its level, the same palette as the pills. */
+const LEVEL_COLOR: ExpressionSpecification = [
+  "match",
+  ["get", "level"],
+  1,
+  LEVELS[1].color,
+  2,
+  LEVELS[2].color,
+  3,
+  LEVELS[3].color,
+  4,
+  LEVELS[4].color,
+  NEUTRAL_LEVEL.color,
+];
 
 const PIN_WIDTH = 32;
 const PIN_HEIGHT = 44;
@@ -55,6 +91,8 @@ const PIN_HEIGHT = 44;
 const PIN_HEAD = 32;
 
 interface WarningsMapProps {
+  /** Every warning area in Europe, from the Geo endpoint. */
+  areas: WarningAreaFeature[];
   picked: LatLon;
   /** Severest level in force at the pin, or null when nothing is. */
   level: number | null;
@@ -64,6 +102,7 @@ interface WarningsMapProps {
 }
 
 export default function WarningsMap({
+  areas,
   picked,
   level,
   count,
@@ -78,15 +117,19 @@ export default function WarningsMap({
   );
   /** Set while the pin itself moved the location, so the map stays put. */
   const skipRecenterRef = useRef(false);
+  /** The areas layers only exist once the style has loaded. */
+  const loadedRef = useRef(false);
 
   // The map is built once, so anything it closes over has to be read from a
   // ref or it would be stuck with the values of the first render.
   const onPickRef = useRef(onPick);
   const pickedRef = useRef(picked);
+  const areasRef = useRef(areas);
   useEffect(() => {
     onPickRef.current = onPick;
     pickedRef.current = picked;
-  }, [onPick, picked]);
+    areasRef.current = areas;
+  }, [onPick, picked, areas]);
 
   // The map and its pin share one lifecycle: both are created here and both
   // go away together, so a remount cannot leave the pin behind on a map that
@@ -109,6 +152,73 @@ export default function WarningsMap({
       }),
     );
 
+    const tooltip = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 12,
+      maxWidth: "280px",
+    });
+
+    map.on("load", () => {
+      map.addSource(AREAS_SOURCE, {
+        type: "geojson",
+        data: toFeatureCollection(areasRef.current),
+      });
+      // Areas overlap, so the severest is drawn last and stays on top.
+      map.addLayer({
+        id: AREAS_FILL_LAYER,
+        type: "fill",
+        source: AREAS_SOURCE,
+        layout: { "fill-sort-key": ["get", "level"] },
+        paint: {
+          "fill-color": LEVEL_COLOR,
+          // What has not started yet is there, but quieter.
+          "fill-opacity": ["case", ["get", "active"], 0.35, 0.12],
+        },
+      });
+      map.addLayer({
+        id: AREAS_ACTIVE_LINE_LAYER,
+        type: "line",
+        source: AREAS_SOURCE,
+        filter: ["==", ["get", "active"], true],
+        layout: { "line-sort-key": ["get", "level"] },
+        paint: { "line-color": LEVEL_COLOR, "line-width": 1 },
+      });
+      map.addLayer({
+        id: AREAS_UPCOMING_LINE_LAYER,
+        type: "line",
+        source: AREAS_SOURCE,
+        filter: ["==", ["get", "active"], false],
+        layout: { "line-sort-key": ["get", "level"] },
+        paint: {
+          "line-color": LEVEL_COLOR,
+          "line-width": 1,
+          "line-dasharray": [2, 2],
+        },
+      });
+
+      // The tooltip names what is under the cursor; clicking still moves the
+      // pin there, which is how to read the warnings in full.
+      map.on("mousemove", AREAS_FILL_LAYER, (event) => {
+        const ids = new Set(event.features?.map((feature) => feature.id));
+        const hovered = areasRef.current
+          .filter((area) => ids.has(area.id))
+          .sort((a, b) => b.properties.level - a.properties.level);
+        if (hovered.length === 0) return;
+
+        tooltip
+          .setLngLat(event.lngLat)
+          .setDOMContent(tooltipContent(hovered))
+          .addTo(map);
+        // The tooltip sits under the cursor, so it has to let the clicks and
+        // moves meant for the map below it through.
+        tooltip.getElement().style.pointerEvents = "none";
+      });
+      map.on("mouseleave", AREAS_FILL_LAYER, () => tooltip.remove());
+
+      loadedRef.current = true;
+    });
+
     const pin = createPin();
     const marker = new Marker({
       element: pin.element,
@@ -129,12 +239,24 @@ export default function WarningsMap({
     markerRef.current = marker;
     pinRef.current = { shape: pin.shape, label: pin.label };
     return () => {
+      tooltip.remove();
       map.remove();
       mapRef.current = null;
       markerRef.current = null;
       pinRef.current = null;
+      loadedRef.current = false;
     };
   }, []);
+
+  // Push new areas into the source instead of rebuilding the map, so a change
+  // of language leaves the pan and zoom alone. Areas that arrive before the
+  // style has loaded are picked up from the ref when it does.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
+    const source = map.getSource(AREAS_SOURCE) as GeoJSONSource | undefined;
+    source?.setData(toFeatureCollection(areas));
+  }, [areas]);
 
   // Keep the pin on the picked location and follow it, unless the pin is what
   // moved the location in the first place.
@@ -218,4 +340,58 @@ function createPin(): {
 
   element.append(svg, label);
   return { element, shape, label };
+}
+
+function toFeatureCollection(
+  areas: WarningAreaFeature[],
+): GeoJSON.FeatureCollection {
+  return { type: "FeatureCollection", features: areas };
+}
+
+/**
+ * What the tooltip shows: the severest warning under the cursor, and how many
+ * more cover the same spot. It is built as DOM rather than as an HTML string,
+ * which keeps the text from the API text instead of markup.
+ */
+function tooltipContent(hovered: WarningAreaFeature[]): HTMLElement {
+  const [{ properties: area }, ...others] = hovered;
+  const meta = levelMeta(area.level);
+
+  const root = document.createElement("div");
+  root.className = "space-y-1";
+
+  const header = document.createElement("div");
+  header.className = "flex items-center gap-2";
+
+  const pill = document.createElement("span");
+  pill.className = "rounded-full px-2 py-0.5 text-xs font-medium";
+  pill.style.backgroundColor = meta.color;
+  pill.style.color = meta.textColor;
+  pill.textContent = meta.label;
+
+  const country = document.createElement("span");
+  country.className = "text-xs text-dark/70";
+  country.textContent = `${countryFlag(area.countryCode)} ${area.countryCode}`;
+
+  header.append(pill, country);
+
+  const title = document.createElement("p");
+  title.className = "text-sm font-medium text-dark";
+  title.textContent = area.title;
+
+  const period = document.createElement("p");
+  period.className = "text-xs text-dark/70";
+  period.textContent = area.active
+    ? formatWindow(area)
+    : `Upcoming · ${formatWindow(area)}`;
+
+  root.append(header, title, period);
+
+  if (others.length > 0) {
+    const more = document.createElement("p");
+    more.className = "text-xs text-dark/70";
+    more.textContent = `+ ${others.length} more here. Click to see them all.`;
+    root.append(more);
+  }
+  return root;
 }
